@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="Manage QuizMaster Pro quiz attempts." />
+
+    <title>Quiz Attempts | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/attempts.css" />
+
+    <script src="/js/admin/attempts.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon">Q</span>
+
+          <div>
+            <strong>QuizMaster Pro</strong>
+            <small>Administration</small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation">
+          <a href="/admin">
+            <span>📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions">
+            <span>📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories">
+            <span>📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users">
+            <span>👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts" class="active">
+            <span>🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/dashboard">
+            <span>🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small>Administrator</small>
+          </div>
+        </div>
+      </aside>
+
+      <main class="attempts-main">
+        <header class="attempts-header">
+          <div>
+            <p class="page-label">Attempt Management</p>
+
+            <h1>Quiz Attempts</h1>
+
+            <p>
+              Review quiz submissions, inspect answers and remove invalid
+              attempts.
+            </p>
+          </div>
+
+          <a href="/admin" class="secondary-button"> Admin Dashboard </a>
+        </header>
+
+        <section class="summary-grid">
+          <article class="summary-card">
+            <span class="summary-icon">🎯</span>
+
+            <div>
+              <p>Total Attempts</p>
+              <strong id="totalAttemptsCount">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">⚡</span>
+
+            <div>
+              <p>Total XP Earned</p>
+              <strong id="totalXpCount">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">📈</span>
+
+            <div>
+              <p>Average Accuracy</p>
+              <strong id="averageAccuracyCount">0%</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">💯</span>
+
+            <div>
+              <p>Perfect Scores</p>
+              <strong id="perfectScoresCount">0</strong>
+            </div>
+          </article>
+        </section>
+
+        <section class="attempts-controls">
+          <div class="search-group">
+            <label for="attemptSearchInput" class="visually-hidden">
+              Search attempts
+            </label>
+
+            <input
+              id="attemptSearchInput"
+              type="search"
+              placeholder="Search by user, email or category..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="filter-group">
+            <select id="categoryFilter" aria-label="Filter by category">
+              <option value="all">All categories</option>
+            </select>
+
+            <select id="userFilter" aria-label="Filter by user">
+              <option value="all">All users</option>
+            </select>
+
+            <select id="sortFilter" aria-label="Sort attempts">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="accuracy">Highest accuracy</option>
+              <option value="score">Highest score</option>
+              <option value="xp">Highest XP</option>
+              <option value="time">Fastest time</option>
+            </select>
+
+            <button
+              id="refreshAttemptsButton"
+              type="button"
+              class="secondary-button"
+            >
+              Refresh
+            </button>
+          </div>
+        </section>
+
+        <section id="attemptsLoadingState" class="state-card">
+          <div class="spinner"></div>
+          <p>Loading quiz attempts...</p>
+        </section>
+
+        <section id="attemptsErrorState" class="state-card hidden">
+          <span class="state-icon">⚠️</span>
+
+          <h2>Unable to load attempts</h2>
+
+          <p id="attemptsErrorMessage">Something went wrong.</p>
+
+          <button id="retryAttemptsButton" type="button" class="primary-button">
+            Try Again
+          </button>
+        </section>
+
+        <section id="attemptsEmptyState" class="state-card hidden">
+          <span class="state-icon">📭</span>
+
+          <h2>No attempts found</h2>
+
+          <p>No quiz attempts match the selected filters.</p>
+        </section>
+
+        <section id="attemptsContent" class="attempts-content hidden">
+          <div class="attempts-table-card">
+            <div class="attempts-table-header" aria-hidden="true">
+              <span>User</span>
+              <span>Category</span>
+              <span>Score</span>
+              <span>Accuracy</span>
+              <span>XP</span>
+              <span>Date</span>
+              <span>Actions</span>
+            </div>
+
+            <div
+              id="attemptsList"
+              class="attempts-list"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <div class="pagination">
+            <button
+              id="previousPageButton"
+              type="button"
+              class="pagination-button"
+            >
+              ← Previous
+            </button>
+
+            <span id="paginationText"> Page 1 of 1 </span>
+
+            <button id="nextPageButton" type="button" class="pagination-button">
+              Next →
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- Attempt details modal -->
+
+    <div id="attemptDetailsModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-details-modal></div>
+
+      <section
+        class="modal-panel details-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="attemptDetailsTitle"
+      >
+        <header class="modal-header">
+          <div>
+            <p class="page-label">Attempt Details</p>
+
+            <h2 id="attemptDetailsTitle">Quiz Submission</h2>
+          </div>
+
+          <button
+            type="button"
+            class="modal-close-button"
+            data-close-details-modal
+            aria-label="Close attempt details"
+          >
+            ×
+          </button>
+        </header>
+
+        <div id="attemptDetailsLoading" class="modal-loading">
+          <div class="spinner"></div>
+          <p>Loading attempt details...</p>
+        </div>
+
+        <div id="attemptDetailsContent" class="hidden">
+          <section class="attempt-overview">
+            <div class="attempt-user-card">
+              <div id="detailsAvatar" class="details-avatar">U</div>
+
+              <div>
+                <h3 id="detailsUserName">Unknown User</h3>
+                <p id="detailsUserEmail">No email</p>
+              </div>
+            </div>
+
+            <div class="attempt-metrics">
+              <article>
+                <span>Category</span>
+                <strong id="detailsCategory">Unknown</strong>
+              </article>
+
+              <article>
+                <span>Score</span>
+                <strong id="detailsScore">0 / 0</strong>
+              </article>
+
+              <article>
+                <span>Accuracy</span>
+                <strong id="detailsAccuracy">0%</strong>
+              </article>
+
+              <article>
+                <span>XP Earned</span>
+                <strong id="detailsXp">0 XP</strong>
+              </article>
+
+              <article>
+                <span>Time Taken</span>
+                <strong id="detailsTime">0m 0s</strong>
+              </article>
+
+              <article>
+                <span>Completed</span>
+                <strong id="detailsCompletedAt">Unknown</strong>
+              </article>
+            </div>
+          </section>
+
+          <section class="answer-review-section">
+            <div class="answer-review-header">
+              <h3>Answer Review</h3>
+
+              <span id="answerCountText"> 0 questions </span>
+            </div>
+
+            <div id="answerReviewList" class="answer-review-list"></div>
+          </section>
+        </div>
+      </section>
+    </div>
+
+    <!-- Delete confirmation modal -->
+
+    <div id="deleteAttemptModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-delete-modal></div>
+
+      <section
+        class="modal-panel delete-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteAttemptTitle"
+      >
+        <span class="delete-icon">🗑️</span>
+
+        <h2 id="deleteAttemptTitle">Delete Quiz Attempt?</h2>
+
+        <p id="deleteAttemptDescription">This action cannot be undone.</p>
+
+        <p id="deleteAttemptMessage" class="form-message"></p>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            data-close-delete-modal
+          >
+            Cancel
+          </button>
+
+          <button
+            id="confirmDeleteAttemptButton"
+            type="button"
+            class="danger-button"
+          >
+            Delete Attempt
+          </button>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
