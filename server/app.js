@@ -22,6 +22,7 @@ const achievementRoutes = require("./routes/achievementRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const adminQuestionRoutes = require("./routes/adminQuestionRoutes");
+const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
 
 /* ============================================================
    Middleware Imports
@@ -239,7 +240,7 @@ app.get("/admin/questions", protect, adminOnly, (req, res) => {
 });
 
 app.get("/admin/categories", protect, adminOnly, (req, res) => {
-  return res.render("admin/dashboard", {
+  return res.render("admin/categories", {
     user: req.user,
   });
 });
@@ -275,6 +276,8 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/achievements", achievementRoutes);
 
 app.use("/api/analytics", analyticsRoutes);
+
+app.use("/api/admin/categories", adminCategoryRoutes);
 
 app.use("/api/admin/questions", adminQuestionRoutes);
 

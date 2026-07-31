@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="Manage QuizMaster Pro quiz categories." />
+
+    <title>Category Management | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/categories.css" />
+
+    <script src="/js/admin/categories.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <!-- ================= SIDEBAR ================= -->
+
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon">Q</span>
+
+          <div>
+            <strong>QuizMaster Pro</strong>
+            <small>Administration</small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation">
+          <a href="/admin">
+            <span>📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions">
+            <span>📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories" class="active">
+            <span>📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users">
+            <span>👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts">
+            <span>🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/dashboard">
+            <span>🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small>Administrator</small>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ================= MAIN ================= -->
+
+      <main class="categories-main">
+        <header class="categories-header">
+          <div>
+            <p class="page-label">Category Management</p>
+
+            <h1>Quiz Categories</h1>
+
+            <p>
+              Review category statistics, rename categories and remove unused
+              categories.
+            </p>
+          </div>
+
+          <a href="/admin/questions" class="primary-button"> + Add Question </a>
+        </header>
+
+        <!-- ================= SUMMARY ================= -->
+
+        <section class="summary-grid">
+          <article class="summary-card">
+            <span class="summary-icon">📚</span>
+
+            <div>
+              <p>Total Categories</p>
+
+              <strong id="totalCategoriesCount"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">📝</span>
+
+            <div>
+              <p>Total Questions</p>
+
+              <strong id="totalQuestionsCount"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">🎯</span>
+
+            <div>
+              <p>Quiz Attempts</p>
+
+              <strong id="totalAttemptsCount"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">⭐</span>
+
+            <div>
+              <p>Most Popular</p>
+
+              <strong id="mostPopularCategory"> None </strong>
+            </div>
+          </article>
+        </section>
+
+        <!-- ================= CONTROLS ================= -->
+
+        <section class="category-controls">
+          <div class="search-group">
+            <label for="categorySearchInput" class="visually-hidden">
+              Search categories
+            </label>
+
+            <input
+              id="categorySearchInput"
+              type="search"
+              placeholder="Search categories..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="control-actions">
+            <select id="categorySortFilter" aria-label="Sort categories">
+              <option value="name-asc">Name A–Z</option>
+
+              <option value="name-desc">Name Z–A</option>
+
+              <option value="questions-desc">Most Questions</option>
+
+              <option value="attempts-desc">Most Attempts</option>
+
+              <option value="accuracy-desc">Highest Accuracy</option>
+            </select>
+
+            <button
+              id="refreshCategoriesButton"
+              type="button"
+              class="secondary-button"
+            >
+              Refresh
+            </button>
+          </div>
+        </section>
+
+        <!-- ================= LOADING ================= -->
+
+        <section id="categoriesLoadingState" class="state-card">
+          <div class="spinner"></div>
+
+          <p>Loading categories...</p>
+        </section>
+
+        <!-- ================= ERROR ================= -->
+
+        <section id="categoriesErrorState" class="state-card hidden">
+          <span class="state-icon">⚠️</span>
+
+          <h2>Unable to load categories</h2>
+
+          <p id="categoriesErrorMessage">Something went wrong.</p>
+
+          <button
+            id="retryCategoriesButton"
+            type="button"
+            class="primary-button"
+          >
+            Try Again
+          </button>
+        </section>
+
+        <!-- ================= EMPTY ================= -->
+
+        <section id="categoriesEmptyState" class="state-card hidden">
+          <span class="state-icon">📭</span>
+
+          <h2>No categories found</h2>
+
+          <p>Add quiz questions to create categories.</p>
+
+          <a href="/admin/questions" class="primary-button"> Add Question </a>
+        </section>
+
+        <!-- ================= CATEGORY GRID ================= -->
+
+        <section id="categoriesContent" class="categories-content hidden">
+          <div
+            id="categoriesGrid"
+            class="categories-grid"
+            aria-live="polite"
+          ></div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ================= RENAME MODAL ================= -->
+
+    <div id="renameCategoryModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-rename-modal></div>
+
+      <section
+        class="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="renameModalTitle"
+      >
+        <header class="modal-header">
+          <div>
+            <p class="page-label">Edit Category</p>
+
+            <h2 id="renameModalTitle">Rename Category</h2>
+          </div>
+
+          <button
+            type="button"
+            class="modal-close-button"
+            data-close-rename-modal
+            aria-label="Close rename dialog"
+          >
+            ×
+          </button>
+        </header>
+
+        <form id="renameCategoryForm">
+          <div class="form-group">
+            <label for="currentCategoryName"> Current Name </label>
+
+            <input id="currentCategoryName" type="text" disabled />
+          </div>
+
+          <div class="form-group">
+            <label for="newCategoryName"> New Category Name </label>
+
+            <input id="newCategoryName" type="text" maxlength="100" required />
+          </div>
+
+          <p class="modal-help">
+            Renaming updates all questions and saved quiz history in this
+            category.
+          </p>
+
+          <p id="renameCategoryMessage" class="form-message"></p>
+
+          <footer class="modal-actions">
+            <button
+              type="button"
+              class="secondary-button"
+              data-close-rename-modal
+            >
+              Cancel
+            </button>
+
+            <button
+              id="confirmRenameCategoryButton"
+              type="submit"
+              class="primary-button"
+            >
+              Rename Category
+            </button>
+          </footer>
+        </form>
+      </section>
+    </div>
+
+    <!-- ================= DELETE MODAL ================= -->
+
+    <div id="deleteCategoryModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-delete-modal></div>
+
+      <section
+        class="delete-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteCategoryTitle"
+      >
+        <span class="delete-icon">🗑️</span>
+
+        <h2 id="deleteCategoryTitle">Delete Category?</h2>
+
+        <p id="deleteCategoryDescription">
+          This removes all questions in the category.
+        </p>
+
+        <p id="deleteCategoryMessage" class="form-message"></p>
+
+        <div class="delete-modal-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            data-close-delete-modal
+          >
+            Cancel
+          </button>
+
+          <button
+            id="confirmDeleteCategoryButton"
+            type="button"
+            class="danger-button"
+          >
+            Delete Category
+          </button>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
