@@ -2,17 +2,25 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="QuizMaster Pro user dashboard" />
+
     <title>Dashboard | QuizMaster Pro</title>
 
     <link rel="stylesheet" href="/css/dashboard.css" />
   </head>
+
   <body>
-    <div class="dashboard">
+    <main class="dashboard">
       <!-- ================= HEADER ================= -->
 
       <header class="header">
-        <div class="logo">🧠 QuizMaster Pro</div>
+        <a href="/dashboard" class="logo">
+          <span aria-hidden="true">🧠</span>
+          <span>QuizMaster Pro</span>
+        </a>
 
         <div class="user-area">
           <span class="welcome">
@@ -20,7 +28,7 @@
             <strong><%= user.firstName %></strong>
           </span>
 
-          <button id="logoutButton">Logout</button>
+          <button id="logoutButton" type="button">Logout</button>
         </div>
       </header>
 
@@ -31,8 +39,8 @@
           <h1>Welcome Back 👋</h1>
 
           <p>
-            Ready to improve your rank today? Pick a category and start solving
-            quizzes.
+            Ready to improve your rank today? Pick a category, test your
+            knowledge and earn more XP.
           </p>
         </div>
       </section>
@@ -40,51 +48,87 @@
       <!-- ================= SEARCH ================= -->
 
       <section class="search-section">
-        <input id="searchInput" type="text" placeholder="Search category..." />
+        <label for="searchInput" class="visually-hidden">
+          Search quiz categories
+        </label>
+
+        <input
+          id="searchInput"
+          type="search"
+          placeholder="Search category..."
+          autocomplete="off"
+        />
       </section>
 
       <!-- ================= CATEGORIES ================= -->
 
-      <section>
-        <h2 class="section-title">Quiz Categories</h2>
+      <section aria-labelledby="categoriesTitle">
+        <h2 id="categoriesTitle" class="section-title">Quiz Categories</h2>
 
-        <div id="categoriesContainer" class="category-grid">
-          <!-- Loaded from API -->
+        <div id="categoriesContainer" class="category-grid" aria-live="polite">
+          <div class="category-loading">Loading quiz categories...</div>
         </div>
       </section>
 
-      <!-- ================= STATS ================= -->
+      <!-- ================= STATISTICS ================= -->
 
-      <section>
-        <h2 class="section-title">Your Statistics</h2>
+      <section aria-labelledby="statisticsTitle">
+        <h2 id="statisticsTitle" class="section-title">Your Statistics</h2>
 
         <div class="stats-grid">
-          <div class="stat-card">
+          <article class="stat-card">
             <h3>Total XP</h3>
-
             <h1><%= user.totalXp || 0 %></h1>
-          </div>
+          </article>
 
-          <div class="stat-card">
-            <h3>Completed</h3>
-
+          <article class="stat-card">
+            <h3>Quizzes Completed</h3>
             <h1><%= user.quizzesCompleted || 0 %></h1>
-          </div>
+          </article>
 
-          <div class="stat-card">
-            <h3>Correct</h3>
-
+          <article class="stat-card">
+            <h3>Correct Answers</h3>
             <h1><%= user.correctAnswers || 0 %></h1>
-          </div>
+          </article>
 
-          <div class="stat-card">
-            <h3>Streak</h3>
-
+          <article class="stat-card">
+            <h3>Current Streak</h3>
             <h1><%= user.currentStreak || 0 %></h1>
-          </div>
+          </article>
         </div>
       </section>
-    </div>
+
+      <!-- ================= LEADERBOARD ================= -->
+
+      <section class="leaderboard-section" aria-labelledby="leaderboardTitle">
+        <div class="section-heading">
+          <div>
+            <p class="section-label">Global Rankings</p>
+
+            <h2 id="leaderboardTitle">🏆 Leaderboard</h2>
+          </div>
+
+          <span id="leaderboardPlayerCount" class="leaderboard-player-count">
+            0 players
+          </span>
+        </div>
+
+        <div class="leaderboard-card">
+          <div class="leaderboard-table-header" aria-hidden="true">
+            <span>Rank</span>
+            <span>Player</span>
+            <span>Quizzes</span>
+            <span>XP</span>
+          </div>
+
+          <div id="leaderboardList" aria-live="polite">
+            <div class="leaderboard-loading">Loading leaderboard...</div>
+          </div>
+        </div>
+
+        <div id="currentUserRank" class="current-user-rank" hidden></div>
+      </section>
+    </main>
 
     <script src="/js/dashboard.js"></script>
   </body>

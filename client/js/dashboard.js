@@ -1,44 +1,64 @@
 "use strict";
 
+/* ============================================================
+   DOM Elements
+============================================================ */
+
 const elements = {
   categoriesContainer: document.getElementById("categoriesContainer"),
+
   searchInput: document.getElementById("searchInput"),
+
   logoutButton: document.getElementById("logoutButton"),
+
+  leaderboardList: document.getElementById("leaderboardList"),
+
+  leaderboardPlayerCount: document.getElementById("leaderboardPlayerCount"),
+
+  currentUserRank: document.getElementById("currentUserRank"),
 };
+
+/* ============================================================
+   Category Information
+============================================================ */
 
 const categoryDetails = {
   Java: {
     icon: "☕",
-    description: "OOP, collections, exceptions, inheritance, and threads.",
+    description: "OOP, collections, exceptions, inheritance and threads.",
   },
 
   Python: {
     icon: "🐍",
-    description: "Functions, lists, dictionaries, OOP, and exceptions.",
+    description: "Functions, lists, dictionaries, OOP and exceptions.",
   },
 
   C: {
     icon: "💻",
-    description: "Pointers, arrays, functions, memory, and fundamentals.",
+    description: "Pointers, arrays, functions, memory and fundamentals.",
   },
 
   DBMS: {
     icon: "🗄️",
-    description: "SQL, keys, normalization, joins, and transactions.",
+    description: "SQL, keys, normalization, joins and transactions.",
   },
 
   "Operating Systems": {
     icon: "🖥️",
-    description: "Processes, scheduling, memory, paging, and deadlocks.",
+    description: "Processes, scheduling, memory, paging and deadlocks.",
   },
 
   "Computer Networks": {
     icon: "🌐",
-    description: "TCP/IP, DNS, HTTP, routing, protocols, and networking.",
+    description: "TCP/IP, DNS, HTTP, routing and network protocols.",
   },
 };
 
 let categories = [];
+
+/* ============================================================
+   Category Functions
+============================================================ */
 
 function getCategoryDetails(category) {
   return (
@@ -50,10 +70,17 @@ function getCategoryDetails(category) {
   );
 }
 
+function openQuiz(category) {
+  const encodedCategory = encodeURIComponent(category);
+
+  window.location.href = `/quiz?category=${encodedCategory}`;
+}
+
 function createCategoryCard(category) {
   const details = getCategoryDetails(category);
 
   const card = document.createElement("article");
+
   card.className = "category-card";
   card.tabIndex = 0;
   card.setAttribute("role", "link");
@@ -62,43 +89,48 @@ function createCategoryCard(category) {
   const topSection = document.createElement("div");
 
   const icon = document.createElement("div");
+
   icon.className = "category-icon";
   icon.textContent = details.icon;
+  icon.setAttribute("aria-hidden", "true");
 
   const title = document.createElement("h3");
+
   title.textContent = category;
 
   const description = document.createElement("p");
+
   description.textContent = details.description;
 
   topSection.append(icon, title, description);
 
   const footer = document.createElement("div");
+
   footer.className = "category-footer";
 
   const difficulty = document.createElement("span");
+
   difficulty.className = "category-difficulty";
   difficulty.textContent = "Easy • Medium • Hard";
 
   const start = document.createElement("span");
+
   start.className = "category-start";
   start.textContent = "Start Quiz →";
 
   footer.append(difficulty, start);
+
   card.append(topSection, footer);
 
-  const openQuiz = () => {
-    const encodedCategory = encodeURIComponent(category);
-
-    window.location.href = `/quiz?category=${encodedCategory}`;
-  };
-
-  card.addEventListener("click", openQuiz);
+  card.addEventListener("click", () => {
+    openQuiz(category);
+  });
 
   card.addEventListener("keydown", (event) => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      openQuiz();
+
+      openQuiz(category);
     }
   });
 
@@ -106,10 +138,15 @@ function createCategoryCard(category) {
 }
 
 function renderCategories(categoryList) {
+  if (!elements.categoriesContainer) {
+    return;
+  }
+
   elements.categoriesContainer.innerHTML = "";
 
   if (categoryList.length === 0) {
     const emptyMessage = document.createElement("div");
+
     emptyMessage.className = "category-empty";
     emptyMessage.textContent = "No quiz categories match your search.";
 
@@ -119,11 +156,17 @@ function renderCategories(categoryList) {
   }
 
   categoryList.forEach((category) => {
-    elements.categoriesContainer.appendChild(createCategoryCard(category));
+    const categoryCard = createCategoryCard(category);
+
+    elements.categoriesContainer.appendChild(categoryCard);
   });
 }
 
 async function loadCategories() {
+  if (!elements.categoriesContainer) {
+    return;
+  }
+
   elements.categoriesContainer.innerHTML = `
     <div class="category-loading">
       Loading quiz categories...
@@ -133,7 +176,9 @@ async function loadCategories() {
   try {
     const response = await fetch("/api/quiz/categories", {
       method: "GET",
+
       credentials: "include",
+
       headers: {
         Accept: "application/json",
       },
@@ -158,10 +203,14 @@ async function loadCategories() {
 
     renderCategories(categories);
   } catch (error) {
+    console.error("Category loading error:", error);
+
     elements.categoriesContainer.innerHTML = "";
 
     const errorMessage = document.createElement("div");
+
     errorMessage.className = "category-error";
+
     errorMessage.textContent = error.message || "An unexpected error occurred.";
 
     elements.categoriesContainer.appendChild(errorMessage);
@@ -169,6 +218,10 @@ async function loadCategories() {
 }
 
 function filterCategories() {
+  if (!elements.searchInput) {
+    return;
+  }
+
   const searchTerm = elements.searchInput.value.trim().toLowerCase();
 
   const filteredCategories = categories.filter((category) =>
@@ -178,14 +231,281 @@ function filterCategories() {
   renderCategories(filteredCategories);
 }
 
+/* ============================================================
+   Leaderboard Functions
+============================================================ */
+
+function getRankIcon(rank) {
+  if (rank === 1) {
+    return "🥇";
+  }
+
+  if (rank === 2) {
+    return "🥈";
+  }
+
+  if (rank === 3) {
+    return "🥉";
+  }
+
+  return `#${rank}`;
+}
+
+function getInitials(firstName, lastName) {
+  const firstInitial = firstName?.trim().charAt(0) || "";
+
+  const lastInitial = lastName?.trim().charAt(0) || "";
+
+  return `${firstInitial}${lastInitial}`.toUpperCase() || "U";
+}
+
+function createPlayerAvatar(player) {
+  const avatar = document.createElement("div");
+
+  avatar.className = "leaderboard-avatar";
+
+  if (player.avatar) {
+    const image = document.createElement("img");
+
+    image.className = "leaderboard-avatar-image";
+    image.src = player.avatar;
+    image.alt = `${player.fullName || "Player"} avatar`;
+
+    image.addEventListener("error", () => {
+      avatar.innerHTML = "";
+
+      const initials = document.createElement("span");
+
+      initials.className = "leaderboard-avatar-initials";
+
+      initials.textContent = getInitials(player.firstName, player.lastName);
+
+      avatar.appendChild(initials);
+    });
+
+    avatar.appendChild(image);
+  } else {
+    const initials = document.createElement("span");
+
+    initials.className = "leaderboard-avatar-initials";
+
+    initials.textContent = getInitials(player.firstName, player.lastName);
+
+    avatar.appendChild(initials);
+  }
+
+  return avatar;
+}
+
+function createLeaderboardPlayer(player) {
+  const row = document.createElement("article");
+
+  row.className = "leaderboard-row";
+
+  if (player.isCurrentUser) {
+    row.classList.add("current-player");
+  }
+
+  const rank = document.createElement("div");
+
+  rank.className = `leaderboard-rank rank-${player.rank}`;
+
+  rank.textContent = getRankIcon(player.rank);
+
+  const playerSection = document.createElement("div");
+
+  playerSection.className = "leaderboard-player";
+
+  const avatar = createPlayerAvatar(player);
+
+  const playerDetails = document.createElement("div");
+
+  playerDetails.className = "leaderboard-player-details";
+
+  const playerName = document.createElement("strong");
+
+  playerName.textContent =
+    player.fullName ||
+    `${player.firstName || ""} ${player.lastName || ""}`.trim() ||
+    "Unknown Player";
+
+  if (player.isCurrentUser) {
+    const youBadge = document.createElement("span");
+
+    youBadge.className = "you-badge";
+    youBadge.textContent = "You";
+
+    playerName.appendChild(youBadge);
+  }
+
+  const correctAnswers = document.createElement("span");
+
+  correctAnswers.textContent = `${Number(player.correctAnswers) || 0} correct answers`;
+
+  playerDetails.append(playerName, correctAnswers);
+
+  playerSection.append(avatar, playerDetails);
+
+  const quizzes = document.createElement("div");
+
+  quizzes.className = "leaderboard-quizzes";
+  quizzes.textContent = Number(player.quizzesCompleted) || 0;
+
+  const xp = document.createElement("div");
+
+  xp.className = "leaderboard-xp";
+  xp.textContent = `${Number(player.totalXp) || 0} XP`;
+
+  row.append(rank, playerSection, quizzes, xp);
+
+  return row;
+}
+
+function renderLeaderboard(data) {
+  if (!elements.leaderboardList) {
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = "";
+
+  const players = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+
+  const totalPlayers = Number(data.totalPlayers) || players.length;
+
+  if (elements.leaderboardPlayerCount) {
+    elements.leaderboardPlayerCount.textContent = `${totalPlayers} ${
+      totalPlayers === 1 ? "player" : "players"
+    }`;
+  }
+
+  if (players.length === 0) {
+    elements.leaderboardList.innerHTML = `
+      <div class="leaderboard-empty">
+        <span aria-hidden="true">🏆</span>
+        <h3>No rankings available yet</h3>
+        <p>Complete a quiz to enter the leaderboard.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+  players.forEach((player) => {
+    const playerRow = createLeaderboardPlayer(player);
+
+    elements.leaderboardList.appendChild(playerRow);
+  });
+
+  renderCurrentUserRank(data.currentUser);
+}
+
+function renderCurrentUserRank(currentUser) {
+  if (!elements.currentUserRank) {
+    return;
+  }
+
+  /*
+   * Show the separate rank card only when the current
+   * user is not included in the displayed top players.
+   */
+  if (currentUser && Number(currentUser.rank) > 10) {
+    elements.currentUserRank.hidden = false;
+    elements.currentUserRank.innerHTML = "";
+
+    const label = document.createElement("span");
+
+    label.textContent = "Your current rank";
+
+    const rank = document.createElement("strong");
+
+    rank.textContent = `#${currentUser.rank}`;
+
+    const xp = document.createElement("span");
+
+    xp.textContent = `${Number(currentUser.totalXp) || 0} XP`;
+
+    elements.currentUserRank.append(label, rank, xp);
+  } else {
+    elements.currentUserRank.hidden = true;
+    elements.currentUserRank.innerHTML = "";
+  }
+}
+
+function renderLeaderboardError(message) {
+  if (!elements.leaderboardList) {
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = `
+    <div class="leaderboard-empty">
+      <span aria-hidden="true">⚠️</span>
+      <h3>Unable to load leaderboard</h3>
+      <p>${message}</p>
+    </div>
+  `;
+}
+
+async function loadLeaderboard() {
+  if (!elements.leaderboardList) {
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = `
+    <div class="leaderboard-loading">
+      Loading leaderboard...
+    </div>
+  `;
+
+  try {
+    const response = await fetch("/api/leaderboard", {
+      method: "GET",
+
+      credentials: "include",
+
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to load leaderboard.");
+    }
+
+    renderLeaderboard(data);
+  } catch (error) {
+    console.error("Leaderboard error:", error);
+
+    renderLeaderboardError(
+      error.message || "Please refresh the dashboard and try again.",
+    );
+  }
+}
+
+/* ============================================================
+   Logout
+============================================================ */
+
 async function logout() {
+  if (!elements.logoutButton) {
+    return;
+  }
+
   elements.logoutButton.disabled = true;
   elements.logoutButton.textContent = "Logging out...";
 
   try {
     const response = await fetch("/api/auth/logout", {
       method: "POST",
+
       credentials: "include",
+
       headers: {
         Accept: "application/json",
       },
@@ -198,9 +518,13 @@ async function logout() {
     }
 
     localStorage.removeItem("quizmaster_user");
+    localStorage.removeItem("quizProgress");
+    localStorage.removeItem("quizAnswers");
 
     window.location.href = "/login";
   } catch (error) {
+    console.error("Logout error:", error);
+
     alert(error.message || "Unable to log out. Please try again.");
 
     elements.logoutButton.disabled = false;
@@ -208,8 +532,23 @@ async function logout() {
   }
 }
 
-elements.searchInput.addEventListener("input", filterCategories);
+/* ============================================================
+   Event Listeners
+============================================================ */
 
-elements.logoutButton.addEventListener("click", logout);
+function initializeDashboard() {
+  if (elements.searchInput) {
+    elements.searchInput.addEventListener("input", filterCategories);
+  }
 
-loadCategories();
+  if (elements.logoutButton) {
+    elements.logoutButton.addEventListener("click", logout);
+  }
+
+  /*
+   * Load categories and leaderboard together.
+   */
+  Promise.allSettled([loadCategories(), loadLeaderboard()]);
+}
+
+document.addEventListener("DOMContentLoaded", initializeDashboard);
