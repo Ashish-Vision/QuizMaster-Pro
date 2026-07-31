@@ -1,7 +1,9 @@
 "use strict";
 
 const loginForm = document.getElementById("loginForm");
+
 const registerForm = document.getElementById("registerForm");
+
 const formMessage = document.getElementById("formMessage");
 
 function getElement(id) {
@@ -49,7 +51,27 @@ function setButtonLoading(button, loading) {
   }
 
   button.disabled = loading;
+
   button.classList.toggle("loading", loading);
+}
+
+async function sendAuthRequest(endpoint, body) {
+  const response = await fetch(endpoint, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    credentials: "include",
+    body: JSON.stringify(body),
+  });
+
+  const data = await response.json();
+
+  if (!response.ok) {
+    throw new Error(data.message || "Authentication failed.");
+  }
+
+  return data;
 }
 
 document.querySelectorAll(".password-toggle").forEach((button) => {
@@ -62,16 +84,11 @@ document.querySelectorAll(".password-toggle").forEach((button) => {
       return;
     }
 
-    const showingPassword = input.type === "text";
+    const isVisible = input.type === "text";
 
-    input.type = showingPassword ? "password" : "text";
+    input.type = isVisible ? "password" : "text";
 
-    button.textContent = showingPassword ? "Show" : "Hide";
-
-    button.setAttribute(
-      "aria-label",
-      showingPassword ? "Show password" : "Hide password",
-    );
+    button.textContent = isVisible ? "Show" : "Hide";
   });
 });
 
@@ -90,15 +107,7 @@ if (loginForm) {
 
     setFieldError("loginPassword", "loginPasswordError", "");
 
-    if (!email) {
-      setFieldError(
-        "loginEmail",
-        "loginEmailError",
-        "Email address is required.",
-      );
-
-      valid = false;
-    } else if (!isValidEmail(email)) {
+    if (!isValidEmail(email)) {
       setFieldError(
         "loginEmail",
         "loginEmailError",
@@ -129,16 +138,18 @@ if (loginForm) {
     setButtonLoading(submitButton, true);
 
     try {
-      await new Promise((resolve) => {
-        setTimeout(resolve, 700);
+      const data = await sendAuthRequest("/api/auth/login", {
+        email,
+        password,
       });
 
-      showFormMessage(
-        "Login form is ready. Backend authentication will be connected in the next milestone.",
-        "success",
-      );
+      showFormMessage(data.message, "success");
+
+      window.setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 700);
     } catch (error) {
-      showFormMessage("Unable to process the request.", "error");
+      showFormMessage(error.message, "error");
     } finally {
       setButtonLoading(submitButton, false);
     }
@@ -184,45 +195,21 @@ function updatePasswordStrength(password) {
     score += 1;
   }
 
-  const strengthLevels = [
-    {
-      width: "0%",
-      text: "Password strength",
-      background: "transparent",
-    },
-    {
-      width: "20%",
-      text: "Very weak",
-      background: "#ff5d73",
-    },
-    {
-      width: "40%",
-      text: "Weak",
-      background: "#ff855d",
-    },
-    {
-      width: "60%",
-      text: "Fair",
-      background: "#ffcc66",
-    },
-    {
-      width: "80%",
-      text: "Good",
-      background: "#55c9ff",
-    },
-    {
-      width: "100%",
-      text: "Strong",
-      background: "#3ce6a0",
-    },
+  const levels = [
+    ["0%", "Password strength", "transparent"],
+    ["20%", "Very weak", "#ff5d73"],
+    ["40%", "Weak", "#ff855d"],
+    ["60%", "Fair", "#ffcc66"],
+    ["80%", "Good", "#55c9ff"],
+    ["100%", "Strong", "#3ce6a0"],
   ];
 
-  const strength = strengthLevels[score];
+  const [width, text, background] = levels[score];
 
-  strengthBar.style.width = strength.width;
-  strengthBar.style.background = strength.background;
+  strengthBar.style.width = width;
+  strengthBar.style.background = background;
 
-  strengthText.textContent = strength.text;
+  strengthText.textContent = text;
 }
 
 if (registerForm) {
@@ -244,15 +231,15 @@ if (registerForm) {
 
     let valid = true;
 
-    setFieldError("firstName", "firstNameError", "");
-
-    setFieldError("lastName", "lastNameError", "");
-
-    setFieldError("registerEmail", "registerEmailError", "");
-
-    setFieldError("registerPassword", "registerPasswordError", "");
-
-    setFieldError("confirmPassword", "confirmPasswordError", "");
+    [
+      ["firstName", "firstNameError"],
+      ["lastName", "lastNameError"],
+      ["registerEmail", "registerEmailError"],
+      ["registerPassword", "registerPasswordError"],
+      ["confirmPassword", "confirmPasswordError"],
+    ].forEach(([inputId, errorId]) => {
+      setFieldError(inputId, errorId, "");
+    });
 
     const termsError = getElement("acceptTermsError");
 
@@ -280,15 +267,7 @@ if (registerForm) {
       valid = false;
     }
 
-    if (!email) {
-      setFieldError(
-        "registerEmail",
-        "registerEmailError",
-        "Email address is required.",
-      );
-
-      valid = false;
-    } else if (!isValidEmail(email)) {
+    if (!isValidEmail(email)) {
       setFieldError(
         "registerEmail",
         "registerEmailError",
@@ -319,10 +298,7 @@ if (registerForm) {
     }
 
     if (!acceptTerms) {
-      if (termsError) {
-        termsError.textContent =
-          "You must accept the terms and privacy policy.";
-      }
+      termsError.textContent = "You must accept the terms.";
 
       valid = false;
     }
@@ -338,39 +314,22 @@ if (registerForm) {
     setButtonLoading(submitButton, true);
 
     try {
-      await new Promise((resolve) => {
-        setTimeout(resolve, 700);
+      const data = await sendAuthRequest("/api/auth/register", {
+        firstName,
+        lastName,
+        email,
+        password,
       });
 
-      showFormMessage(
-        "Registration form is ready. Database registration will be connected in the next milestone.",
-        "success",
-      );
+      showFormMessage(data.message, "success");
+
+      window.setTimeout(() => {
+        window.location.href = "/dashboard";
+      }, 700);
     } catch (error) {
-      showFormMessage("Unable to process the request.", "error");
+      showFormMessage(error.message, "error");
     } finally {
       setButtonLoading(submitButton, false);
     }
   });
-}
-
-const googleLoginButton = getElement("googleLoginButton");
-
-const googleRegisterButton = getElement("googleRegisterButton");
-
-function showGoogleNotice() {
-  clearFormMessage();
-
-  showFormMessage(
-    "Google authentication will be added after the email authentication backend.",
-    "success",
-  );
-}
-
-if (googleLoginButton) {
-  googleLoginButton.addEventListener("click", showGoogleNotice);
-}
-
-if (googleRegisterButton) {
-  googleRegisterButton.addEventListener("click", showGoogleNotice);
 }

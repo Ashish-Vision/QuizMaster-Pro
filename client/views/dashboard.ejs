@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Dashboard | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/variables.css" />
+
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <link rel="stylesheet" href="/css/dashboard.css" />
+  </head>
+
+  <body>
+    <header class="dashboard-header">
+      <a href="/" class="dashboard-logo"> QuizMaster Pro </a>
+
+      <div class="dashboard-user">
+        <span>
+          Welcome,
+          <strong> <%= user.firstName %> </strong>
+        </span>
+
+        <button id="logoutButton" type="button">Logout</button>
+      </div>
+    </header>
+
+    <main class="dashboard-container">
+      <section class="welcome-card">
+        <p class="dashboard-label">Player Dashboard</p>
+
+        <h1>Welcome back, <%= user.firstName %>!</h1>
+
+        <p>Start a quiz, improve your score, and climb the leaderboard.</p>
+      </section>
+
+      <section class="stats-grid">
+        <article class="stat-card">
+          <span>Total XP</span>
+          <strong> <%= user.totalXp || 0 %> </strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Quizzes Completed</span>
+          <strong> <%= user.quizzesCompleted || 0 %> </strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Correct Answers</span>
+          <strong> <%= user.correctAnswers || 0 %> </strong>
+        </article>
+
+        <article class="stat-card">
+          <span>Current Streak</span>
+          <strong> <%= user.currentStreak || 0 %> </strong>
+        </article>
+      </section>
+
+      <section class="dashboard-actions">
+        <a href="/quiz" class="dashboard-action-card">
+          <h2>Start Quiz</h2>
+          <p>Choose a category and test your knowledge.</p>
+        </a>
+
+        <a href="/leaderboard" class="dashboard-action-card">
+          <h2>Leaderboard</h2>
+          <p>See the highest-scoring QuizMaster players.</p>
+        </a>
+
+        <a href="/profile" class="dashboard-action-card">
+          <h2>Your Profile</h2>
+          <p>View your progress and account details.</p>
+        </a>
+      </section>
+    </main>
+
+    <script src="/js/dashboard.js"></script>
+  </body>
+</html>
