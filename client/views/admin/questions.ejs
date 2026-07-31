@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="Manage QuizMaster Pro quiz questions." />
+
+    <title>Question Management | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/questions.css" />
+
+    <script src="/js/admin/questions.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <!-- ================= SIDEBAR ================= -->
+
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon">Q</span>
+
+          <div>
+            <strong>QuizMaster Pro</strong>
+            <small>Administration</small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation">
+          <a href="/admin">
+            <span>📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions" class="active">
+            <span>📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories">
+            <span>📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users">
+            <span>👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts">
+            <span>🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/dashboard">
+            <span>🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small>Administrator</small>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ================= MAIN ================= -->
+
+      <main class="questions-main">
+        <header class="questions-header">
+          <div>
+            <p class="page-label">Question Management</p>
+
+            <h1>Quiz Questions</h1>
+
+            <p>
+              Add, edit, search, filter and manage questions used in QuizMaster
+              Pro.
+            </p>
+          </div>
+
+          <button
+            id="openCreateModalButton"
+            type="button"
+            class="primary-button"
+          >
+            + Add Question
+          </button>
+        </header>
+
+        <!-- ================= SUMMARY ================= -->
+
+        <section class="summary-grid">
+          <article class="summary-card">
+            <span class="summary-icon">📝</span>
+
+            <div>
+              <p>Total Questions</p>
+
+              <strong id="totalQuestionsCount"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon easy"> 🟢 </span>
+
+            <div>
+              <p>Easy</p>
+
+              <strong id="easyQuestionsCount"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon medium"> 🟡 </span>
+
+            <div>
+              <p>Medium</p>
+
+              <strong id="mediumQuestionsCount"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon hard"> 🔴 </span>
+
+            <div>
+              <p>Hard</p>
+
+              <strong id="hardQuestionsCount"> 0 </strong>
+            </div>
+          </article>
+        </section>
+
+        <!-- ================= CONTROLS ================= -->
+
+        <section class="questions-controls">
+          <div class="search-group">
+            <label class="visually-hidden" for="questionSearchInput">
+              Search questions
+            </label>
+
+            <input
+              id="questionSearchInput"
+              type="search"
+              placeholder="Search questions, categories or explanations..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="filter-group">
+            <select
+              id="categoryFilter"
+              aria-label="Filter questions by category"
+            >
+              <option value="all">All categories</option>
+            </select>
+
+            <select
+              id="difficultyFilter"
+              aria-label="Filter questions by difficulty"
+            >
+              <option value="all">All difficulties</option>
+
+              <option value="Easy">Easy</option>
+              <option value="Medium">Medium</option>
+              <option value="Hard">Hard</option>
+            </select>
+
+            <select id="sortFilter" aria-label="Sort questions">
+              <option value="createdAt:desc">Newest first</option>
+
+              <option value="createdAt:asc">Oldest first</option>
+
+              <option value="question:asc">Question A–Z</option>
+
+              <option value="category:asc">Category A–Z</option>
+
+              <option value="difficulty:asc">Difficulty</option>
+            </select>
+
+            <button
+              id="refreshQuestionsButton"
+              type="button"
+              class="secondary-button"
+            >
+              Refresh
+            </button>
+          </div>
+        </section>
+
+        <!-- ================= LOADING ================= -->
+
+        <section id="questionsLoadingState" class="state-card">
+          <div class="spinner"></div>
+
+          <p>Loading questions...</p>
+        </section>
+
+        <!-- ================= ERROR ================= -->
+
+        <section id="questionsErrorState" class="state-card hidden">
+          <span class="state-icon">⚠️</span>
+
+          <h2>Unable to load questions</h2>
+
+          <p id="questionsErrorMessage">Something went wrong.</p>
+
+          <button
+            id="retryQuestionsButton"
+            type="button"
+            class="primary-button"
+          >
+            Try Again
+          </button>
+        </section>
+
+        <!-- ================= EMPTY ================= -->
+
+        <section id="questionsEmptyState" class="state-card hidden">
+          <span class="state-icon">🔎</span>
+
+          <h2>No questions found</h2>
+
+          <p>No questions match the current filters.</p>
+        </section>
+
+        <!-- ================= TABLE ================= -->
+
+        <section id="questionsContent" class="questions-content hidden">
+          <div class="questions-table-card">
+            <div class="questions-table-header" aria-hidden="true">
+              <span>Question</span>
+              <span>Category</span>
+              <span>Difficulty</span>
+              <span>Correct Answer</span>
+              <span>Actions</span>
+            </div>
+
+            <div
+              id="questionsList"
+              class="questions-list"
+              aria-live="polite"
+            ></div>
+          </div>
+
+          <!-- ================= PAGINATION ================= -->
+
+          <div class="pagination">
+            <button
+              id="previousPageButton"
+              type="button"
+              class="pagination-button"
+            >
+              ← Previous
+            </button>
+
+            <span id="paginationText"> Page 1 of 1 </span>
+
+            <button id="nextPageButton" type="button" class="pagination-button">
+              Next →
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- ================= QUESTION MODAL ================= -->
+
+    <div id="questionModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-question-modal></div>
+
+      <section
+        class="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="questionModalTitle"
+      >
+        <header class="modal-header">
+          <div>
+            <p class="page-label">Question Editor</p>
+
+            <h2 id="questionModalTitle">Add Question</h2>
+          </div>
+
+          <button
+            type="button"
+            class="modal-close-button"
+            aria-label="Close question editor"
+            data-close-question-modal
+          >
+            ×
+          </button>
+        </header>
+
+        <form id="questionForm">
+          <input id="questionId" name="questionId" type="hidden" />
+
+          <div class="form-group">
+            <label for="questionText"> Question </label>
+
+            <textarea
+              id="questionText"
+              name="question"
+              rows="4"
+              minlength="5"
+              maxlength="1000"
+              required
+            ></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="questionCategory"> Category </label>
+
+              <input
+                id="questionCategory"
+                name="category"
+                type="text"
+                maxlength="100"
+                list="categorySuggestions"
+                required
+              />
+
+              <datalist id="categorySuggestions"></datalist>
+            </div>
+
+            <div class="form-group">
+              <label for="questionDifficulty"> Difficulty </label>
+
+              <select id="questionDifficulty" name="difficulty" required>
+                <option value="Easy">Easy</option>
+                <option value="Medium">Medium</option>
+                <option value="Hard">Hard</option>
+              </select>
+            </div>
+          </div>
+
+          <fieldset class="options-fieldset">
+            <legend>Answer Options</legend>
+
+            <p class="fieldset-help">
+              Select the radio button beside the correct answer.
+            </p>
+
+            <div class="option-editor">
+              <input
+                type="radio"
+                name="correctAnswer"
+                value="0"
+                aria-label="Set option 1 as correct"
+                required
+              />
+
+              <input
+                id="questionOption0"
+                type="text"
+                maxlength="500"
+                placeholder="Option 1"
+                required
+              />
+            </div>
+
+            <div class="option-editor">
+              <input
+                type="radio"
+                name="correctAnswer"
+                value="1"
+                aria-label="Set option 2 as correct"
+              />
+
+              <input
+                id="questionOption1"
+                type="text"
+                maxlength="500"
+                placeholder="Option 2"
+                required
+              />
+            </div>
+
+            <div class="option-editor">
+              <input
+                type="radio"
+                name="correctAnswer"
+                value="2"
+                aria-label="Set option 3 as correct"
+              />
+
+              <input
+                id="questionOption2"
+                type="text"
+                maxlength="500"
+                placeholder="Option 3"
+                required
+              />
+            </div>
+
+            <div class="option-editor">
+              <input
+                type="radio"
+                name="correctAnswer"
+                value="3"
+                aria-label="Set option 4 as correct"
+              />
+
+              <input
+                id="questionOption3"
+                type="text"
+                maxlength="500"
+                placeholder="Option 4"
+                required
+              />
+            </div>
+          </fieldset>
+
+          <div class="form-group">
+            <label for="questionExplanation"> Explanation </label>
+
+            <textarea
+              id="questionExplanation"
+              name="explanation"
+              rows="4"
+              maxlength="2000"
+              placeholder="Explain why the answer is correct..."
+            ></textarea>
+          </div>
+
+          <p id="questionFormMessage" class="form-message"></p>
+
+          <footer class="modal-actions">
+            <button
+              type="button"
+              class="secondary-button"
+              data-close-question-modal
+            >
+              Cancel
+            </button>
+
+            <button
+              id="saveQuestionButton"
+              type="submit"
+              class="primary-button"
+            >
+              Save Question
+            </button>
+          </footer>
+        </form>
+      </section>
+    </div>
+
+    <!-- ================= DELETE MODAL ================= -->
+
+    <div id="deleteQuestionModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-delete-modal></div>
+
+      <section
+        class="delete-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteModalTitle"
+      >
+        <span class="delete-icon">🗑️</span>
+
+        <h2 id="deleteModalTitle">Delete Question?</h2>
+
+        <p id="deleteQuestionText">This action cannot be undone.</p>
+
+        <p id="deleteQuestionMessage" class="form-message"></p>
+
+        <div class="delete-modal-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            data-close-delete-modal
+          >
+            Cancel
+          </button>
+
+          <button
+            id="confirmDeleteQuestionButton"
+            type="button"
+            class="danger-button"
+          >
+            Delete Question
+          </button>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
