@@ -23,12 +23,15 @@
         </a>
 
         <div class="user-area">
-          <nav class="dashboard-navigation" aria-label="Dashboard navigation">
-            <a href="/history" class="header-link"> History </a>
+          <nav class="dashboard-navigation">
+            <a href="/profile" class="header-link"> 👤 Profile </a>
 
-            <a href="/leaderboard" class="header-link"> Leaderboard </a>
+            <a href="/history" class="header-link"> 📜 History </a>
+
+            <a href="/leaderboard" class="header-link"> 🏆 Leaderboard </a>
+
+            <a href="/achievements" class="header-link"> 🥇 Achievements </a>
           </nav>
-
           <span class="welcome">
             Welcome,
             <strong> <%= user?.firstName || "Player" %> </strong>
@@ -51,6 +54,83 @@
         </div>
       </section>
 
+      <!-- ================= QUICK ACTIONS ================= -->
+
+      <section
+        class="quick-actions-section"
+        aria-labelledby="quickActionsTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-label">Navigation</p>
+
+            <h2 id="quickActionsTitle">Quick Actions</h2>
+          </div>
+        </div>
+
+        <div class="quick-actions-grid">
+          <a href="/quiz" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">🧠</span>
+
+            <div>
+              <h3>Start Quiz</h3>
+
+              <p>Select a category and test your knowledge.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/profile" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">👤</span>
+
+            <div>
+              <h3>My Profile</h3>
+
+              <p>View your profile, performance and account information.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/history" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">📜</span>
+
+            <div>
+              <h3>Quiz History</h3>
+
+              <p>Review your previous quiz attempts and results.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/leaderboard" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">🏆</span>
+
+            <div>
+              <h3>Leaderboard</h3>
+
+              <p>Compare your XP and ranking with other players.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/achievements" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">🥇</span>
+
+            <div>
+              <h3>Achievements</h3>
+
+              <p>View unlocked badges and upcoming achievement goals.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
+      </section>
+
       <!-- ================= SEARCH ================= -->
 
       <section class="search-section">
@@ -64,6 +144,83 @@
           placeholder="Search category..."
           autocomplete="off"
         />
+      </section>
+
+      <!-- ================= QUICK ACTIONS ================= -->
+
+      <section
+        class="quick-actions-section"
+        aria-labelledby="quickActionsTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-label">Navigation</p>
+
+            <h2 id="quickActionsTitle">Quick Actions</h2>
+          </div>
+        </div>
+
+        <div class="quick-actions-grid">
+          <a href="#categoriesTitle" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">🧠</span>
+
+            <div>
+              <h3>Start Quiz</h3>
+
+              <p>Select a category and test your knowledge.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/profile" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">👤</span>
+
+            <div>
+              <h3>My Profile</h3>
+
+              <p>View your profile, performance and account information.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/history" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">📜</span>
+
+            <div>
+              <h3>Quiz History</h3>
+
+              <p>Review your previous quiz attempts and results.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/leaderboard" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">🏆</span>
+
+            <div>
+              <h3>Leaderboard</h3>
+
+              <p>Compare your XP and ranking with other players.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+
+          <a href="/achievements" class="quick-action-card">
+            <span class="quick-action-icon" aria-hidden="true">🥇</span>
+
+            <div>
+              <h3>Achievements</h3>
+
+              <p>View unlocked badges and upcoming achievement goals.</p>
+            </div>
+
+            <span class="quick-action-arrow" aria-hidden="true">→</span>
+          </a>
+        </div>
       </section>
 
       <!-- ================= CATEGORIES ================= -->
@@ -108,6 +265,60 @@
         </div>
       </section>
 
+      <!-- ================= ACHIEVEMENTS SUMMARY ================= -->
+
+      <section
+        class="dashboard-achievements-section"
+        aria-labelledby="dashboardAchievementsTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-label">Milestones</p>
+
+            <h2 id="dashboardAchievementsTitle">🥇 Achievements</h2>
+          </div>
+
+          <a href="/achievements" class="view-full-leaderboard-link">
+            View All Achievements →
+          </a>
+        </div>
+
+        <div class="achievement-summary-card">
+          <div class="achievement-summary-header">
+            <div>
+              <p>Your achievement progress</p>
+
+              <strong id="dashboardAchievementProgress"> Loading... </strong>
+            </div>
+
+            <span id="dashboardAchievementPercentage"> 0% </span>
+          </div>
+
+          <div
+            id="dashboardAchievementTrack"
+            class="dashboard-achievement-track"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+          >
+            <div
+              id="dashboardAchievementFill"
+              class="dashboard-achievement-fill"
+            ></div>
+          </div>
+
+          <div
+            id="dashboardAchievementsList"
+            class="dashboard-achievements-list"
+            aria-live="polite"
+          >
+            <div class="dashboard-achievement-loading">
+              Loading achievements...
+            </div>
+          </div>
+        </div>
+      </section>
       <!-- ================= LEADERBOARD ================= -->
 
       <section class="leaderboard-section" aria-labelledby="leaderboardTitle">

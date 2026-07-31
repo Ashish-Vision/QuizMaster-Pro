@@ -6,6 +6,10 @@ const Question = require("../models/Question");
 const Score = require("../models/Score");
 const User = require("../models/User");
 
+const {
+  checkAndUnlockAchievements,
+} = require("../services/achievementService");
+
 /**
  * Returns a day number without considering hours, minutes or seconds.
  * This helps calculate daily quiz streaks.
@@ -33,17 +37,23 @@ function calculateNewStreak(user) {
 
   const differenceInDays = todayDayNumber - lastQuizDayNumber;
 
-  // User already completed a quiz today.
+  /*
+   * User already completed a quiz today.
+   */
   if (differenceInDays === 0) {
     return Math.max(user.currentStreak || 0, 1);
   }
 
-  // User completed a quiz yesterday.
+  /*
+   * User completed a quiz yesterday.
+   */
   if (differenceInDays === 1) {
     return (user.currentStreak || 0) + 1;
   }
 
-  // Streak was broken.
+  /*
+   * Streak was broken.
+   */
   return 1;
 }
 
@@ -63,6 +73,7 @@ async function getCategories(req, res, next) {
     return next(error);
   }
 }
+
 async function startQuiz(req, res, next) {
   try {
     const category = decodeURIComponent(req.params.category || "").trim();
@@ -121,6 +132,7 @@ async function startQuiz(req, res, next) {
     return next(error);
   }
 }
+
 async function submitQuiz(req, res, next) {
   try {
     const userId = req.user?._id || req.user?.id;
@@ -200,6 +212,7 @@ async function submitQuiz(req, res, next) {
       }
 
       submittedQuestionIds.push(questionId);
+
       submittedAnswers.set(questionId, selectedAnswer);
     }
 
@@ -207,6 +220,7 @@ async function submitQuiz(req, res, next) {
       _id: {
         $in: submittedQuestionIds,
       },
+
       category: normalizedCategory,
     }).select(
       "_id question options correctAnswer explanation category difficulty",
@@ -228,6 +242,7 @@ async function submitQuiz(req, res, next) {
 
     for (const question of questions) {
       const questionId = String(question._id);
+
       const selectedAnswer = submittedAnswers.get(questionId);
 
       const isUnanswered =
@@ -256,13 +271,17 @@ async function submitQuiz(req, res, next) {
 
       evaluatedAnswers.push({
         question: question._id,
+
         selectedAnswer: isUnanswered ? null : selectedAnswer,
+
         correctAnswer: question.correctAnswer,
+
         isCorrect,
       });
     }
 
     const totalQuestions = questions.length;
+
     const attemptedQuestions = correctAnswers + wrongAnswers;
 
     const accuracy = Number(
@@ -275,7 +294,9 @@ async function submitQuiz(req, res, next) {
      * 20 bonus XP when accuracy is at least 80%.
      */
     const baseXp = correctAnswers * 10;
+
     const performanceBonus = accuracy >= 80 ? 20 : 0;
+
     const xpEarned = baseXp + performanceBonus;
 
     const parsedDuration = Number(quizDurationSeconds);
@@ -329,6 +350,31 @@ async function submitQuiz(req, res, next) {
 
     await user.save();
 
+    let newlyUnlockedAchievements = [];
+
+    try {
+      const achievementResult = await checkAndUnlockAchievements(userId);
+
+      newlyUnlockedAchievements = achievementResult.newlyUnlocked.map(
+        (achievement) => ({
+          id: achievement._id,
+          code: achievement.code,
+          title: achievement.title,
+          description: achievement.description,
+          icon: achievement.icon,
+          category: achievement.category,
+          threshold: achievement.threshold,
+          unlockedAt: achievement.unlockedAt,
+        }),
+      );
+    } catch (achievementError) {
+      /*
+       * Achievement errors should not make an
+       * otherwise successful quiz submission fail.
+       */
+      console.error("Achievement check failed:", achievementError);
+    }
+
     return res.status(201).json({
       success: true,
       message: "Quiz submitted successfully.",
@@ -353,6 +399,8 @@ async function submitQuiz(req, res, next) {
         correctAnswers: user.correctAnswers,
         currentStreak: user.currentStreak,
       },
+
+      newlyUnlockedAchievements,
     });
   } catch (error) {
     return next(error);
@@ -362,6 +410,7 @@ async function submitQuiz(req, res, next) {
 async function getResult(req, res, next) {
   try {
     const userId = req.user?._id || req.user?.id;
+
     const { resultId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(resultId)) {
@@ -377,6 +426,7 @@ async function getResult(req, res, next) {
     })
       .populate({
         path: "answers.question",
+
         select: "question options explanation difficulty",
       })
       .lean();

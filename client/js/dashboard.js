@@ -16,6 +16,23 @@ const elements = {
   leaderboardPlayerCount: document.getElementById("leaderboardPlayerCount"),
 
   currentUserRank: document.getElementById("currentUserRank"),
+  dashboardAchievementProgress: document.getElementById(
+    "dashboardAchievementProgress",
+  ),
+
+  dashboardAchievementPercentage: document.getElementById(
+    "dashboardAchievementPercentage",
+  ),
+
+  dashboardAchievementTrack: document.getElementById(
+    "dashboardAchievementTrack",
+  ),
+
+  dashboardAchievementFill: document.getElementById("dashboardAchievementFill"),
+
+  dashboardAchievementsList: document.getElementById(
+    "dashboardAchievementsList",
+  ),
 };
 
 /* ============================================================
@@ -489,6 +506,182 @@ async function loadLeaderboard() {
 }
 
 /* ============================================================
+   Achievement Functions
+============================================================ */
+
+function formatAchievementDate(dateValue) {
+  if (!dateValue) {
+    return "Unlocked";
+  }
+
+  const date = new Date(dateValue);
+
+  if (Number.isNaN(date.getTime())) {
+    return "Unlocked";
+  }
+
+  return new Intl.DateTimeFormat("en-IN", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).format(date);
+}
+
+function createDashboardAchievementItem(achievement) {
+  const item = document.createElement("article");
+
+  item.className = "dashboard-achievement-item";
+
+  const icon = document.createElement("span");
+
+  icon.className = "dashboard-achievement-item-icon";
+
+  icon.textContent = achievement.icon || "🏆";
+
+  icon.setAttribute("aria-hidden", "true");
+
+  const information = document.createElement("div");
+
+  const title = document.createElement("h3");
+
+  title.textContent = achievement.title || "Achievement";
+
+  const unlockDate = document.createElement("p");
+
+  unlockDate.textContent = `Unlocked ${formatAchievementDate(
+    achievement.unlockedAt,
+  )}`;
+
+  information.append(title, unlockDate);
+
+  item.append(icon, information);
+
+  return item;
+}
+
+function renderDashboardAchievements(data) {
+  if (!elements.dashboardAchievementsList) {
+    return;
+  }
+
+  const achievements = Array.isArray(data.achievements)
+    ? data.achievements
+    : [];
+
+  const unlockedAchievements = achievements
+    .filter((achievement) => achievement.isUnlocked)
+    .sort(
+      (firstAchievement, secondAchievement) =>
+        new Date(secondAchievement.unlockedAt || 0) -
+        new Date(firstAchievement.unlockedAt || 0),
+    );
+
+  const totalAchievements = Number(data.totalAchievements) || 0;
+
+  const unlockedCount = Number(data.unlockedCount) || 0;
+
+  const percentage =
+    totalAchievements > 0
+      ? Math.round((unlockedCount / totalAchievements) * 100)
+      : 0;
+
+  if (elements.dashboardAchievementProgress) {
+    elements.dashboardAchievementProgress.textContent = `${unlockedCount} of ${totalAchievements} achievements unlocked`;
+  }
+
+  if (elements.dashboardAchievementPercentage) {
+    elements.dashboardAchievementPercentage.textContent = `${percentage}%`;
+  }
+
+  if (elements.dashboardAchievementFill) {
+    elements.dashboardAchievementFill.style.width = `${percentage}%`;
+  }
+
+  if (elements.dashboardAchievementTrack) {
+    elements.dashboardAchievementTrack.setAttribute(
+      "aria-valuenow",
+      String(percentage),
+    );
+  }
+
+  elements.dashboardAchievementsList.innerHTML = "";
+
+  if (unlockedAchievements.length === 0) {
+    elements.dashboardAchievementsList.innerHTML = `
+      <div class="dashboard-achievement-empty">
+        Complete a quiz to unlock your first achievement.
+      </div>
+    `;
+
+    return;
+  }
+
+  const recentAchievements = unlockedAchievements.slice(0, 4);
+
+  const fragment = document.createDocumentFragment();
+
+  recentAchievements.forEach((achievement) => {
+    fragment.appendChild(createDashboardAchievementItem(achievement));
+  });
+
+  elements.dashboardAchievementsList.appendChild(fragment);
+}
+
+function renderDashboardAchievementError(message) {
+  if (!elements.dashboardAchievementsList) {
+    return;
+  }
+
+  elements.dashboardAchievementsList.innerHTML = `
+    <div class="dashboard-achievement-error">
+      ${message}
+    </div>
+  `;
+
+  if (elements.dashboardAchievementProgress) {
+    elements.dashboardAchievementProgress.textContent =
+      "Achievement information unavailable";
+  }
+}
+
+async function loadDashboardAchievements() {
+  if (!elements.dashboardAchievementsList) {
+    return;
+  }
+
+  try {
+    const response = await fetch("/api/achievements", {
+      method: "GET",
+
+      credentials: "include",
+
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (response.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to load achievements.");
+    }
+
+    renderDashboardAchievements(data);
+  } catch (error) {
+    console.error("Dashboard achievement error:", error);
+
+    renderDashboardAchievementError(
+      error.message || "Unable to load achievements.",
+    );
+  }
+}
+
+/* ============================================================
    Logout
 ============================================================ */
 
@@ -548,7 +741,11 @@ function initializeDashboard() {
   /*
    * Load categories and leaderboard together.
    */
-  Promise.allSettled([loadCategories(), loadLeaderboard()]);
+  Promise.allSettled([
+    loadCategories(),
+    loadLeaderboard(),
+    loadDashboardAchievements(),
+  ]);
 }
 
 document.addEventListener("DOMContentLoaded", initializeDashboard);

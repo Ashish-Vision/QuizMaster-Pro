@@ -11,9 +11,14 @@ const morgan = require("morgan");
 const authRoutes = require("./routes/authRoutes");
 const quizRoutes = require("./routes/quizRoutes");
 const userRoutes = require("./routes/userRoutes");
+
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
+
 const historyRoutes = require("./routes/historyRoutes");
+
 const profileRoutes = require("./routes/profileRoutes");
+
+const achievementRoutes = require("./routes/achievementRoutes");
 
 const { protect } = require("./middleware/authMiddleware");
 
@@ -54,9 +59,9 @@ app.use(
   cors({
     origin(origin, callback) {
       /*
-       * Requests such as direct browser navigation,
-       * Postman and server-to-server requests may not
-       * include an Origin header.
+       * Direct browser navigation, Postman and
+       * server-to-server requests may not include
+       * an Origin header.
        */
       if (!origin) {
         return callback(null, true);
@@ -120,7 +125,7 @@ app.use(
 
 /*
  * Prevents an unnecessary favicon 404 error
- * when no favicon has been added yet.
+ * when no favicon has been added.
  */
 app.get("/favicon.ico", (req, res) => {
   return res.status(204).end();
@@ -191,8 +196,15 @@ app.get("/history", protect, (req, res) => {
     user: req.user,
   });
 });
+
 app.get("/profile", protect, (req, res) => {
   return res.render("profile", {
+    user: req.user,
+  });
+});
+
+app.get("/achievements", protect, (req, res) => {
+  return res.render("achievements", {
     user: req.user,
   });
 });
@@ -212,6 +224,8 @@ app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/history", historyRoutes);
 
 app.use("/api/profile", profileRoutes);
+
+app.use("/api/achievements", achievementRoutes);
 
 /* ============================================================
    Health Check

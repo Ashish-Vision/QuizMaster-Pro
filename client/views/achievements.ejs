@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="View and track your QuizMaster Pro achievements."
+    />
+
+    <title>Achievements | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/achievements.css" />
+
+    <script src="/js/achievements.js" defer></script>
+  </head>
+
+  <body>
+    <div class="page-shell">
+      <header class="topbar">
+        <a
+          href="/dashboard"
+          class="brand"
+          aria-label="QuizMaster Pro dashboard"
+        >
+          <span class="brand-icon">Q</span>
+
+          <span class="brand-text"> QuizMaster Pro </span>
+        </a>
+
+        <nav class="top-navigation" aria-label="Main navigation">
+          <a href="/dashboard">Dashboard</a>
+          <a href="/quiz">Quiz</a>
+          <a href="/history">History</a>
+          <a href="/leaderboard">Leaderboard</a>
+
+          <a href="/achievements" class="active"> Achievements </a>
+
+          <a href="/profile">Profile</a>
+        </nav>
+
+        <div class="user-menu">
+          <a href="/profile" class="user-profile-link">
+            <div class="header-avatar" id="headerAvatar">
+              <%= user.firstName ? user.firstName.charAt(0).toUpperCase() : "U"
+              %>
+            </div>
+
+            <span> <%= user.firstName || "User" %> </span>
+          </a>
+        </div>
+      </header>
+
+      <main class="achievements-main">
+        <section class="page-heading">
+          <div>
+            <p class="section-label">Progress and rewards</p>
+
+            <h1>Your Achievements</h1>
+
+            <p class="page-description">
+              Complete quizzes, earn XP, maintain streaks and master categories
+              to unlock special achievements.
+            </p>
+          </div>
+
+          <a href="/quiz" class="primary-button"> Start a Quiz </a>
+        </section>
+
+        <section class="summary-grid" aria-label="Achievement summary">
+          <article class="summary-card">
+            <div class="summary-icon">🏆</div>
+
+            <div>
+              <p>Total Achievements</p>
+
+              <strong id="totalAchievements"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon unlocked">✨</div>
+
+            <div>
+              <p>Unlocked</p>
+
+              <strong id="unlockedCount"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon locked">🔒</div>
+
+            <div>
+              <p>Locked</p>
+
+              <strong id="lockedCount"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <div class="summary-icon progress">📈</div>
+
+            <div>
+              <p>Completion</p>
+
+              <strong id="completionPercentage"> 0% </strong>
+            </div>
+          </article>
+        </section>
+
+        <section class="progress-section">
+          <div class="progress-header">
+            <div>
+              <h2>Achievement Progress</h2>
+
+              <p id="progressMessage">Loading your progress...</p>
+            </div>
+
+            <span id="progressLabel"> 0 / 0 </span>
+          </div>
+
+          <div
+            class="progress-track"
+            role="progressbar"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            id="progressTrack"
+          >
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </section>
+
+        <section class="filters-section">
+          <div>
+            <h2>Achievement Collection</h2>
+
+            <p>Filter achievements by their status or category.</p>
+          </div>
+
+          <div class="filter-controls" aria-label="Achievement filters">
+            <select id="statusFilter" aria-label="Filter by status">
+              <option value="all">All achievements</option>
+
+              <option value="unlocked">Unlocked</option>
+
+              <option value="locked">Locked</option>
+            </select>
+
+            <select id="categoryFilter" aria-label="Filter by category">
+              <option value="all">All categories</option>
+
+              <option value="quiz">Quiz</option>
+              <option value="xp">XP</option>
+
+              <option value="accuracy">Accuracy</option>
+
+              <option value="streak">Streak</option>
+
+              <option value="category">Category mastery</option>
+            </select>
+          </div>
+        </section>
+
+        <section id="loadingState" class="state-card">
+          <div class="spinner"></div>
+
+          <p>Loading achievements...</p>
+        </section>
+
+        <section id="errorState" class="state-card error-state hidden">
+          <div class="state-icon">⚠️</div>
+
+          <h2>Unable to load achievements</h2>
+
+          <p id="errorMessage">Something went wrong.</p>
+
+          <button type="button" id="retryButton" class="secondary-button">
+            Try Again
+          </button>
+        </section>
+
+        <section id="emptyState" class="state-card hidden">
+          <div class="state-icon">🔎</div>
+
+          <h2>No achievements found</h2>
+
+          <p>No achievements match the selected filters.</p>
+        </section>
+
+        <section
+          id="achievementsGrid"
+          class="achievements-grid hidden"
+          aria-live="polite"
+        ></section>
+      </main>
+    </div>
+  </body>
+</html>
