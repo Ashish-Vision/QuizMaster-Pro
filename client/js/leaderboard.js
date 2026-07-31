@@ -1,5 +1,9 @@
 "use strict";
 
+/* ============================================================
+   DOM Elements
+============================================================ */
+
 const elements = {
   loadingState: document.getElementById("loadingState"),
 
@@ -9,6 +13,8 @@ const elements = {
 
   retryButton: document.getElementById("retryButton"),
 
+  logoutButton: document.getElementById("logoutButton"),
+
   leaderboardContent: document.getElementById("leaderboardContent"),
 
   podium: document.getElementById("podium"),
@@ -16,45 +22,117 @@ const elements = {
   leaderboardBody: document.getElementById("leaderboardBody"),
 
   playerCount: document.getElementById("playerCount"),
+
+  emptyState: document.getElementById("emptyState"),
 };
 
+/* ============================================================
+   Utility Functions
+============================================================ */
+
 function getInitials(player) {
-  const firstInitial = player.firstName?.charAt(0) || "P";
+  const firstInitial = player.firstName?.trim().charAt(0) || "P";
 
-  const lastInitial = player.lastName?.charAt(0) || "";
+  const lastInitial = player.lastName?.trim().charAt(0) || "";
 
-  return (firstInitial + lastInitial).toUpperCase();
+  return `${firstInitial}${lastInitial}`.toUpperCase();
 }
 
 function getPlayerName(player) {
-  return [player.firstName, player.lastName].filter(Boolean).join(" ");
+  if (player.fullName?.trim()) {
+    return player.fullName.trim();
+  }
+
+  const fullName = [player.firstName, player.lastName]
+    .filter(Boolean)
+    .join(" ")
+    .trim();
+
+  return fullName || "QuizMaster Player";
 }
 
+function getNumber(value) {
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : 0;
+}
+
+function getRankDisplay(rank) {
+  const numericRank = getNumber(rank);
+
+  if (numericRank === 1) {
+    return "🥇 1";
+  }
+
+  if (numericRank === 2) {
+    return "🥈 2";
+  }
+
+  if (numericRank === 3) {
+    return "🥉 3";
+  }
+
+  return `#${numericRank}`;
+}
+
+/* ============================================================
+   Page States
+============================================================ */
+
 function showLoading() {
-  elements.loadingState.classList.remove("hidden");
-
-  elements.errorState.classList.add("hidden");
-
-  elements.leaderboardContent.classList.add("hidden");
+  elements.loadingState?.classList.remove("hidden");
+  elements.errorState?.classList.add("hidden");
+  elements.leaderboardContent?.classList.add("hidden");
 }
 
 function showError(message) {
-  elements.loadingState.classList.add("hidden");
+  elements.loadingState?.classList.add("hidden");
+  elements.leaderboardContent?.classList.add("hidden");
+  elements.errorState?.classList.remove("hidden");
 
-  elements.leaderboardContent.classList.add("hidden");
-
-  elements.errorState.classList.remove("hidden");
-
-  elements.errorMessage.textContent = message;
+  if (elements.errorMessage) {
+    elements.errorMessage.textContent = message || "Please try again.";
+  }
 }
 
 function showContent() {
-  elements.loadingState.classList.add("hidden");
-
-  elements.errorState.classList.add("hidden");
-
-  elements.leaderboardContent.classList.remove("hidden");
+  elements.loadingState?.classList.add("hidden");
+  elements.errorState?.classList.add("hidden");
+  elements.leaderboardContent?.classList.remove("hidden");
 }
+
+/* ============================================================
+   Avatar
+============================================================ */
+
+function createAvatar(player, className) {
+  const avatar = document.createElement("div");
+
+  avatar.className = className;
+
+  if (player.avatar) {
+    const image = document.createElement("img");
+
+    image.src = player.avatar;
+    image.alt = `${getPlayerName(player)} avatar`;
+    image.className = "avatar-image";
+
+    image.addEventListener("error", () => {
+      avatar.innerHTML = "";
+      avatar.textContent = getInitials(player);
+    });
+
+    avatar.appendChild(image);
+  } else {
+    avatar.textContent = getInitials(player);
+  }
+
+  return avatar;
+}
+
+/* ============================================================
+   Podium
+============================================================ */
 
 function createPodiumCard(player, position) {
   const card = document.createElement("article");
@@ -77,23 +155,30 @@ function createPodiumCard(player, position) {
 
   medal.className = "podium-medal";
   medal.textContent = medalMap[position];
+  medal.setAttribute("aria-hidden", "true");
 
-  const avatar = document.createElement("div");
-
-  avatar.className = "podium-avatar";
-  avatar.textContent = getInitials(player);
+  const avatar = createAvatar(player, "podium-avatar");
 
   const name = document.createElement("h3");
 
   name.textContent = getPlayerName(player);
 
+  if (player.isCurrentUser) {
+    const badge = document.createElement("span");
+
+    badge.className = "you-badge";
+    badge.textContent = "You";
+
+    name.appendChild(badge);
+  }
+
   const details = document.createElement("p");
 
-  details.textContent = `${player.quizzesCompleted} quizzes`;
+  details.textContent = `${getNumber(player.quizzesCompleted)} quizzes`;
 
   const xp = document.createElement("strong");
 
-  xp.textContent = `${player.totalXp} XP`;
+  xp.textContent = `${getNumber(player.totalXp)} XP`;
 
   card.append(medal, avatar, name, details, xp);
 
@@ -101,6 +186,10 @@ function createPodiumCard(player, position) {
 }
 
 function renderPodium(players) {
+  if (!elements.podium) {
+    return;
+  }
+
   elements.podium.innerHTML = "";
 
   if (players.length === 0) {
@@ -110,6 +199,11 @@ function renderPodium(players) {
   const first = players[0];
   const second = players[1];
   const third = players[2];
+
+  /*
+   * Podium order:
+   * second place, first place, third place
+   */
 
   if (second) {
     elements.podium.appendChild(createPodiumCard(second, "second"));
@@ -124,6 +218,10 @@ function renderPodium(players) {
   }
 }
 
+/* ============================================================
+   Leaderboard Table
+============================================================ */
+
 function createLeaderboardRow(player) {
   const row = document.createElement("tr");
 
@@ -134,16 +232,7 @@ function createLeaderboardRow(player) {
   const rankCell = document.createElement("td");
 
   rankCell.className = "rank-cell";
-
-  if (player.rank === 1) {
-    rankCell.textContent = "🥇 1";
-  } else if (player.rank === 2) {
-    rankCell.textContent = "🥈 2";
-  } else if (player.rank === 3) {
-    rankCell.textContent = "🥉 3";
-  } else {
-    rankCell.textContent = `#${player.rank}`;
-  }
+  rankCell.textContent = getRankDisplay(player.rank);
 
   const playerCell = document.createElement("td");
 
@@ -151,10 +240,7 @@ function createLeaderboardRow(player) {
 
   playerWrapper.className = "player-cell";
 
-  const avatar = document.createElement("div");
-
-  avatar.className = "player-avatar";
-  avatar.textContent = getInitials(player);
+  const avatar = createAvatar(player, "player-avatar");
 
   const nameWrapper = document.createElement("div");
 
@@ -177,20 +263,20 @@ function createLeaderboardRow(player) {
   const xpCell = document.createElement("td");
 
   xpCell.className = "xp-cell";
-  xpCell.textContent = `${player.totalXp} XP`;
+  xpCell.textContent = `${getNumber(player.totalXp)} XP`;
 
   const quizzesCell = document.createElement("td");
 
-  quizzesCell.textContent = player.quizzesCompleted;
+  quizzesCell.textContent = getNumber(player.quizzesCompleted);
 
   const correctCell = document.createElement("td");
 
-  correctCell.textContent = player.correctAnswers;
+  correctCell.textContent = getNumber(player.correctAnswers);
 
   const streakCell = document.createElement("td");
 
   streakCell.className = "streak-cell";
-  streakCell.textContent = `🔥 ${player.currentStreak}`;
+  streakCell.textContent = `🔥 ${getNumber(player.currentStreak)}`;
 
   row.append(
     rankCell,
@@ -204,25 +290,51 @@ function createLeaderboardRow(player) {
   return row;
 }
 
-function renderLeaderboard(players) {
+function renderLeaderboard(players, totalPlayers) {
+  if (!elements.leaderboardBody) {
+    return;
+  }
+
   elements.leaderboardBody.innerHTML = "";
+
+  const playerTotal = getNumber(totalPlayers) || players.length;
+
+  if (elements.playerCount) {
+    elements.playerCount.textContent = `${playerTotal} ${
+      playerTotal === 1 ? "player" : "players"
+    }`;
+  }
+
+  if (players.length === 0) {
+    elements.emptyState?.classList.remove("hidden");
+    return;
+  }
+
+  elements.emptyState?.classList.add("hidden");
 
   players.forEach((player) => {
     elements.leaderboardBody.appendChild(createLeaderboardRow(player));
   });
-
-  elements.playerCount.textContent = `${players.length} ${
-    players.length === 1 ? "player" : "players"
-  }`;
 }
+
+/* ============================================================
+   API
+============================================================ */
 
 async function loadLeaderboard() {
   showLoading();
 
   try {
-    const response = await fetch("/api/users/leaderboard?limit=20", {
+    /*
+     * Correct route:
+     * app.use("/api/leaderboard", leaderboardRoutes)
+     */
+
+    const response = await fetch("/api/leaderboard?limit=20", {
       method: "GET",
+
       credentials: "include",
+
       headers: {
         Accept: "application/json",
       },
@@ -245,14 +357,70 @@ async function loadLeaderboard() {
 
     renderPodium(data.leaderboard.slice(0, 3));
 
-    renderLeaderboard(data.leaderboard);
+    renderLeaderboard(data.leaderboard, data.totalPlayers);
 
     showContent();
   } catch (error) {
+    console.error("Leaderboard error:", error);
+
     showError(error.message || "An unexpected error occurred.");
   }
 }
 
-elements.retryButton.addEventListener("click", loadLeaderboard);
+/* ============================================================
+   Logout
+============================================================ */
 
-loadLeaderboard();
+async function logout() {
+  if (!elements.logoutButton) {
+    return;
+  }
+
+  elements.logoutButton.disabled = true;
+  elements.logoutButton.textContent = "Logging out...";
+
+  try {
+    const response = await fetch("/api/auth/logout", {
+      method: "POST",
+
+      credentials: "include",
+
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Logout failed.");
+    }
+
+    localStorage.removeItem("quizmaster_user");
+    localStorage.removeItem("quizProgress");
+    localStorage.removeItem("quizAnswers");
+
+    window.location.href = "/login";
+  } catch (error) {
+    console.error("Logout error:", error);
+
+    alert(error.message || "Unable to log out. Please try again.");
+
+    elements.logoutButton.disabled = false;
+    elements.logoutButton.textContent = "Logout";
+  }
+}
+
+/* ============================================================
+   Initialization
+============================================================ */
+
+function initializeLeaderboard() {
+  elements.retryButton?.addEventListener("click", loadLeaderboard);
+
+  elements.logoutButton?.addEventListener("click", logout);
+
+  loadLeaderboard();
+}
+
+document.addEventListener("DOMContentLoaded", initializeLeaderboard);

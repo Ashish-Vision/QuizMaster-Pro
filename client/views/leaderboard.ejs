@@ -17,18 +17,26 @@
 
   <body>
     <main class="leaderboard-page">
+      <!-- ================= HEADER ================= -->
+
       <header class="leaderboard-header">
         <a href="/dashboard" class="brand">
-          <span class="brand-icon">Q</span>
+          <span class="brand-icon" aria-hidden="true">Q</span>
           <span>QuizMaster Pro</span>
         </a>
 
-        <nav class="header-navigation">
-          <a href="/dashboard"> Dashboard </a>
+        <nav class="header-navigation" aria-label="Leaderboard navigation">
+          <a href="/dashboard">Dashboard</a>
 
           <span class="current-user"> <%= user?.firstName || "Player" %> </span>
+
+          <button type="button" id="logoutButton" class="logout-button">
+            Logout
+          </button>
         </nav>
       </header>
+
+      <!-- ================= HERO ================= -->
 
       <section class="leaderboard-hero">
         <div>
@@ -39,17 +47,21 @@
           <p>Earn XP by completing quizzes and climb your way to the top.</p>
         </div>
 
-        <div class="hero-trophy">🏆</div>
+        <div class="hero-trophy" aria-hidden="true">🏆</div>
       </section>
 
-      <section class="loading-state" id="loadingState">
-        <div class="loader"></div>
+      <!-- ================= LOADING ================= -->
+
+      <section class="loading-state" id="loadingState" aria-live="polite">
+        <div class="loader" aria-hidden="true"></div>
 
         <p>Loading leaderboard...</p>
       </section>
 
-      <section class="error-state hidden" id="errorState">
-        <div class="error-icon">!</div>
+      <!-- ================= ERROR ================= -->
+
+      <section class="error-state hidden" id="errorState" aria-live="assertive">
+        <div class="error-icon" aria-hidden="true">!</div>
 
         <h2>Unable to load leaderboard</h2>
 
@@ -60,8 +72,14 @@
         </button>
       </section>
 
+      <!-- ================= CONTENT ================= -->
+
       <section class="leaderboard-content hidden" id="leaderboardContent">
-        <div class="podium" id="podium"></div>
+        <!-- Top three players -->
+
+        <div class="podium" id="podium" aria-label="Top three players"></div>
+
+        <!-- Full leaderboard -->
 
         <div class="ranking-card">
           <div class="ranking-header">
@@ -78,17 +96,25 @@
             <table class="leaderboard-table">
               <thead>
                 <tr>
-                  <th>Rank</th>
-                  <th>Player</th>
-                  <th>XP</th>
-                  <th>Quizzes</th>
-                  <th>Correct</th>
-                  <th>Streak</th>
+                  <th scope="col">Rank</th>
+                  <th scope="col">Player</th>
+                  <th scope="col">XP</th>
+                  <th scope="col">Quizzes</th>
+                  <th scope="col">Correct</th>
+                  <th scope="col">Streak</th>
                 </tr>
               </thead>
 
               <tbody id="leaderboardBody"></tbody>
             </table>
+          </div>
+
+          <div id="emptyState" class="empty-state hidden">
+            <span aria-hidden="true">🏆</span>
+
+            <h3>No players found</h3>
+
+            <p>Complete a quiz to become the first ranked player.</p>
           </div>
         </div>
       </section>
@@ -97,3 +123,4 @@
     <script src="/js/leaderboard.js" defer></script>
   </body>
 </html>
+  
