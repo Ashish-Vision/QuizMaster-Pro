@@ -1,0 +1,25 @@
+:root {
+  --background: #070816;
+  --background-light: #10132a;
+  --surface: rgba(19, 23, 51, 0.72);
+  --surface-solid: #151936;
+  --surface-hover: #1e244d;
+
+  --primary: #7c5cff;
+  --primary-light: #a58fff;
+  --secondary: #32d6ff;
+
+  --text: #f7f7ff;
+  --text-muted: #a8adc7;
+  --border: rgba(255, 255, 255, 0.1);
+
+  --success: #3ce6a0;
+  --warning: #ffcc66;
+
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
+  --container-width: 1180px;
+
+  --radius-small: 10px;
+  --radius-medium: 18px;
+  --radius-large: 28px;
+}

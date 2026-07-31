@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="QuizMaster Pro is an interactive quiz platform for learning, competing and improving your knowledge."
+    />
+
+    <title>QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/variables.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/animations.css" />
+    <link rel="stylesheet" href="/css/responsive.css" />
+  </head>
+
+  <body>
+    <%- include("partials/navbar") %>
+
+    <main>
+      <section class="hero" id="home">
+        <div class="background-glow glow-one"></div>
+        <div class="background-glow glow-two"></div>
+
+        <div class="hero-content">
+          <p class="hero-badge">Learn. Compete. Improve.</p>
+
+          <h1>
+            Challenge your mind with
+            <span>QuizMaster Pro</span>
+          </h1>
+
+          <p class="hero-description">
+            Test your knowledge, compete with players, track your progress and
+            master new topics through interactive quizzes.
+          </p>
+
+          <div class="hero-buttons">
+            <a href="#categories" class="primary-button large-button">
+              Start Quiz
+            </a>
+
+            <a href="#features" class="secondary-button large-button">
+              Explore Features
+            </a>
+          </div>
+
+          <div class="hero-stats">
+            <div>
+              <strong class="counter" data-target="10000" data-suffix="+">
+                0
+              </strong>
+
+              <span>Questions</span>
+            </div>
+
+            <div>
+              <strong class="counter" data-target="25" data-suffix="+">
+                0
+              </strong>
+
+              <span>Categories</span>
+            </div>
+
+            <div>
+              <strong class="counter" data-target="5000" data-suffix="+">
+                0
+              </strong>
+
+              <span>Players</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="hero-card">
+          <div class="quiz-card-header">
+            <span class="quiz-label"> Daily Challenge </span>
+
+            <span class="quiz-points"> +100 XP </span>
+          </div>
+
+          <p class="question-number">Question 4 of 10</p>
+
+          <h2>Which data structure follows the LIFO principle?</h2>
+
+          <div class="answer-list">
+            <button type="button">Queue</button>
+
+            <button type="button" class="selected-answer">Stack</button>
+
+            <button type="button">Linked List</button>
+
+            <button type="button">Graph</button>
+          </div>
+
+          <div class="quiz-progress">
+            <span style="width: 40%"></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="section reveal" id="features">
+        <div class="section-heading">
+          <p>Platform Features</p>
+
+          <h2>Everything you need to improve your knowledge</h2>
+        </div>
+
+        <div class="card-grid">
+          <article class="info-card">
+            <div class="card-icon">⚡</div>
+
+            <h3>Timed Challenges</h3>
+
+            <p>
+              Answer questions under pressure and improve your speed, focus and
+              accuracy.
+            </p>
+          </article>
+
+          <article class="info-card">
+            <div class="card-icon">🏆</div>
+
+            <h3>Leaderboards</h3>
+
+            <p>
+              Compete with other players, earn XP and climb the global rankings.
+            </p>
+          </article>
+
+          <article class="info-card">
+            <div class="card-icon">📊</div>
+
+            <h3>Progress Tracking</h3>
+
+            <p>
+              Monitor scores, accuracy, completed quizzes and learning streaks.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section reveal" id="categories">
+        <div class="section-heading">
+          <p>Quiz Categories</p>
+
+          <h2>Choose a topic and begin your challenge</h2>
+        </div>
+
+        <div class="category-grid">
+          <article class="category-card">
+            <span>💻</span>
+
+            <h3>Programming</h3>
+
+            <p>120 quizzes</p>
+          </article>
+
+          <article class="category-card">
+            <span>🧠</span>
+
+            <h3>Aptitude</h3>
+
+            <p>85 quizzes</p>
+          </article>
+
+          <article class="category-card">
+            <span>🧪</span>
+
+            <h3>Science</h3>
+
+            <p>95 quizzes</p>
+          </article>
+
+          <article class="category-card">
+            <span>🌍</span>
+
+            <h3>Geography</h3>
+
+            <p>70 quizzes</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section leaderboard-section reveal" id="leaderboard">
+        <div class="section-heading">
+          <p>Top Players</p>
+
+          <h2>Weekly leaderboard</h2>
+        </div>
+
+        <div class="leaderboard">
+          <div class="leaderboard-row">
+            <span class="rank">1</span>
+
+            <div>
+              <h3>Alex Carter</h3>
+              <p>Programming Master</p>
+            </div>
+
+            <strong>9,850 XP</strong>
+          </div>
+
+          <div class="leaderboard-row">
+            <span class="rank">2</span>
+
+            <div>
+              <h3>Ashish</h3>
+              <p>Quiz Challenger</p>
+            </div>
+
+            <strong>9,410 XP</strong>
+          </div>
+
+          <div class="leaderboard-row">
+            <span class="rank">3</span>
+
+            <div>
+              <h3>Sarah Wilson</h3>
+              <p>Science Expert</p>
+            </div>
+
+            <strong>9,120 XP</strong>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <%- include("partials/footer") %>
+
+    <script src="/js/ui.js"></script>
+    <script src="/js/animations.js"></script>
+    <script src="/js/app.js"></script>
+  </body>
+</html>
+  
