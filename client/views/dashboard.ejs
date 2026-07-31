@@ -23,9 +23,15 @@
         </a>
 
         <div class="user-area">
+          <nav class="dashboard-navigation" aria-label="Dashboard navigation">
+            <a href="/history" class="header-link"> History </a>
+
+            <a href="/leaderboard" class="header-link"> Leaderboard </a>
+          </nav>
+
           <span class="welcome">
             Welcome,
-            <strong><%= user.firstName %></strong>
+            <strong> <%= user?.firstName || "Player" %> </strong>
           </span>
 
           <button id="logoutButton" type="button">Logout</button>
@@ -78,22 +84,26 @@
         <div class="stats-grid">
           <article class="stat-card">
             <h3>Total XP</h3>
-            <h1><%= user.totalXp || 0 %></h1>
+
+            <h1><%= user?.totalXp || 0 %></h1>
           </article>
 
           <article class="stat-card">
             <h3>Quizzes Completed</h3>
-            <h1><%= user.quizzesCompleted || 0 %></h1>
+
+            <h1><%= user?.quizzesCompleted || 0 %></h1>
           </article>
 
           <article class="stat-card">
             <h3>Correct Answers</h3>
-            <h1><%= user.correctAnswers || 0 %></h1>
+
+            <h1><%= user?.correctAnswers || 0 %></h1>
           </article>
 
           <article class="stat-card">
             <h3>Current Streak</h3>
-            <h1><%= user.currentStreak || 0 %></h1>
+
+            <h1><%= user?.currentStreak || 0 %></h1>
           </article>
         </div>
       </section>
@@ -108,9 +118,15 @@
             <h2 id="leaderboardTitle">🏆 Leaderboard</h2>
           </div>
 
-          <span id="leaderboardPlayerCount" class="leaderboard-player-count">
-            0 players
-          </span>
+          <div class="leaderboard-heading-actions">
+            <span id="leaderboardPlayerCount" class="leaderboard-player-count">
+              0 players
+            </span>
+
+            <a href="/leaderboard" class="view-full-leaderboard-link">
+              View Full Leaderboard →
+            </a>
+          </div>
         </div>
 
         <div class="leaderboard-card">
@@ -130,6 +146,6 @@
       </section>
     </main>
 
-    <script src="/js/dashboard.js"></script>
+    <script src="/js/dashboard.js" defer></script>
   </body>
 </html>

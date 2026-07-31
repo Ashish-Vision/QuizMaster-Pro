@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="View your previous QuizMaster Pro quiz attempts."
+    />
+
+    <title>Quiz History | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/history.css" />
+  </head>
+
+  <body>
+    <main class="history-page">
+      <!-- ================= HEADER ================= -->
+
+      <header class="history-header">
+        <a href="/dashboard" class="brand">
+          <span class="brand-icon" aria-hidden="true">Q</span>
+
+          <span>QuizMaster Pro</span>
+        </a>
+
+        <nav class="header-navigation" aria-label="History navigation">
+          <a href="/dashboard">Dashboard</a>
+
+          <a href="/leaderboard">Leaderboard</a>
+
+          <span class="current-user"> <%= user?.firstName || "Player" %> </span>
+
+          <button type="button" id="logoutButton" class="logout-button">
+            Logout
+          </button>
+        </nav>
+      </header>
+
+      <!-- ================= HERO ================= -->
+
+      <section class="history-hero">
+        <div>
+          <p class="section-label">Your performance</p>
+
+          <h1>Quiz Attempt History</h1>
+
+          <p>
+            Review your previous quizzes, scores, accuracy, XP earned and
+            completion time.
+          </p>
+        </div>
+
+        <div class="hero-icon" aria-hidden="true">📚</div>
+      </section>
+
+      <!-- ================= FILTERS ================= -->
+
+      <section class="history-controls">
+        <div class="filter-group">
+          <label for="categoryFilter"> Filter by category </label>
+
+          <select id="categoryFilter">
+            <option value="all">All categories</option>
+          </select>
+        </div>
+
+        <button type="button" id="refreshButton" class="secondary-button">
+          Refresh
+        </button>
+      </section>
+
+      <!-- ================= SUMMARY ================= -->
+
+      <section id="historySummary" class="history-summary">
+        <article class="summary-card">
+          <span>Total Attempts</span>
+          <strong id="totalAttemptsValue">0</strong>
+        </article>
+
+        <article class="summary-card">
+          <span>Current Page</span>
+          <strong id="currentPageValue">1</strong>
+        </article>
+
+        <article class="summary-card">
+          <span>Total Pages</span>
+          <strong id="totalPagesValue">1</strong>
+        </article>
+      </section>
+
+      <!-- ================= LOADING ================= -->
+
+      <section id="loadingState" class="state-card" aria-live="polite">
+        <div class="loader" aria-hidden="true"></div>
+
+        <p>Loading your quiz history...</p>
+      </section>
+
+      <!-- ================= ERROR ================= -->
+
+      <section id="errorState" class="state-card hidden" aria-live="assertive">
+        <div class="state-icon error-icon">!</div>
+
+        <h2>Unable to load history</h2>
+
+        <p id="errorMessage">Please try again.</p>
+
+        <button type="button" id="retryButton" class="primary-button">
+          Try Again
+        </button>
+      </section>
+
+      <!-- ================= EMPTY ================= -->
+
+      <section id="emptyState" class="state-card hidden">
+        <div class="state-icon">📝</div>
+
+        <h2>No quiz attempts found</h2>
+
+        <p>Complete a quiz and your result will appear here.</p>
+
+        <a href="/dashboard" class="primary-button"> Start a Quiz </a>
+      </section>
+
+      <!-- ================= HISTORY ================= -->
+
+      <section id="historyContent" class="history-content hidden">
+        <div id="historyList" class="history-list" aria-live="polite"></div>
+
+        <nav class="pagination" aria-label="Quiz history pages">
+          <button type="button" id="previousButton" class="pagination-button">
+            ← Previous
+          </button>
+
+          <span id="paginationText"> Page 1 of 1 </span>
+
+          <button type="button" id="nextButton" class="pagination-button">
+            Next →
+          </button>
+        </nav>
+      </section>
+    </main>
+
+    <script src="/js/history.js" defer></script>
+  </body>
+</html>

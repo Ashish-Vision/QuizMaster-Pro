@@ -12,6 +12,7 @@ const authRoutes = require("./routes/authRoutes");
 const quizRoutes = require("./routes/quizRoutes");
 const userRoutes = require("./routes/userRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
+const historyRoutes = require("./routes/historyRoutes");
 
 const { protect } = require("./middleware/authMiddleware");
 
@@ -168,8 +169,7 @@ app.get("/result/:resultId", protect, (req, res) => {
 });
 
 /*
- * Optional fallback route for an existing result page
- * that reads the result ID from a query parameter:
+ * Optional fallback route:
  * /result?resultId=64f123...
  */
 app.get("/result", protect, (req, res) => {
@@ -185,6 +185,12 @@ app.get("/leaderboard", protect, (req, res) => {
   });
 });
 
+app.get("/history", protect, (req, res) => {
+  return res.render("history", {
+    user: req.user,
+  });
+});
+
 /* ============================================================
    API Routes
 ============================================================ */
@@ -196,6 +202,8 @@ app.use("/api/quiz", quizRoutes);
 app.use("/api/users", userRoutes);
 
 app.use("/api/leaderboard", leaderboardRoutes);
+
+app.use("/api/history", historyRoutes);
 
 /* ============================================================
    Health Check
