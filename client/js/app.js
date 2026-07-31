@@ -1,11 +1,5 @@
-app.get("/login", (req, res) => {
-  res.render("login");
-});
+"use strict";
 
-app.get("/register", (req, res) => {
-  res.render("register");
-});
-
-app.get("/dashboard", (req, res) => {
-  res.render("dashboard");
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("QuizMaster Pro frontend loaded");
 });

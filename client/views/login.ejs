@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Sign in to your QuizMaster Pro account."
+    />
+
+    <title>Login | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/variables.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/animations.css" />
+    <link rel="stylesheet" href="/css/auth.css" />
+    <link rel="stylesheet" href="/css/responsive.css" />
+  </head>
+
+  <body>
+    <%- include("partials/navbar") %>
+
+    <main class="auth-page">
+      <div class="auth-glow auth-glow-one"></div>
+      <div class="auth-glow auth-glow-two"></div>
+
+      <section class="auth-container">
+        <div class="auth-introduction">
+          <p class="auth-label">Welcome Back</p>
+
+          <h1>
+            Continue your
+            <span>learning journey</span>
+          </h1>
+
+          <p class="auth-description">
+            Sign in to access quizzes, track your progress, earn XP and compete
+            on the leaderboard.
+          </p>
+
+          <div class="auth-benefits">
+            <div class="auth-benefit">
+              <span>✓</span>
+
+              <div>
+                <h3>Track your progress</h3>
+                <p>View your quiz history, scores and accuracy.</p>
+              </div>
+            </div>
+
+            <div class="auth-benefit">
+              <span>✓</span>
+
+              <div>
+                <h3>Earn rewards</h3>
+                <p>Collect XP, achievements and daily streaks.</p>
+              </div>
+            </div>
+
+            <div class="auth-benefit">
+              <span>✓</span>
+
+              <div>
+                <h3>Compete globally</h3>
+                <p>Climb leaderboards and challenge other players.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-card">
+          <div class="auth-card-header">
+            <h2>Sign in</h2>
+
+            <p>Enter your details to access your account.</p>
+          </div>
+
+          <div
+            class="form-message"
+            id="formMessage"
+            role="alert"
+            aria-live="polite"
+          ></div>
+
+          <form class="auth-form" id="loginForm" novalidate>
+            <div class="form-group">
+              <label for="loginEmail"> Email address </label>
+
+              <input
+                type="email"
+                id="loginEmail"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+
+              <small class="field-error" id="loginEmailError"></small>
+            </div>
+
+            <div class="form-group">
+              <div class="label-row">
+                <label for="loginPassword"> Password </label>
+
+                <a href="#" class="forgot-link"> Forgot password? </a>
+              </div>
+
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="loginPassword"
+                  name="password"
+                  placeholder="Enter your password"
+                  autocomplete="current-password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="password-toggle"
+                  data-password-target="loginPassword"
+                  aria-label="Show password"
+                >
+                  Show
+                </button>
+              </div>
+
+              <small class="field-error" id="loginPasswordError"></small>
+            </div>
+
+            <label class="remember-option">
+              <input type="checkbox" id="rememberMe" name="rememberMe" />
+
+              <span>Remember me</span>
+            </label>
+
+            <button type="submit" class="primary-button auth-submit-button">
+              <span class="button-text"> Sign In </span>
+
+              <span class="button-loader" aria-hidden="true"></span>
+            </button>
+          </form>
+
+          <div class="auth-divider">
+            <span>or continue with</span>
+          </div>
+
+          <button
+            type="button"
+            class="social-auth-button"
+            id="googleLoginButton"
+          >
+            <span class="google-icon">G</span>
+            Continue with Google
+          </button>
+
+          <p class="auth-switch">
+            Do not have an account?
+
+            <a href="/register"> Create account </a>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <%- include("partials/footer") %>
+
+    <script src="/js/ui.js"></script>
+    <script src="/js/auth.js"></script>
+  </body>
+</html>

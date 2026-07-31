@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="Create your QuizMaster Pro account." />
+
+    <title>Create Account | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/variables.css" />
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/animations.css" />
+    <link rel="stylesheet" href="/css/auth.css" />
+    <link rel="stylesheet" href="/css/responsive.css" />
+  </head>
+
+  <body>
+    <%- include("partials/navbar") %>
+
+    <main class="auth-page">
+      <div class="auth-glow auth-glow-one"></div>
+      <div class="auth-glow auth-glow-two"></div>
+
+      <section class="auth-container">
+        <div class="auth-introduction">
+          <p class="auth-label">Join QuizMaster Pro</p>
+
+          <h1>
+            Learn smarter and
+            <span>compete globally</span>
+          </h1>
+
+          <p class="auth-description">
+            Create an account to unlock personalized quizzes, achievements,
+            statistics and competitive challenges.
+          </p>
+
+          <div class="auth-statistics">
+            <div>
+              <strong>10K+</strong>
+              <span>Questions</span>
+            </div>
+
+            <div>
+              <strong>25+</strong>
+              <span>Categories</span>
+            </div>
+
+            <div>
+              <strong>5K+</strong>
+              <span>Players</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="auth-card">
+          <div class="auth-card-header">
+            <h2>Create account</h2>
+
+            <p>Start your learning journey today.</p>
+          </div>
+
+          <div
+            class="form-message"
+            id="formMessage"
+            role="alert"
+            aria-live="polite"
+          ></div>
+
+          <form class="auth-form" id="registerForm" novalidate>
+            <div class="form-row">
+              <div class="form-group">
+                <label for="firstName"> First name </label>
+
+                <input
+                  type="text"
+                  id="firstName"
+                  name="firstName"
+                  placeholder="Ashish"
+                  autocomplete="given-name"
+                  required
+                />
+
+                <small class="field-error" id="firstNameError"></small>
+              </div>
+
+              <div class="form-group">
+                <label for="lastName"> Last name </label>
+
+                <input
+                  type="text"
+                  id="lastName"
+                  name="lastName"
+                  placeholder="Vision"
+                  autocomplete="family-name"
+                  required
+                />
+
+                <small class="field-error" id="lastNameError"></small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="registerEmail"> Email address </label>
+
+              <input
+                type="email"
+                id="registerEmail"
+                name="email"
+                placeholder="you@example.com"
+                autocomplete="email"
+                required
+              />
+
+              <small class="field-error" id="registerEmailError"></small>
+            </div>
+
+            <div class="form-group">
+              <label for="registerPassword"> Password </label>
+
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="registerPassword"
+                  name="password"
+                  placeholder="Minimum 8 characters"
+                  autocomplete="new-password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="password-toggle"
+                  data-password-target="registerPassword"
+                  aria-label="Show password"
+                >
+                  Show
+                </button>
+              </div>
+
+              <div class="password-strength">
+                <span class="strength-bar" id="strengthBar"></span>
+              </div>
+
+              <small class="password-strength-text" id="strengthText">
+                Password strength
+              </small>
+
+              <small class="field-error" id="registerPasswordError"></small>
+            </div>
+
+            <div class="form-group">
+              <label for="confirmPassword"> Confirm password </label>
+
+              <div class="password-wrapper">
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  placeholder="Re-enter your password"
+                  autocomplete="new-password"
+                  required
+                />
+
+                <button
+                  type="button"
+                  class="password-toggle"
+                  data-password-target="confirmPassword"
+                  aria-label="Show password"
+                >
+                  Show
+                </button>
+              </div>
+
+              <small class="field-error" id="confirmPasswordError"></small>
+            </div>
+
+            <label class="terms-option">
+              <input type="checkbox" id="acceptTerms" name="acceptTerms" />
+
+              <span>
+                I agree to the
+                <a href="#">Terms of Service</a>
+                and
+                <a href="#">Privacy Policy</a>.
+              </span>
+            </label>
+
+            <small class="field-error" id="acceptTermsError"></small>
+
+            <button type="submit" class="primary-button auth-submit-button">
+              <span class="button-text"> Create Account </span>
+
+              <span class="button-loader" aria-hidden="true"></span>
+            </button>
+          </form>
+
+          <div class="auth-divider">
+            <span>or register with</span>
+          </div>
+
+          <button
+            type="button"
+            class="social-auth-button"
+            id="googleRegisterButton"
+          >
+            <span class="google-icon">G</span>
+            Continue with Google
+          </button>
+
+          <p class="auth-switch">
+            Already have an account?
+
+            <a href="/login"> Sign in </a>
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <%- include("partials/footer") %>
+
+    <script src="/js/ui.js"></script>
+    <script src="/js/auth.js"></script>
+  </body>
+</html>

@@ -14,20 +14,38 @@ app.use(cookieParser());
 app.use(cors());
 app.use(helmet());
 app.use(morgan("dev"));
-// View Engine
+
+// View engine
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "../client/views"));
 
-// Static Files
+// Static files
 app.use(
   express.static(path.join(__dirname, "../client"), {
     index: false,
   }),
 );
 
-// Home Route
+// Page routes
 app.get("/", (req, res) => {
   res.render("index");
+});
+
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+app.get("/register", (req, res) => {
+  res.render("register");
+});
+
+app.get("/dashboard", (req, res) => {
+  res.render("dashboard");
+});
+
+// 404 page
+app.use((req, res) => {
+  res.status(404).send("Page not found");
 });
 
 module.exports = app;
