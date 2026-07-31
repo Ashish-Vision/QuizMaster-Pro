@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="View your QuizMaster Pro quiz result." />
+
+    <title>Quiz Result | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/result.css" />
+  </head>
+
+  <body>
+    <main class="result-page">
+      <section class="result-card" id="resultCard">
+        <div class="result-icon">🏆</div>
+
+        <p class="result-label">Quiz completed</p>
+
+        <h1>Great work, <%= user?.firstName || "QuizMaster" %>!</h1>
+
+        <p class="result-category" id="resultCategory">Loading result...</p>
+
+        <div class="score-circle">
+          <span id="scoreValue">0</span>
+
+          <small id="scoreTotal"> / 0 </small>
+        </div>
+
+        <div class="result-grid">
+          <article class="result-stat">
+            <span>Accuracy</span>
+            <strong id="accuracyValue"> 0% </strong>
+          </article>
+
+          <article class="result-stat">
+            <span>Correct</span>
+            <strong id="correctValue"> 0 </strong>
+          </article>
+
+          <article class="result-stat">
+            <span>Wrong</span>
+            <strong id="wrongValue"> 0 </strong>
+          </article>
+
+          <article class="result-stat">
+            <span>Unanswered</span>
+            <strong id="unansweredValue"> 0 </strong>
+          </article>
+
+          <article class="result-stat">
+            <span>XP Earned</span>
+            <strong id="xpValue"> +0 XP </strong>
+          </article>
+
+          <article class="result-stat">
+            <span>Time Taken</span>
+            <strong id="timeValue"> 00:00 </strong>
+          </article>
+        </div>
+
+        <div class="result-actions">
+          <a href="/dashboard" class="secondary-button"> Dashboard </a>
+
+          <button type="button" class="primary-button" id="retryQuizButton">
+            Retry Quiz
+          </button>
+        </div>
+      </section>
+
+      <section class="result-error hidden" id="resultError">
+        <div class="error-icon">!</div>
+
+        <h1>Result unavailable</h1>
+
+        <p>We could not find your recent quiz result.</p>
+
+        <a href="/dashboard" class="primary-button"> Return to Dashboard </a>
+      </section>
+    </main>
+
+    <script src="/js/result.js" defer></script>
+  </body>
+</html>

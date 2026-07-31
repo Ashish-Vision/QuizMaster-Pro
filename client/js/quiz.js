@@ -9,36 +9,56 @@ const state = {
   currentIndex: 0,
   remainingSeconds: QUIZ_DURATION_SECONDS,
   timerId: null,
+  submitting: false,
 };
 
 const elements = {
   loadingState: document.getElementById("loadingState"),
+
   errorState: document.getElementById("errorState"),
+
   errorMessage: document.getElementById("errorMessage"),
+
   retryButton: document.getElementById("retryButton"),
 
   quizContent: document.getElementById("quizContent"),
+
   categoryName: document.getElementById("categoryName"),
+
   currentQuestionNumber: document.getElementById("currentQuestionNumber"),
+
   totalQuestionCount: document.getElementById("totalQuestionCount"),
+
   progressTrack: document.getElementById("progressTrack"),
+
   progressBar: document.getElementById("progressBar"),
+
   difficultyBadge: document.getElementById("difficultyBadge"),
+
   answeredStatus: document.getElementById("answeredStatus"),
+
   questionText: document.getElementById("questionText"),
+
   optionsContainer: document.getElementById("optionsContainer"),
+
   answeredCount: document.getElementById("answeredCount"),
 
   previousButton: document.getElementById("previousButton"),
+
   nextButton: document.getElementById("nextButton"),
+
   submitButton: document.getElementById("submitButton"),
 
   timer: document.getElementById("timer"),
+
   timerValue: document.getElementById("timerValue"),
 
   submitModal: document.getElementById("submitModal"),
+
   submitSummary: document.getElementById("submitSummary"),
+
   cancelSubmitButton: document.getElementById("cancelSubmitButton"),
+
   confirmSubmitButton: document.getElementById("confirmSubmitButton"),
 };
 
@@ -64,6 +84,7 @@ function showError(message) {
   elements.loadingState.classList.add("hidden");
   elements.quizContent.classList.add("hidden");
   elements.errorState.classList.remove("hidden");
+
   elements.errorMessage.textContent = message;
 }
 
@@ -111,17 +132,14 @@ async function loadQuiz() {
       throw new Error(data.message || "Unable to load quiz questions.");
     }
 
-    if (!Array.isArray(data.questions)) {
-      throw new Error("The quiz response is invalid.");
-    }
-
-    if (data.questions.length === 0) {
-      throw new Error(`No questions are available for ${state.category}.`);
+    if (!Array.isArray(data.questions) || data.questions.length === 0) {
+      throw new Error("No questions are available for this category.");
     }
 
     state.questions = data.questions;
     state.currentIndex = 0;
     state.remainingSeconds = QUIZ_DURATION_SECONDS;
+    state.submitting = false;
 
     restoreProgress();
 
@@ -150,7 +168,11 @@ function restoreProgress() {
 
     const parsedProgress = JSON.parse(storedProgress);
 
-    if (parsedProgress && typeof parsedProgress.answers === "object") {
+    if (
+      parsedProgress &&
+      typeof parsedProgress.answers === "object" &&
+      parsedProgress.answers !== null
+    ) {
       state.answers = parsedProgress.answers;
     }
 
@@ -171,11 +193,16 @@ function restoreProgress() {
     }
   } catch (error) {
     console.error("Unable to restore quiz progress:", error);
+
     state.answers = {};
   }
 }
 
 function saveProgress() {
+  if (!state.category || state.questions.length === 0) {
+    return;
+  }
+
   const progress = {
     answers: state.answers,
     currentIndex: state.currentIndex,
@@ -190,10 +217,12 @@ function renderQuestion() {
 
   if (!question) {
     showError("The requested quiz question was not found.");
+
     return;
   }
 
   const questionNumber = state.currentIndex + 1;
+
   const progressPercentage = (questionNumber / state.questions.length) * 100;
 
   elements.currentQuestionNumber.textContent = questionNumber;
@@ -240,7 +269,9 @@ function renderOptions(question) {
 
     optionButton.type = "button";
     optionButton.className = "option-button";
+
     optionButton.setAttribute("role", "radio");
+
     optionButton.setAttribute(
       "aria-checked",
       selectedAnswer === optionIndex ? "true" : "false",
@@ -251,10 +282,13 @@ function renderOptions(question) {
     }
 
     const optionLetter = document.createElement("span");
+
     optionLetter.className = "option-letter";
+
     optionLetter.textContent = String.fromCharCode(65 + optionIndex);
 
     const optionText = document.createElement("span");
+
     optionText.className = "option-text";
     optionText.textContent = option;
 
@@ -269,6 +303,10 @@ function renderOptions(question) {
 }
 
 function selectAnswer(questionId, optionIndex) {
+  if (state.submitting) {
+    return;
+  }
+
   state.answers[questionId] = optionIndex;
 
   renderQuestion();
@@ -279,7 +317,7 @@ function updateNavigation() {
 
   const isLastQuestion = state.currentIndex === state.questions.length - 1;
 
-  elements.previousButton.disabled = isFirstQuestion;
+  elements.previousButton.disabled = isFirstQuestion || state.submitting;
 
   elements.nextButton.classList.toggle("hidden", isLastQuestion);
 
@@ -294,7 +332,9 @@ function updateAnswerInformation() {
     currentQuestion._id,
   );
 
-  const answeredCount = Object.keys(state.answers).length;
+  const answeredCount = state.questions.filter((question) =>
+    Object.prototype.hasOwnProperty.call(state.answers, question._id),
+  ).length;
 
   elements.answeredStatus.textContent = currentQuestionAnswered
     ? "Answered"
@@ -304,7 +344,7 @@ function updateAnswerInformation() {
 }
 
 function goToPreviousQuestion() {
-  if (state.currentIndex <= 0) {
+  if (state.submitting || state.currentIndex <= 0) {
     return;
   }
 
@@ -313,7 +353,7 @@ function goToPreviousQuestion() {
 }
 
 function goToNextQuestion() {
-  if (state.currentIndex >= state.questions.length - 1) {
+  if (state.submitting || state.currentIndex >= state.questions.length - 1) {
     return;
   }
 
@@ -345,10 +385,14 @@ function startTimer() {
   state.timerId = window.setInterval(() => {
     state.remainingSeconds -= 1;
 
+    if (state.remainingSeconds < 0) {
+      state.remainingSeconds = 0;
+    }
+
     updateTimerDisplay();
     saveProgress();
 
-    if (state.remainingSeconds <= 0) {
+    if (state.remainingSeconds === 0) {
       stopTimer();
       openSubmitModal(true);
     }
@@ -363,7 +407,9 @@ function stopTimer() {
 }
 
 function openSubmitModal(timeExpired = false) {
-  const answeredCount = Object.keys(state.answers).length;
+  const answeredCount = state.questions.filter((question) =>
+    Object.prototype.hasOwnProperty.call(state.answers, question._id),
+  ).length;
 
   const unansweredCount = state.questions.length - answeredCount;
 
@@ -388,31 +434,90 @@ function openSubmitModal(timeExpired = false) {
 }
 
 function closeSubmitModal() {
+  if (state.submitting) {
+    return;
+  }
+
   elements.submitModal.classList.add("hidden");
 }
 
-function submitQuiz() {
+async function submitQuiz() {
+  if (state.submitting) {
+    return;
+  }
+
+  state.submitting = true;
   stopTimer();
 
-  const quizSubmission = {
+  elements.confirmSubmitButton.disabled = true;
+  elements.confirmSubmitButton.textContent = "Submitting...";
+
+  const payload = {
     category: state.category,
+
     answers: state.questions.map((question) => ({
       questionId: question._id,
-      selectedAnswer: state.answers[question._id] ?? null,
+
+      selectedAnswer: Object.prototype.hasOwnProperty.call(
+        state.answers,
+        question._id,
+      )
+        ? state.answers[question._id]
+        : null,
     })),
+
     remainingSeconds: state.remainingSeconds,
+
+    quizDurationSeconds: QUIZ_DURATION_SECONDS,
   };
 
-  console.log("Quiz submission:", quizSubmission);
+  try {
+    const response = await fetch("/api/quiz/submit", {
+      method: "POST",
+      credentials: "include",
 
-  alert(
-    "Quiz answers prepared successfully. Server-side score calculation will be added next.",
-  );
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
 
-  closeSubmitModal();
+      body: JSON.stringify(payload),
+    });
+
+    const data = await response.json();
+
+    if (response.status === 401) {
+      window.location.href = "/login";
+      return;
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to submit the quiz.");
+    }
+
+    sessionStorage.setItem("quizmaster_result", JSON.stringify(data.result));
+
+    localStorage.removeItem(getStorageKey());
+
+    window.location.href = "/result";
+  } catch (error) {
+    state.submitting = false;
+
+    elements.confirmSubmitButton.disabled = false;
+
+    elements.confirmSubmitButton.textContent = "Submit Now";
+
+    alert(error.message || "Quiz submission failed. Please try again.");
+
+    startTimer();
+  }
 }
 
 function handleKeyboardNavigation(event) {
+  if (state.submitting) {
+    return;
+  }
+
   if (!elements.submitModal.classList.contains("hidden")) {
     if (event.key === "Escape") {
       closeSubmitModal();

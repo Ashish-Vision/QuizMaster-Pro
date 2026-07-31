@@ -17,17 +17,13 @@ const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
-/* --------------------------------------------------
-   View engine
--------------------------------------------------- */
+/* View engine */
 
 app.set("view engine", "ejs");
 
 app.set("views", path.join(__dirname, "../client/views"));
 
-/* --------------------------------------------------
-   Global middleware
--------------------------------------------------- */
+/* Global middleware */
 
 app.use(express.json());
 
@@ -54,9 +50,7 @@ app.use(
 
 app.use(morgan("dev"));
 
-/* --------------------------------------------------
-   Static files
--------------------------------------------------- */
+/* Static files */
 
 app.use(
   express.static(path.join(__dirname, "../client"), {
@@ -64,9 +58,7 @@ app.use(
   }),
 );
 
-/* --------------------------------------------------
-   Page routes
--------------------------------------------------- */
+/* Public page routes */
 
 app.get("/", (req, res) => {
   res.render("index");
@@ -80,6 +72,8 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
+/* Protected page routes */
+
 app.get("/dashboard", protect, (req, res) => {
   res.render("dashboard", {
     user: req.user,
@@ -92,17 +86,19 @@ app.get("/quiz", protect, (req, res) => {
   });
 });
 
-/* --------------------------------------------------
-   API routes
--------------------------------------------------- */
+app.get("/result", protect, (req, res) => {
+  res.render("result", {
+    user: req.user,
+  });
+});
+
+/* API routes */
 
 app.use("/api/auth", authRoutes);
 
 app.use("/api/quiz", quizRoutes);
 
-/* --------------------------------------------------
-   Error handlers
--------------------------------------------------- */
+/* Error handlers */
 
 app.use(notFoundHandler);
 
