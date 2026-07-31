@@ -4,20 +4,43 @@ const jwt = require("jsonwebtoken");
 
 const User = require("../models/User");
 
+/**
+ * Determines whether the current request expects an HTML page.
+ */
+function requestExpectsHtml(req) {
+  return req.accepts(["html", "json"]) === "html";
+}
+
+/**
+ * Removes an invalid authentication cookie.
+ */
+function clearAuthenticationCookie(res) {
+  res.clearCookie("quizmaster_token", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+  });
+}
+
+/**
+ * Protects routes that require authentication.
+ */
 async function protect(req, res, next) {
   try {
     let token = req.cookies?.quizmaster_token;
 
     const authorizationHeader = req.headers.authorization;
 
-    if (!token && authorizationHeader?.startsWith("Bearer ")) {
-      token = authorizationHeader.split(" ")[1];
+    if (
+      !token &&
+      typeof authorizationHeader === "string" &&
+      authorizationHeader.startsWith("Bearer ")
+    ) {
+      token = authorizationHeader.slice(7).trim();
     }
 
     if (!token) {
-      const acceptsHtml = req.accepts(["html", "json"]) === "html";
-
-      if (acceptsHtml) {
+      if (requestExpectsHtml(req)) {
         return res.redirect("/login");
       }
 
@@ -27,14 +50,33 @@ async function protect(req, res, next) {
       });
     }
 
+    if (!process.env.JWT_SECRET) {
+      throw new Error(
+        "JWT_SECRET is missing from the environment configuration.",
+      );
+    }
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    if (!decoded?.userId) {
+      clearAuthenticationCookie(res);
+
+      if (requestExpectsHtml(req)) {
+        return res.redirect("/login");
+      }
+
+      return res.status(401).json({
+        success: false,
+        message: "The authentication token is invalid.",
+      });
+    }
 
     const user = await User.findById(decoded.userId).select("-password");
 
     if (!user) {
-      const acceptsHtml = req.accepts(["html", "json"]) === "html";
+      clearAuthenticationCookie(res);
 
-      if (acceptsHtml) {
+      if (requestExpectsHtml(req)) {
         return res.redirect("/login");
       }
 
@@ -44,6 +86,31 @@ async function protect(req, res, next) {
       });
     }
 
+    if (!user.isActive) {
+      clearAuthenticationCookie(res);
+
+      if (requestExpectsHtml(req)) {
+        return res.redirect("/login");
+      }
+
+      return res.status(403).json({
+        success: false,
+        message: "This account has been disabled.",
+      });
+    }
+
+    /*
+     * The complete authenticated user is now available
+     * to all following middleware and route handlers.
+     *
+     * This includes:
+     * - firstName
+     * - lastName
+     * - email
+     * - role
+     * - totalXp
+     * - statistics
+     */
     req.user = user;
 
     return next();
@@ -52,9 +119,9 @@ async function protect(req, res, next) {
       error.name === "JsonWebTokenError" ||
       error.name === "TokenExpiredError"
     ) {
-      const acceptsHtml = req.accepts(["html", "json"]) === "html";
+      clearAuthenticationCookie(res);
 
-      if (acceptsHtml) {
+      if (requestExpectsHtml(req)) {
         return res.redirect("/login");
       }
 
@@ -68,9 +135,30 @@ async function protect(req, res, next) {
   }
 }
 
+/**
+ * Allows only users whose role is included in allowedRoles.
+ *
+ * Example:
+ * authorizeRoles("admin")
+ */
 function authorizeRoles(...allowedRoles) {
   return function authorize(req, res, next) {
-    if (!req.user || !allowedRoles.includes(req.user.role)) {
+    if (!req.user) {
+      if (requestExpectsHtml(req)) {
+        return res.redirect("/login");
+      }
+
+      return res.status(401).json({
+        success: false,
+        message: "Authentication is required.",
+      });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      if (requestExpectsHtml(req)) {
+        return res.redirect("/dashboard");
+      }
+
       return res.status(403).json({
         success: false,
         message: "You do not have permission to access this resource.",
