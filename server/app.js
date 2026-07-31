@@ -10,6 +10,7 @@ const morgan = require("morgan");
 
 const authRoutes = require("./routes/authRoutes");
 const quizRoutes = require("./routes/quizRoutes");
+const userRoutes = require("./routes/userRoutes");
 
 const { protect } = require("./middleware/authMiddleware");
 
@@ -17,13 +18,17 @@ const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
-/* View engine */
+/* ============================================================
+   View Engine
+============================================================ */
 
 app.set("view engine", "ejs");
 
 app.set("views", path.join(__dirname, "../client/views"));
 
-/* Global middleware */
+/* ============================================================
+   Global Middleware
+============================================================ */
 
 app.use(express.json());
 
@@ -38,6 +43,7 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: process.env.CLIENT_ORIGIN || "http://localhost:5000",
+
     credentials: true,
   }),
 );
@@ -50,7 +56,9 @@ app.use(
 
 app.use(morgan("dev"));
 
-/* Static files */
+/* ============================================================
+   Static Files
+============================================================ */
 
 app.use(
   express.static(path.join(__dirname, "../client"), {
@@ -58,7 +66,9 @@ app.use(
   }),
 );
 
-/* Public page routes */
+/* ============================================================
+   Public Page Routes
+============================================================ */
 
 app.get("/", (req, res) => {
   res.render("index");
@@ -72,7 +82,9 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
-/* Protected page routes */
+/* ============================================================
+   Protected Page Routes
+============================================================ */
 
 app.get("/dashboard", protect, (req, res) => {
   res.render("dashboard", {
@@ -92,15 +104,31 @@ app.get("/result", protect, (req, res) => {
   });
 });
 
-/* API routes */
+app.get("/leaderboard", protect, (req, res) => {
+  res.render("leaderboard", {
+    user: req.user,
+  });
+});
+
+/* ============================================================
+   API Routes
+============================================================ */
 
 app.use("/api/auth", authRoutes);
 
 app.use("/api/quiz", quizRoutes);
 
-/* Error handlers */
+app.use("/api/users", userRoutes);
+
+/* ============================================================
+   404 Handler
+============================================================ */
 
 app.use(notFoundHandler);
+
+/* ============================================================
+   Global Error Handler
+============================================================ */
 
 app.use(errorHandler);
 

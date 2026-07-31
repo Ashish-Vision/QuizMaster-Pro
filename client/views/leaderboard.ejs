@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="View the highest-ranked QuizMaster Pro players."
+    />
+
+    <title>Leaderboard | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/leaderboard.css" />
+  </head>
+
+  <body>
+    <main class="leaderboard-page">
+      <header class="leaderboard-header">
+        <a href="/dashboard" class="brand">
+          <span class="brand-icon">Q</span>
+          <span>QuizMaster Pro</span>
+        </a>
+
+        <nav class="header-navigation">
+          <a href="/dashboard"> Dashboard </a>
+
+          <span class="current-user"> <%= user?.firstName || "Player" %> </span>
+        </nav>
+      </header>
+
+      <section class="leaderboard-hero">
+        <div>
+          <p class="section-label">Global rankings</p>
+
+          <h1>QuizMaster Leaderboard</h1>
+
+          <p>Earn XP by completing quizzes and climb your way to the top.</p>
+        </div>
+
+        <div class="hero-trophy">🏆</div>
+      </section>
+
+      <section class="loading-state" id="loadingState">
+        <div class="loader"></div>
+
+        <p>Loading leaderboard...</p>
+      </section>
+
+      <section class="error-state hidden" id="errorState">
+        <div class="error-icon">!</div>
+
+        <h2>Unable to load leaderboard</h2>
+
+        <p id="errorMessage">Please try again.</p>
+
+        <button type="button" id="retryButton" class="primary-button">
+          Try Again
+        </button>
+      </section>
+
+      <section class="leaderboard-content hidden" id="leaderboardContent">
+        <div class="podium" id="podium"></div>
+
+        <div class="ranking-card">
+          <div class="ranking-header">
+            <div>
+              <p class="section-label">Top players</p>
+
+              <h2>Current Rankings</h2>
+            </div>
+
+            <span id="playerCount"> 0 players </span>
+          </div>
+
+          <div class="table-wrapper">
+            <table class="leaderboard-table">
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Player</th>
+                  <th>XP</th>
+                  <th>Quizzes</th>
+                  <th>Correct</th>
+                  <th>Streak</th>
+                </tr>
+              </thead>
+
+              <tbody id="leaderboardBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/js/leaderboard.js" defer></script>
+  </body>
+</html>
