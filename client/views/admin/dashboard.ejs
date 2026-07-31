@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" href="/css/admin/dashboard.css" />
 
+    <script src="/js/admin/charts.js" defer></script>
     <script src="/js/admin/dashboard.js" defer></script>
   </head>
 
@@ -229,6 +230,105 @@
                 </div>
               </div>
             </article>
+          </section>
+
+          <!-- ================= CHARTS ================= -->
+
+          <section class="admin-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Last 7 Days</p>
+                <h2>Platform Activity</h2>
+              </div>
+
+              <span class="section-note"> Live Trends </span>
+            </div>
+
+            <div class="charts-grid">
+              <article class="chart-card chart-card-wide">
+                <div class="chart-heading">
+                  <div>
+                    <h3>Quiz Attempts</h3>
+                    <p>Attempts completed every day</p>
+                  </div>
+
+                  <strong id="weeklyAttemptTotal">0</strong>
+                </div>
+
+                <div class="chart-container">
+                  <canvas id="attemptsTrendChart"></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>XP Earned</h3>
+                    <p>Daily XP</p>
+                  </div>
+
+                  <strong id="weeklyXpTotal">0 XP</strong>
+                </div>
+
+                <div class="chart-container">
+                  <canvas id="xpTrendChart"></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>New Users</h3>
+                    <p>Registrations</p>
+                  </div>
+
+                  <strong id="weeklyUserTotal">0</strong>
+                </div>
+
+                <div class="chart-container">
+                  <canvas id="usersTrendChart"></canvas>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <!-- ================= DISTRIBUTION ================= -->
+
+          <section class="admin-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Analytics</p>
+                <h2>Performance Distribution</h2>
+              </div>
+            </div>
+
+            <div class="distribution-grid">
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>Attempts by Category</h3>
+                    <p>Most active categories</p>
+                  </div>
+                </div>
+
+                <div class="chart-container chart-container-tall">
+                  <canvas id="categoryDistributionChart"></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>Accuracy Distribution</h3>
+                    <p>Overall quiz performance</p>
+                  </div>
+                </div>
+
+                <div class="chart-container chart-container-tall">
+                  <canvas id="accuracyDistributionChart"></canvas>
+                </div>
+              </article>
+            </div>
           </section>
 
           <section class="admin-section">

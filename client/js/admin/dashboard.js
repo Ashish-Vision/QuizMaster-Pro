@@ -44,6 +44,12 @@ const elements = {
   recentUsersList: document.getElementById("recentUsersList"),
 
   recentAttemptsList: document.getElementById("recentAttemptsList"),
+
+  weeklyAttemptTotal: document.getElementById("weeklyAttemptTotal"),
+
+  weeklyXpTotal: document.getElementById("weeklyXpTotal"),
+
+  weeklyUserTotal: document.getElementById("weeklyUserTotal"),
 };
 
 function toggleElement(element, shouldShow) {
@@ -314,6 +320,80 @@ function renderRecentAttempts(attempts) {
   elements.recentAttemptsList.appendChild(fragment);
 }
 
+function renderCharts(data) {
+  const trends = data.trends || {};
+
+  const daily = Array.isArray(trends.daily) ? trends.daily : [];
+
+  const accuracyDistribution = Array.isArray(trends.accuracyDistribution)
+    ? trends.accuracyDistribution
+    : [];
+
+  const categories = Array.isArray(data.categoryStatistics)
+    ? data.categoryStatistics
+    : [];
+
+  const labels = daily.map((item) => item.label);
+
+  const attemptValues = daily.map((item) => Number(item.attempts) || 0);
+
+  const xpValues = daily.map((item) => Number(item.xpEarned) || 0);
+
+  const userValues = daily.map((item) => Number(item.newUsers) || 0);
+
+  const weeklyAttempts = attemptValues.reduce(
+    (total, value) => total + value,
+    0,
+  );
+
+  const weeklyXp = xpValues.reduce((total, value) => total + value, 0);
+
+  const weeklyUsers = userValues.reduce((total, value) => total + value, 0);
+
+  if (elements.weeklyAttemptTotal) {
+    elements.weeklyAttemptTotal.textContent = weeklyAttempts;
+  }
+
+  if (elements.weeklyXpTotal) {
+    elements.weeklyXpTotal.textContent = `${weeklyXp} XP`;
+  }
+
+  if (elements.weeklyUserTotal) {
+    elements.weeklyUserTotal.textContent = weeklyUsers;
+  }
+
+  if (!window.AdminCharts) {
+    console.warn("Admin chart utilities were not loaded.");
+
+    return;
+  }
+
+  window.AdminCharts.drawLineChart("attemptsTrendChart", labels, attemptValues);
+
+  window.AdminCharts.drawLineChart("xpTrendChart", labels, xpValues, {
+    color: "#f3b84a",
+  });
+
+  window.AdminCharts.drawLineChart("usersTrendChart", labels, userValues, {
+    color: "#2ed3a7",
+  });
+
+  window.AdminCharts.drawBarChart(
+    "categoryDistributionChart",
+    categories.map((category) => category.category),
+    categories.map((category) => Number(category.attempts) || 0),
+  );
+
+  window.AdminCharts.drawBarChart(
+    "accuracyDistributionChart",
+    accuracyDistribution.map((item) => item.label),
+    accuracyDistribution.map((item) => Number(item.count) || 0),
+    {
+      color: "#7657ff",
+    },
+  );
+}
+
 function renderDashboard(data) {
   renderOverview(data);
 
@@ -322,6 +402,16 @@ function renderDashboard(data) {
   renderRecentUsers(data.recentUsers);
 
   renderRecentAttempts(data.recentAttempts);
+
+  /*
+   * The chart canvases must be visible before
+   * their dimensions can be calculated.
+   */
+  toggleElement(elements.content, true);
+
+  window.requestAnimationFrame(() => {
+    renderCharts(data);
+  });
 }
 
 function showLoading() {
