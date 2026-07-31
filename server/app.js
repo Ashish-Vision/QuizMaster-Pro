@@ -19,6 +19,7 @@ const historyRoutes = require("./routes/historyRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 
 const achievementRoutes = require("./routes/achievementRoutes");
+const analyticsRoutes = require("./routes/analyticsRoutes");
 
 const { protect } = require("./middleware/authMiddleware");
 
@@ -208,7 +209,11 @@ app.get("/achievements", protect, (req, res) => {
     user: req.user,
   });
 });
-
+app.get("/analytics", protect, (req, res) => {
+  return res.render("analytics", {
+    user: req.user,
+  });
+});
 /* ============================================================
    API Routes
 ============================================================ */
@@ -226,6 +231,8 @@ app.use("/api/history", historyRoutes);
 app.use("/api/profile", profileRoutes);
 
 app.use("/api/achievements", achievementRoutes);
+
+app.use("/api/analytics", analyticsRoutes);
 
 /* ============================================================
    Health Check

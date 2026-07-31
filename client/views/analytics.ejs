@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="QuizMaster Pro personal performance analytics"
+    />
+
+    <title>Analytics | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/analytics.css" />
+
+    <script src="/js/analytics.js" defer></script>
+  </head>
+
+  <body>
+    <main class="analytics-page">
+      <header class="analytics-header">
+        <a href="/dashboard" class="analytics-logo">
+          <span aria-hidden="true">🧠</span>
+          <span>QuizMaster Pro</span>
+        </a>
+
+        <nav class="analytics-navigation">
+          <a href="/dashboard">Dashboard</a>
+          <a href="/history">History</a>
+          <a href="/leaderboard">Leaderboard</a>
+          <a href="/achievements">Achievements</a>
+          <a href="/analytics" class="active">Analytics</a>
+          <a href="/profile">Profile</a>
+        </nav>
+
+        <a href="/profile" class="analytics-user">
+          <span class="analytics-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "U"
+            %>
+          </span>
+
+          <span> <%= user?.firstName || "Player" %> </span>
+        </a>
+      </header>
+
+      <section class="analytics-hero">
+        <div>
+          <p class="section-label">Performance insights</p>
+
+          <h1>Your Analytics</h1>
+
+          <p>
+            Track your quiz performance, accuracy, category strengths and recent
+            progress.
+          </p>
+        </div>
+
+        <a href="#categoryAnalytics" class="primary-link"> View Categories </a>
+      </section>
+
+      <section id="analyticsLoading" class="analytics-state">
+        <div class="spinner"></div>
+
+        <p>Loading your analytics...</p>
+      </section>
+
+      <section id="analyticsError" class="analytics-state hidden">
+        <span class="state-icon">⚠️</span>
+
+        <h2>Unable to load analytics</h2>
+
+        <p id="analyticsErrorMessage">Something went wrong.</p>
+
+        <button id="analyticsRetryButton" type="button">Try Again</button>
+      </section>
+
+      <div id="analyticsContent" class="hidden">
+        <section
+          class="analytics-summary-grid"
+          aria-label="Performance summary"
+        >
+          <article class="analytics-stat-card">
+            <span>📝</span>
+
+            <div>
+              <p>Total Quizzes</p>
+              <strong id="totalQuizzes">0</strong>
+            </div>
+          </article>
+
+          <article class="analytics-stat-card">
+            <span>🎯</span>
+
+            <div>
+              <p>Average Accuracy</p>
+              <strong id="averageAccuracy">0%</strong>
+            </div>
+          </article>
+
+          <article class="analytics-stat-card">
+            <span>🏆</span>
+
+            <div>
+              <p>Best Accuracy</p>
+              <strong id="bestAccuracy">0%</strong>
+            </div>
+          </article>
+
+          <article class="analytics-stat-card">
+            <span>⚡</span>
+
+            <div>
+              <p>Total XP</p>
+              <strong id="totalXpEarned">0</strong>
+            </div>
+          </article>
+        </section>
+
+        <section class="answer-summary-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-label">Answer breakdown</p>
+
+              <h2>Question Performance</h2>
+            </div>
+          </div>
+
+          <div class="answer-summary-grid">
+            <article>
+              <span class="answer-icon correct">✓</span>
+              <p>Correct Answers</p>
+              <strong id="correctAnswers">0</strong>
+            </article>
+
+            <article>
+              <span class="answer-icon wrong">✕</span>
+              <p>Wrong Answers</p>
+              <strong id="wrongAnswers">0</strong>
+            </article>
+
+            <article>
+              <span class="answer-icon unanswered">−</span>
+              <p>Unanswered</p>
+              <strong id="unansweredAnswers">0</strong>
+            </article>
+
+            <article>
+              <span class="answer-icon time">⏱</span>
+              <p>Average Time</p>
+              <strong id="averageTime">0m 0s</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="performance-highlights">
+          <article class="highlight-card">
+            <p>Strongest Category</p>
+
+            <h2 id="strongestCategory">No data yet</h2>
+
+            <span id="strongestCategoryAccuracy">
+              Complete quizzes to see your strongest category.
+            </span>
+          </article>
+
+          <article class="highlight-card">
+            <p>Needs Improvement</p>
+
+            <h2 id="weakestCategory">No data yet</h2>
+
+            <span id="weakestCategoryAccuracy">
+              Complete quizzes to view category insights.
+            </span>
+          </article>
+
+          <article class="highlight-card">
+            <p>Current Streak</p>
+
+            <h2 id="currentStreak">0 days</h2>
+
+            <span> Complete quizzes on consecutive days. </span>
+          </article>
+        </section>
+
+        <section id="categoryAnalytics" class="category-analytics-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-label">Subject performance</p>
+
+              <h2>Category Analytics</h2>
+            </div>
+          </div>
+
+          <div class="analytics-table-card">
+            <div class="analytics-table-header">
+              <span>Category</span>
+              <span>Quizzes</span>
+              <span>Accuracy</span>
+              <span>Best</span>
+              <span>XP</span>
+            </div>
+
+            <div id="categoryAnalyticsList" aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="recent-performance-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-label">Latest attempts</p>
+
+              <h2>Recent Performance</h2>
+            </div>
+
+            <a href="/history" class="secondary-link"> View Full History → </a>
+          </div>
+
+          <div id="recentPerformanceGrid" class="recent-performance-grid"></div>
+        </section>
+      </div>
+    </main>
+  </body>
+</html>
+  
