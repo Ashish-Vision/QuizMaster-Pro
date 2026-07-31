@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Take quizzes and test your knowledge with QuizMaster Pro."
+    />
+
+    <title>Quiz | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/quiz.css" />
+  </head>
+
+  <body>
+    <main class="quiz-page">
+      <section class="quiz-container">
+        <header class="quiz-header">
+          <a href="/dashboard" class="back-link"> ← Dashboard </a>
+
+          <div class="quiz-brand">
+            <span class="brand-icon">Q</span>
+            <span>QuizMaster Pro</span>
+          </div>
+
+          <div class="timer" id="timer" aria-live="polite">
+            <span class="timer-icon">⏱</span>
+            <span id="timerValue">10:00</span>
+          </div>
+        </header>
+
+        <section class="loading-state" id="loadingState" aria-live="polite">
+          <div class="loader"></div>
+
+          <h1>Preparing your quiz</h1>
+
+          <p>Please wait while we load your questions.</p>
+        </section>
+
+        <section
+          class="error-state hidden"
+          id="errorState"
+          aria-live="assertive"
+        >
+          <div class="error-icon">!</div>
+
+          <h1>Unable to load quiz</h1>
+
+          <p id="errorMessage">Something went wrong while loading the quiz.</p>
+
+          <div class="error-actions">
+            <button type="button" class="primary-button" id="retryButton">
+              Try Again
+            </button>
+
+            <a href="/dashboard" class="secondary-button">
+              Return to Dashboard
+            </a>
+          </div>
+        </section>
+
+        <section class="quiz-content hidden" id="quizContent">
+          <div class="quiz-meta">
+            <div>
+              <p class="meta-label">Category</p>
+              <h1 id="categoryName">Quiz</h1>
+            </div>
+
+            <div class="question-counter">
+              Question
+              <strong id="currentQuestionNumber">1</strong>
+              of
+              <strong id="totalQuestionCount">10</strong>
+            </div>
+          </div>
+
+          <div
+            class="progress-track"
+            role="progressbar"
+            aria-label="Quiz progress"
+            aria-valuemin="0"
+            aria-valuemax="100"
+            aria-valuenow="0"
+            id="progressTrack"
+          >
+            <div class="progress-bar" id="progressBar"></div>
+          </div>
+
+          <article class="question-card">
+            <div class="question-information">
+              <span class="difficulty-badge" id="difficultyBadge"> Easy </span>
+
+              <span id="answeredStatus"> Not answered </span>
+            </div>
+
+            <h2 class="question-text" id="questionText">Loading question...</h2>
+
+            <div
+              class="options-container"
+              id="optionsContainer"
+              role="radiogroup"
+              aria-label="Answer options"
+            ></div>
+          </article>
+
+          <div class="quiz-navigation">
+            <button type="button" class="secondary-button" id="previousButton">
+              ← Previous
+            </button>
+
+            <div class="question-navigation-info">
+              <span id="answeredCount">0</span>
+              answered
+            </div>
+
+            <button type="button" class="primary-button" id="nextButton">
+              Next →
+            </button>
+
+            <button
+              type="button"
+              class="submit-button hidden"
+              id="submitButton"
+            >
+              Submit Quiz
+            </button>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <div
+      class="modal-backdrop hidden"
+      id="submitModal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="submitModalTitle"
+    >
+      <div class="modal-card">
+        <div class="modal-icon">✓</div>
+
+        <h2 id="submitModalTitle">Submit your quiz?</h2>
+
+        <p id="submitSummary">
+          Make sure you have answered all questions before submitting.
+        </p>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            id="cancelSubmitButton"
+          >
+            Continue Quiz
+          </button>
+
+          <button type="button" class="submit-button" id="confirmSubmitButton">
+            Submit Now
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script src="/js/quiz.js" defer></script>
+  </body>
+</html>
