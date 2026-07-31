@@ -2,80 +2,89 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <title>Dashboard | QuizMaster Pro</title>
-
-    <link rel="stylesheet" href="/css/variables.css" />
-
-    <link rel="stylesheet" href="/css/style.css" />
 
     <link rel="stylesheet" href="/css/dashboard.css" />
   </head>
-
   <body>
-    <header class="dashboard-header">
-      <a href="/" class="dashboard-logo"> QuizMaster Pro </a>
+    <div class="dashboard">
+      <!-- ================= HEADER ================= -->
 
-      <div class="dashboard-user">
-        <span>
-          Welcome,
-          <strong> <%= user.firstName %> </strong>
-        </span>
+      <header class="header">
+        <div class="logo">🧠 QuizMaster Pro</div>
 
-        <button id="logoutButton" type="button">Logout</button>
-      </div>
-    </header>
+        <div class="user-area">
+          <span class="welcome">
+            Welcome,
+            <strong><%= user.firstName %></strong>
+          </span>
 
-    <main class="dashboard-container">
-      <section class="welcome-card">
-        <p class="dashboard-label">Player Dashboard</p>
+          <button id="logoutButton">Logout</button>
+        </div>
+      </header>
 
-        <h1>Welcome back, <%= user.firstName %>!</h1>
+      <!-- ================= HERO ================= -->
 
-        <p>Start a quiz, improve your score, and climb the leaderboard.</p>
+      <section class="hero">
+        <div>
+          <h1>Welcome Back 👋</h1>
+
+          <p>
+            Ready to improve your rank today? Pick a category and start solving
+            quizzes.
+          </p>
+        </div>
       </section>
 
-      <section class="stats-grid">
-        <article class="stat-card">
-          <span>Total XP</span>
-          <strong> <%= user.totalXp || 0 %> </strong>
-        </article>
+      <!-- ================= SEARCH ================= -->
 
-        <article class="stat-card">
-          <span>Quizzes Completed</span>
-          <strong> <%= user.quizzesCompleted || 0 %> </strong>
-        </article>
-
-        <article class="stat-card">
-          <span>Correct Answers</span>
-          <strong> <%= user.correctAnswers || 0 %> </strong>
-        </article>
-
-        <article class="stat-card">
-          <span>Current Streak</span>
-          <strong> <%= user.currentStreak || 0 %> </strong>
-        </article>
+      <section class="search-section">
+        <input id="searchInput" type="text" placeholder="Search category..." />
       </section>
 
-      <section class="dashboard-actions">
-        <a href="/quiz" class="dashboard-action-card">
-          <h2>Start Quiz</h2>
-          <p>Choose a category and test your knowledge.</p>
-        </a>
+      <!-- ================= CATEGORIES ================= -->
 
-        <a href="/leaderboard" class="dashboard-action-card">
-          <h2>Leaderboard</h2>
-          <p>See the highest-scoring QuizMaster players.</p>
-        </a>
+      <section>
+        <h2 class="section-title">Quiz Categories</h2>
 
-        <a href="/profile" class="dashboard-action-card">
-          <h2>Your Profile</h2>
-          <p>View your progress and account details.</p>
-        </a>
+        <div id="categoriesContainer" class="category-grid">
+          <!-- Loaded from API -->
+        </div>
       </section>
-    </main>
+
+      <!-- ================= STATS ================= -->
+
+      <section>
+        <h2 class="section-title">Your Statistics</h2>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <h3>Total XP</h3>
+
+            <h1><%= user.totalXp || 0 %></h1>
+          </div>
+
+          <div class="stat-card">
+            <h3>Completed</h3>
+
+            <h1><%= user.quizzesCompleted || 0 %></h1>
+          </div>
+
+          <div class="stat-card">
+            <h3>Correct</h3>
+
+            <h1><%= user.correctAnswers || 0 %></h1>
+          </div>
+
+          <div class="stat-card">
+            <h3>Streak</h3>
+
+            <h1><%= user.currentStreak || 0 %></h1>
+          </div>
+        </div>
+      </section>
+    </div>
 
     <script src="/js/dashboard.js"></script>
   </body>
