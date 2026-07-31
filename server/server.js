@@ -27,10 +27,28 @@ async function startServer() {
       });
     });
 
-    process.on("SIGTERM", () => {
-      console.log("SIGTERM received. Closing server.");
+    process.on("uncaughtException", (error) => {
+      console.error("Uncaught exception:", error);
 
       server.close(() => {
+        process.exit(1);
+      });
+    });
+
+    process.on("SIGTERM", () => {
+      console.log("SIGTERM received. Closing server...");
+
+      server.close(() => {
+        console.log("Server closed.");
+        process.exit(0);
+      });
+    });
+
+    process.on("SIGINT", () => {
+      console.log("SIGINT received. Closing server...");
+
+      server.close(() => {
+        console.log("Server closed.");
         process.exit(0);
       });
     });

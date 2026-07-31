@@ -13,16 +13,19 @@ const answerSchema = new mongoose.Schema(
     selectedAnswer: {
       type: Number,
       default: null,
+      min: 0,
     },
 
     correctAnswer: {
       type: Number,
       required: true,
+      min: 0,
     },
 
     isCorrect: {
       type: Boolean,
       required: true,
+      default: false,
     },
   },
   {
@@ -46,10 +49,15 @@ const scoreSchema = new mongoose.Schema(
       index: true,
     },
 
-    totalQuestions: {
+    answers: {
+      type: [answerSchema],
+      default: [],
+    },
+
+    score: {
       type: Number,
       required: true,
-      min: 1,
+      min: 0,
     },
 
     attemptedQuestions: {
@@ -76,10 +84,10 @@ const scoreSchema = new mongoose.Schema(
       min: 0,
     },
 
-    score: {
+    totalQuestions: {
       type: Number,
       required: true,
-      min: 0,
+      min: 1,
     },
 
     accuracy: {
@@ -93,28 +101,36 @@ const scoreSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0,
-      default: 0,
     },
 
     timeTakenSeconds: {
       type: Number,
+      required: true,
       min: 0,
       default: 0,
     },
 
-    answers: {
-      type: [answerSchema],
-      default: [],
+    completedAt: {
+      type: Date,
+      default: Date.now,
     },
   },
   {
     timestamps: true,
+    versionKey: false,
   },
 );
 
 scoreSchema.index({
   user: 1,
-  createdAt: -1,
+  completedAt: -1,
 });
 
-module.exports = mongoose.model("Score", scoreSchema);
+scoreSchema.index({
+  category: 1,
+  score: -1,
+});
+
+const Score = mongoose.model("Score", scoreSchema);
+
+module.exports = Score;

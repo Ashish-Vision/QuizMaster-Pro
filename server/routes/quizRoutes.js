@@ -2,18 +2,23 @@
 
 const express = require("express");
 
-const quizController = require("../controllers/quizController");
+const {
+  getCategories,
+  startQuiz,
+  submitQuiz,
+  getResult,
+} = require("../controllers/quizController");
 
 const { protect } = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.get("/categories", protect, quizController.getCategories);
+router.get("/categories", protect, getCategories);
 
-router.get("/start/:category", protect, quizController.startQuiz);
+router.get("/start/:category", protect, startQuiz);
 
-router.post("/submit", protect, quizController.submitQuiz);
+router.post("/submit", protect, submitQuiz);
 
-router.get("/result/:resultId", protect, quizController.getResult);
+router.get("/result/:resultId", protect, getResult);
 
 module.exports = router;

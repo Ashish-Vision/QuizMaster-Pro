@@ -76,6 +76,11 @@ const userSchema = new mongoose.Schema(
       min: 0,
     },
 
+    lastQuizDate: {
+      type: Date,
+      default: null,
+    },
+
     isActive: {
       type: Boolean,
       default: true,
@@ -125,6 +130,7 @@ userSchema.methods.toSafeObject = function toSafeObject() {
     quizzesCompleted: this.quizzesCompleted,
     correctAnswers: this.correctAnswers,
     currentStreak: this.currentStreak,
+    lastQuizDate: this.lastQuizDate,
     lastLoginAt: this.lastLoginAt,
     createdAt: this.createdAt,
   };

@@ -6,6 +6,47 @@ const Question = require("../models/Question");
 const Score = require("../models/Score");
 const User = require("../models/User");
 
+/**
+ * Returns a day number without considering hours, minutes or seconds.
+ * This helps calculate daily quiz streaks.
+ */
+function getDayNumber(date) {
+  const parsedDate = new Date(date);
+
+  return Math.floor(
+    Date.UTC(
+      parsedDate.getUTCFullYear(),
+      parsedDate.getUTCMonth(),
+      parsedDate.getUTCDate(),
+    ) /
+      (1000 * 60 * 60 * 24),
+  );
+}
+
+function calculateNewStreak(user) {
+  if (!user.lastQuizDate) {
+    return 1;
+  }
+
+  const todayDayNumber = getDayNumber(new Date());
+  const lastQuizDayNumber = getDayNumber(user.lastQuizDate);
+
+  const differenceInDays = todayDayNumber - lastQuizDayNumber;
+
+  // User already completed a quiz today.
+  if (differenceInDays === 0) {
+    return Math.max(user.currentStreak || 0, 1);
+  }
+
+  // User completed a quiz yesterday.
+  if (differenceInDays === 1) {
+    return (user.currentStreak || 0) + 1;
+  }
+
+  // Streak was broken.
+  return 1;
+}
+
 async function getCategories(req, res, next) {
   try {
     const categories = await Question.distinct("category");
@@ -22,10 +63,9 @@ async function getCategories(req, res, next) {
     return next(error);
   }
 }
-
 async function startQuiz(req, res, next) {
   try {
-    const category = decodeURIComponent(req.params.category).trim();
+    const category = decodeURIComponent(req.params.category || "").trim();
 
     if (!category) {
       return res.status(400).json({
@@ -81,9 +121,17 @@ async function startQuiz(req, res, next) {
     return next(error);
   }
 }
-
 async function submitQuiz(req, res, next) {
   try {
+    const userId = req.user?._id || req.user?.id;
+
+    if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
+      return res.status(401).json({
+        success: false,
+        message: "Authentication is required to submit a quiz.",
+      });
+    }
+
     const {
       category,
       answers,
@@ -115,7 +163,11 @@ async function submitQuiz(req, res, next) {
     const submittedAnswers = new Map();
 
     for (const answer of answers) {
-      if (!answer || !mongoose.Types.ObjectId.isValid(answer.questionId)) {
+      if (
+        !answer ||
+        !answer.questionId ||
+        !mongoose.Types.ObjectId.isValid(answer.questionId)
+      ) {
         return res.status(400).json({
           success: false,
           message: "The submission contains an invalid question ID.",
@@ -131,25 +183,23 @@ async function submitQuiz(req, res, next) {
         });
       }
 
-      const selectedAnswer =
-        answer.selectedAnswer === null || answer.selectedAnswer === undefined
-          ? null
-          : Number(answer.selectedAnswer);
+      let selectedAnswer = null;
 
       if (
-        selectedAnswer !== null &&
-        (!Number.isInteger(selectedAnswer) ||
-          selectedAnswer < 0 ||
-          selectedAnswer > 3)
+        answer.selectedAnswer !== null &&
+        answer.selectedAnswer !== undefined
       ) {
-        return res.status(400).json({
-          success: false,
-          message: "One or more selected answers are invalid.",
-        });
+        selectedAnswer = Number(answer.selectedAnswer);
+
+        if (!Number.isInteger(selectedAnswer) || selectedAnswer < 0) {
+          return res.status(400).json({
+            success: false,
+            message: "One or more selected answers are invalid.",
+          });
+        }
       }
 
       submittedQuestionIds.push(questionId);
-
       submittedAnswers.set(questionId, selectedAnswer);
     }
 
@@ -158,12 +208,15 @@ async function submitQuiz(req, res, next) {
         $in: submittedQuestionIds,
       },
       category: normalizedCategory,
-    }).select("_id correctAnswer category question options explanation");
+    }).select(
+      "_id question options correctAnswer explanation category difficulty",
+    );
 
     if (questions.length !== submittedQuestionIds.length) {
       return res.status(400).json({
         success: false,
-        message: "One or more questions do not belong to this quiz category.",
+        message:
+          "One or more questions do not exist or do not belong to this quiz category.",
       });
     }
 
@@ -171,13 +224,24 @@ async function submitQuiz(req, res, next) {
     let wrongAnswers = 0;
     let unansweredQuestions = 0;
 
-    const evaluatedAnswers = questions.map((question) => {
-      const questionId = String(question._id);
+    const evaluatedAnswers = [];
 
+    for (const question of questions) {
+      const questionId = String(question._id);
       const selectedAnswer = submittedAnswers.get(questionId);
 
       const isUnanswered =
         selectedAnswer === null || selectedAnswer === undefined;
+
+      if (
+        !isUnanswered &&
+        (selectedAnswer < 0 || selectedAnswer >= question.options.length)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `The selected answer for question "${question.question}" is invalid.`,
+        });
+      }
 
       const isCorrect =
         !isUnanswered && selectedAnswer === question.correctAnswer;
@@ -190,91 +254,105 @@ async function submitQuiz(req, res, next) {
         wrongAnswers += 1;
       }
 
-      return {
+      evaluatedAnswers.push({
         question: question._id,
-        selectedAnswer: selectedAnswer === undefined ? null : selectedAnswer,
+        selectedAnswer: isUnanswered ? null : selectedAnswer,
         correctAnswer: question.correctAnswer,
         isCorrect,
-      };
-    });
+      });
+    }
 
     const totalQuestions = questions.length;
-
-    const attemptedQuestions = totalQuestions - unansweredQuestions;
+    const attemptedQuestions = correctAnswers + wrongAnswers;
 
     const accuracy = Number(
       ((correctAnswers / totalQuestions) * 100).toFixed(2),
     );
 
-    const xpEarned = correctAnswers * 10;
+    /*
+     * XP rules:
+     * 10 XP per correct answer.
+     * 20 bonus XP when accuracy is at least 80%.
+     */
+    const baseXp = correctAnswers * 10;
+    const performanceBonus = accuracy >= 80 ? 20 : 0;
+    const xpEarned = baseXp + performanceBonus;
 
-    const safeDuration = Number.isFinite(Number(quizDurationSeconds))
-      ? Math.max(0, Math.floor(Number(quizDurationSeconds)))
+    const parsedDuration = Number(quizDurationSeconds);
+
+    const safeDuration = Number.isFinite(parsedDuration)
+      ? Math.max(0, Math.floor(parsedDuration))
       : 600;
 
-    const safeRemainingSeconds = Number.isFinite(Number(remainingSeconds))
-      ? Math.max(
-          0,
-          Math.min(safeDuration, Math.floor(Number(remainingSeconds))),
-        )
+    const parsedRemainingSeconds = Number(remainingSeconds);
+
+    const safeRemainingSeconds = Number.isFinite(parsedRemainingSeconds)
+      ? Math.max(0, Math.min(safeDuration, Math.floor(parsedRemainingSeconds)))
       : 0;
 
     const timeTakenSeconds = safeDuration - safeRemainingSeconds;
 
+    const user = await User.findById(userId).select(
+      "totalXp quizzesCompleted correctAnswers currentStreak lastQuizDate",
+    );
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "The authenticated user could not be found.",
+      });
+    }
+
+    const newStreak = calculateNewStreak(user);
+
     const scoreDocument = await Score.create({
-      user: req.user._id,
+      user: userId,
       category: normalizedCategory,
-      totalQuestions,
+      answers: evaluatedAnswers,
+      score: correctAnswers,
       attemptedQuestions,
       correctAnswers,
       wrongAnswers,
       unansweredQuestions,
-      score: correctAnswers,
+      totalQuestions,
       accuracy,
       xpEarned,
       timeTakenSeconds,
-      answers: evaluatedAnswers,
+      completedAt: new Date(),
     });
 
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
-      {
-        $inc: {
-          totalXp: xpEarned,
-          quizzesCompleted: 1,
-          correctAnswers,
-        },
-      },
-      {
-        new: true,
-        runValidators: true,
-      },
-    ).select("firstName totalXp quizzesCompleted correctAnswers currentStreak");
+    user.totalXp += xpEarned;
+    user.quizzesCompleted += 1;
+    user.correctAnswers += correctAnswers;
+    user.currentStreak = newStreak;
+    user.lastQuizDate = new Date();
+
+    await user.save();
 
     return res.status(201).json({
       success: true,
       message: "Quiz submitted successfully.",
+
       result: {
         resultId: scoreDocument._id,
         category: normalizedCategory,
+        score: correctAnswers,
         totalQuestions,
         attemptedQuestions,
         correctAnswers,
         wrongAnswers,
         unansweredQuestions,
-        score: correctAnswers,
         accuracy,
         xpEarned,
         timeTakenSeconds,
       },
-      userStats: updatedUser
-        ? {
-            totalXp: updatedUser.totalXp || 0,
-            quizzesCompleted: updatedUser.quizzesCompleted || 0,
-            correctAnswers: updatedUser.correctAnswers || 0,
-            currentStreak: updatedUser.currentStreak || 0,
-          }
-        : null,
+
+      userStats: {
+        totalXp: user.totalXp,
+        quizzesCompleted: user.quizzesCompleted,
+        correctAnswers: user.correctAnswers,
+        currentStreak: user.currentStreak,
+      },
     });
   } catch (error) {
     return next(error);
@@ -283,6 +361,7 @@ async function submitQuiz(req, res, next) {
 
 async function getResult(req, res, next) {
   try {
+    const userId = req.user?._id || req.user?.id;
     const { resultId } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(resultId)) {
@@ -294,8 +373,13 @@ async function getResult(req, res, next) {
 
     const result = await Score.findOne({
       _id: resultId,
-      user: req.user._id,
-    }).select("-answers.correctAnswer");
+      user: userId,
+    })
+      .populate({
+        path: "answers.question",
+        select: "question options explanation difficulty",
+      })
+      .lean();
 
     if (!result) {
       return res.status(404).json({
