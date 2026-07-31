@@ -5,7 +5,7 @@ const User = require("../models/User");
 
 async function protect(req, res, next) {
   try {
-    let token = req.cookies.quizmaster_token;
+    let token = req.cookies?.quizmaster_token;
 
     const authorizationHeader = req.headers.authorization;
 
@@ -20,8 +20,12 @@ async function protect(req, res, next) {
     if (!token) {
       return res.status(401).json({
         success: false,
-        message: "Authentication is required.",
+        message: "Authentication is required. Please log in.",
       });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      throw new Error("JWT_SECRET is missing.");
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
@@ -31,11 +35,12 @@ async function protect(req, res, next) {
     if (!user || !user.isActive) {
       return res.status(401).json({
         success: false,
-        message: "User account is unavailable.",
+        message: "The user associated with this session is unavailable.",
       });
     }
 
     req.user = user;
+
     return next();
   } catch (error) {
     if (
@@ -44,38 +49,11 @@ async function protect(req, res, next) {
     ) {
       return res.status(401).json({
         success: false,
-        message: "Session expired or invalid.",
+        message: "Your session is invalid or has expired. Please log in again.",
       });
     }
 
     return next(error);
-  }
-}
-
-async function protectPage(req, res, next) {
-  try {
-    const token = req.cookies.quizmaster_token;
-
-    if (!token) {
-      return res.redirect("/login");
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    const user = await User.findById(decoded.userId);
-
-    if (!user || !user.isActive) {
-      res.clearCookie("quizmaster_token");
-      return res.redirect("/login");
-    }
-
-    req.user = user;
-    res.locals.user = user;
-
-    return next();
-  } catch (error) {
-    res.clearCookie("quizmaster_token");
-    return res.redirect("/login");
   }
 }
 
@@ -94,6 +72,6 @@ function authorizeRoles(...allowedRoles) {
 
 module.exports = {
   protect,
-  protectPage,
   authorizeRoles,
 };
+  

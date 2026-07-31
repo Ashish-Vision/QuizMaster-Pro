@@ -8,25 +8,15 @@ const morgan = require("morgan");
 const cookieParser = require("cookie-parser");
 
 const authRoutes = require("./routes/authRoutes");
-
-const { protectPage } = require("./middleware/authMiddleware");
+const quizRoutes = require("./routes/quizRoutes");
 
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
 
-// ------------------------------
-// Global middleware
-// ------------------------------
-
+// These must come before routes
 app.use(express.json());
-
-app.use(
-  express.urlencoded({
-    extended: true,
-  }),
-);
-
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 app.use(
@@ -44,17 +34,8 @@ app.use(
 
 app.use(morgan("dev"));
 
-// ------------------------------
-// View engine
-// ------------------------------
-
 app.set("view engine", "ejs");
-
 app.set("views", path.join(__dirname, "../client/views"));
-
-// ------------------------------
-// Static files
-// ------------------------------
 
 app.use(
   express.static(path.join(__dirname, "../client"), {
@@ -62,10 +43,7 @@ app.use(
   }),
 );
 
-// ------------------------------
-// Public page routes
-// ------------------------------
-
+// Page routes
 app.get("/", (req, res) => {
   res.render("index");
 });
@@ -78,39 +56,16 @@ app.get("/register", (req, res) => {
   res.render("register");
 });
 
-// ------------------------------
-// Protected page routes
-// ------------------------------
-
-app.get("/dashboard", protectPage, (req, res) => {
-  res.render("dashboard", {
-    user: req.user,
-  });
+app.get("/dashboard", (req, res) => {
+  res.render("dashboard");
 });
 
-// ------------------------------
-// Health route
-// ------------------------------
-
-app.get("/api/health", (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: "QuizMaster Pro API is running.",
-  });
-});
-
-// ------------------------------
-// API routes
-// ------------------------------
-
+// API routes must come after cookieParser()
 app.use("/api/auth", authRoutes);
+app.use("/api/quiz", quizRoutes);
 
-// ------------------------------
-// Error handlers
-// ------------------------------
-
+// Error handlers must remain last
 app.use(notFoundHandler);
-
 app.use(errorHandler);
 
 module.exports = app;
