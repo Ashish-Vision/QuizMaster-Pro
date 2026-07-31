@@ -13,6 +13,7 @@ const quizRoutes = require("./routes/quizRoutes");
 const userRoutes = require("./routes/userRoutes");
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
 const historyRoutes = require("./routes/historyRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 const { protect } = require("./middleware/authMiddleware");
 
@@ -190,6 +191,11 @@ app.get("/history", protect, (req, res) => {
     user: req.user,
   });
 });
+app.get("/profile", protect, (req, res) => {
+  return res.render("profile", {
+    user: req.user,
+  });
+});
 
 /* ============================================================
    API Routes
@@ -204,6 +210,8 @@ app.use("/api/users", userRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 
 app.use("/api/history", historyRoutes);
+
+app.use("/api/profile", profileRoutes);
 
 /* ============================================================
    Health Check

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  />
+
+  <title>Profile | QuizMaster Pro</title>
+
+  <link rel="stylesheet" href="/css/profile.css" />
+</head>
+<body>
+  <main class="profile-page">
+    <header class="profile-header">
+      <div>
+        <p class="profile-label">QuizMaster Pro</p>
+        <h1>My Profile</h1>
+        <p class="profile-subtitle">
+          View your account details and quiz performance.
+        </p>
+      </div>
+
+      <nav class="profile-navigation">
+        <a href="/dashboard">Dashboard</a>
+        <a href="/history">History</a>
+        <a href="/leaderboard">Leaderboard</a>
+      </nav>
+    </header>
+
+    <section class="profile-card">
+      <div class="profile-identity">
+        <div
+          id="profileAvatar"
+          class="profile-avatar"
+          aria-label="Profile avatar"
+        >
+          <span id="profileInitials">
+            <%= `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}` %>
+          </span>
+        </div>
+
+        <div>
+          <h2 id="profileFullName">
+            <%= user.firstName %> <%= user.lastName %>
+          </h2>
+
+          <p id="profileEmail">
+            <%= user.email %>
+          </p>
+
+          <span id="profileRole" class="profile-role">
+            <%= user.role %>
+          </span>
+        </div>
+      </div>
+
+      <button
+        id="editProfileButton"
+        class="primary-button"
+        type="button"
+      >
+        Edit Profile
+      </button>
+    </section>
+
+    <section class="statistics-section">
+      <div class="section-heading">
+        <div>
+          <p class="section-label">Performance</p>
+          <h2>Your Statistics</h2>
+        </div>
+      </div>
+
+      <div class="statistics-grid">
+        <article class="stat-card">
+          <span class="stat-label">Total XP</span>
+          <strong id="totalXp">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Quizzes Completed</span>
+          <strong id="quizzesCompleted">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Correct Answers</span>
+          <strong id="correctAnswers">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Current Streak</span>
+          <strong id="currentStreak">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Highest Score</span>
+          <strong id="highestScore">0</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Average Accuracy</span>
+          <strong id="averageAccuracy">0%</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Highest Accuracy</span>
+          <strong id="highestAccuracy">0%</strong>
+        </article>
+
+        <article class="stat-card">
+          <span class="stat-label">Average Time</span>
+          <strong id="averageTime">0 sec</strong>
+        </article>
+      </div>
+    </section>
+
+    <section class="details-grid">
+      <article class="details-card">
+        <div class="section-heading">
+          <div>
+            <p class="section-label">Category</p>
+            <h2>Favorite Category</h2>
+          </div>
+        </div>
+
+        <div id="favoriteCategoryContent">
+          <p>No quiz category data available.</p>
+        </div>
+      </article>
+
+      <article class="details-card">
+        <div class="section-heading">
+          <div>
+            <p class="section-label">Account</p>
+            <h2>Account Details</h2>
+          </div>
+        </div>
+
+        <dl class="account-details">
+          <div>
+            <dt>Joined</dt>
+            <dd id="createdAt">-</dd>
+          </div>
+
+          <div>
+            <dt>Last Login</dt>
+            <dd id="lastLoginAt">-</dd>
+          </div>
+
+          <div>
+            <dt>Last Quiz</dt>
+            <dd id="lastQuizDate">-</dd>
+          </div>
+
+          <div>
+            <dt>Total XP Earned</dt>
+            <dd id="totalXpEarned">0</dd>
+          </div>
+        </dl>
+      </article>
+    </section>
+  </main>
+
+  <div
+    id="profileModal"
+    class="modal hidden"
+    aria-hidden="true"
+  >
+    <div class="modal-backdrop" data-close-modal></div>
+
+    <section
+      class="modal-content"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="editProfileTitle"
+    >
+      <div class="modal-header">
+        <div>
+          <p class="section-label">Account</p>
+          <h2 id="editProfileTitle">Edit Profile</h2>
+        </div>
+
+        <button
+          type="button"
+          class="close-button"
+          aria-label="Close profile editor"
+          data-close-modal
+        >
+          ×
+        </button>
+      </div>
+
+      <form id="profileForm">
+        <div class="form-group">
+          <label for="firstName">First Name</label>
+          <input
+            id="firstName"
+            name="firstName"
+            type="text"
+            minlength="2"
+            maxlength="50"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="lastName">Last Name</label>
+          <input
+            id="lastName"
+            name="lastName"
+            type="text"
+            minlength="2"
+            maxlength="50"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="avatar">Avatar URL</label>
+          <input
+            id="avatar"
+            name="avatar"
+            type="url"
+            placeholder="https://example.com/avatar.jpg"
+          />
+        </div>
+
+        <p id="profileMessage" class="form-message"></p>
+
+        <div class="form-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            data-close-modal
+          >
+            Cancel
+          </button>
+
+          <button
+            id="saveProfileButton"
+            type="submit"
+            class="primary-button"
+          >
+            Save Changes
+          </button>
+        </div>
+      </form>
+    </section>
+  </div>
+
+  <script src="/js/profile.js" defer></script>
+</body>
+</html>
