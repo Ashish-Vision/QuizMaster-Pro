@@ -33,6 +33,12 @@
             <a href="/achievements" class="header-link"> 🥇 Achievements </a>
 
             <a href="/analytics" class="header-link"> 📊 Analytics </a>
+
+            <% if (user?.role === "admin") { %>
+  <a href="/admin" class="header-link">
+    🛡️ Admin
+  </a>
+<% } %>
           </nav>
           <span class="welcome">
             Welcome,

@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="QuizMaster Pro administrator dashboard" />
+
+    <title>Admin Dashboard | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/dashboard.css" />
+
+    <script src="/js/admin/dashboard.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon"> Q </span>
+
+          <div>
+            <strong>QuizMaster Pro</strong>
+            <small>Administration</small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation">
+          <a href="/admin" class="active">
+            <span>📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions">
+            <span>📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories">
+            <span>📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users">
+            <span>👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts">
+            <span>🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/dashboard">
+            <span>🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName .charAt(0) .toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small> Administrator </small>
+          </div>
+        </div>
+      </aside>
+
+      <main class="admin-main">
+        <header class="admin-header">
+          <div>
+            <p class="page-label">Administration</p>
+
+            <h1>Dashboard Overview</h1>
+
+            <p>Monitor platform activity, users and quiz performance.</p>
+          </div>
+
+          <div class="header-actions">
+            <a href="/dashboard" class="secondary-button"> User View </a>
+
+            <button id="adminLogoutButton" type="button" class="danger-button">
+              Logout
+            </button>
+          </div>
+        </header>
+
+        <section id="adminLoading" class="admin-state">
+          <div class="spinner"></div>
+
+          <p>Loading administrator dashboard...</p>
+        </section>
+
+        <section id="adminError" class="admin-state hidden">
+          <span class="state-icon"> ⚠️ </span>
+
+          <h2>Unable to load dashboard</h2>
+
+          <p id="adminErrorMessage">Something went wrong.</p>
+
+          <button id="adminRetryButton" type="button">Try Again</button>
+        </section>
+
+        <div id="adminContent" class="hidden">
+          <section class="statistics-grid">
+            <article class="stat-card">
+              <span class="stat-icon"> 👥 </span>
+
+              <div>
+                <p>Total Users</p>
+                <strong id="totalUsers"> 0 </strong>
+
+                <small id="regularUserText"> 0 regular users </small>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon"> 🎯 </span>
+
+              <div>
+                <p>Quiz Attempts</p>
+                <strong id="totalAttempts"> 0 </strong>
+
+                <small> Platform-wide attempts </small>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon"> ⚡ </span>
+
+              <div>
+                <p>Total XP Earned</p>
+                <strong id="totalXp"> 0 </strong>
+
+                <small> From saved score records </small>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon"> 🏆 </span>
+
+              <div>
+                <p>Achievements</p>
+                <strong id="totalAchievements"> 0 </strong>
+
+                <small> Unlocked achievements </small>
+              </div>
+            </article>
+          </section>
+
+          <section class="performance-grid">
+            <article class="performance-card">
+              <div class="card-heading">
+                <div>
+                  <p class="page-label">Quiz performance</p>
+
+                  <h2>Platform Summary</h2>
+                </div>
+              </div>
+
+              <div class="metric-list">
+                <div>
+                  <span> Average accuracy </span>
+
+                  <strong id="averageAccuracy"> 0% </strong>
+                </div>
+
+                <div>
+                  <span> Highest accuracy </span>
+
+                  <strong id="highestAccuracy"> 0% </strong>
+                </div>
+
+                <div>
+                  <span> Average quiz time </span>
+
+                  <strong id="averageQuizTime"> 0m 0s </strong>
+                </div>
+
+                <div>
+                  <span> Questions answered </span>
+
+                  <strong id="totalQuestions"> 0 </strong>
+                </div>
+              </div>
+            </article>
+
+            <article class="performance-card">
+              <div class="card-heading">
+                <div>
+                  <p class="page-label">Answer breakdown</p>
+
+                  <h2>Answer Statistics</h2>
+                </div>
+              </div>
+
+              <div class="answer-progress">
+                <div class="answer-row">
+                  <div>
+                    <span>Correct</span>
+                    <strong id="correctAnswers"> 0 </strong>
+                  </div>
+
+                  <div class="progress-track">
+                    <div
+                      id="correctProgress"
+                      class="progress-fill correct"
+                    ></div>
+                  </div>
+                </div>
+
+                <div class="answer-row">
+                  <div>
+                    <span>Wrong</span>
+                    <strong id="wrongAnswers"> 0 </strong>
+                  </div>
+
+                  <div class="progress-track">
+                    <div id="wrongProgress" class="progress-fill wrong"></div>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </section>
+
+          <section class="admin-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Quiz categories</p>
+
+                <h2>Category Performance</h2>
+              </div>
+            </div>
+
+            <div id="categoryGrid" class="category-grid"></div>
+          </section>
+
+          <section class="tables-grid">
+            <article class="table-card">
+              <div class="section-heading">
+                <div>
+                  <p class="page-label">Latest accounts</p>
+
+                  <h2>Recent Users</h2>
+                </div>
+
+                <a href="/admin/users"> View All </a>
+              </div>
+
+              <div id="recentUsersList" class="table-list"></div>
+            </article>
+
+            <article class="table-card">
+              <div class="section-heading">
+                <div>
+                  <p class="page-label">Latest activity</p>
+
+                  <h2>Recent Attempts</h2>
+                </div>
+
+                <a href="/admin/attempts"> View All </a>
+              </div>
+
+              <div id="recentAttemptsList" class="table-list"></div>
+            </article>
+          </section>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>

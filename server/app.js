@@ -8,20 +8,27 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 
+/* ============================================================
+   Route Imports
+============================================================ */
+
 const authRoutes = require("./routes/authRoutes");
 const quizRoutes = require("./routes/quizRoutes");
 const userRoutes = require("./routes/userRoutes");
-
 const leaderboardRoutes = require("./routes/leaderboardRoutes");
-
 const historyRoutes = require("./routes/historyRoutes");
-
 const profileRoutes = require("./routes/profileRoutes");
-
 const achievementRoutes = require("./routes/achievementRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+
+/* ============================================================
+   Middleware Imports
+============================================================ */
 
 const { protect } = require("./middleware/authMiddleware");
+
+const { adminOnly } = require("./middleware/adminMiddleware");
 
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
@@ -47,7 +54,7 @@ app.use(
 );
 
 /* ============================================================
-   CORS
+   CORS Configuration
 ============================================================ */
 
 const allowedOrigins = [
@@ -60,9 +67,8 @@ app.use(
   cors({
     origin(origin, callback) {
       /*
-       * Direct browser navigation, Postman and
-       * server-to-server requests may not include
-       * an Origin header.
+       * Requests from browsers normally include Origin.
+       * Direct navigation, Postman and server requests may not.
        */
       if (!origin) {
         return callback(null, true);
@@ -124,10 +130,6 @@ app.use(
   }),
 );
 
-/*
- * Prevents an unnecessary favicon 404 error
- * when no favicon has been added.
- */
 app.get("/favicon.ico", (req, res) => {
   return res.status(204).end();
 });
@@ -149,7 +151,7 @@ app.get("/register", (req, res) => {
 });
 
 /* ============================================================
-   Protected Page Routes
+   Protected User Page Routes
 ============================================================ */
 
 app.get("/dashboard", protect, (req, res) => {
@@ -164,10 +166,6 @@ app.get("/quiz", protect, (req, res) => {
   });
 });
 
-/*
- * Supports result IDs in the URL:
- * /result/64f123...
- */
 app.get("/result/:resultId", protect, (req, res) => {
   return res.render("result", {
     user: req.user,
@@ -175,10 +173,6 @@ app.get("/result/:resultId", protect, (req, res) => {
   });
 });
 
-/*
- * Optional fallback route:
- * /result?resultId=64f123...
- */
 app.get("/result", protect, (req, res) => {
   return res.render("result", {
     user: req.user,
@@ -209,11 +203,51 @@ app.get("/achievements", protect, (req, res) => {
     user: req.user,
   });
 });
+
 app.get("/analytics", protect, (req, res) => {
   return res.render("analytics", {
     user: req.user,
   });
 });
+
+/* ============================================================
+   Protected Administrator Page Routes
+============================================================ */
+
+app.get("/admin", protect, adminOnly, (req, res) => {
+  return res.render("admin/dashboard", {
+    user: req.user,
+  });
+});
+
+/*
+ * These routes are being prepared for later phases.
+ * They can all use the same dashboard layout temporarily.
+ */
+app.get("/admin/questions", protect, adminOnly, (req, res) => {
+  return res.render("admin/dashboard", {
+    user: req.user,
+  });
+});
+
+app.get("/admin/categories", protect, adminOnly, (req, res) => {
+  return res.render("admin/dashboard", {
+    user: req.user,
+  });
+});
+
+app.get("/admin/users", protect, adminOnly, (req, res) => {
+  return res.render("admin/dashboard", {
+    user: req.user,
+  });
+});
+
+app.get("/admin/attempts", protect, adminOnly, (req, res) => {
+  return res.render("admin/dashboard", {
+    user: req.user,
+  });
+});
+
 /* ============================================================
    API Routes
 ============================================================ */
@@ -233,6 +267,8 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/achievements", achievementRoutes);
 
 app.use("/api/analytics", analyticsRoutes);
+
+app.use("/api/admin", adminRoutes);
 
 /* ============================================================
    Health Check
