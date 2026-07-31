@@ -9,7 +9,9 @@
   },
   "scripts": {
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "dev": "nodemon server/server.js",
+    "seed:questions": "node server/database/seedQuestions.js",
+    "reset:questions": "node server/database/resetQuestions.js"
   },
   "keywords": [],
   "author": "",
