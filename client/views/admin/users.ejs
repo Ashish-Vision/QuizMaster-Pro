@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta name="description" content="Manage QuizMaster Pro users." />
+
+    <title>User Management | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/users.css" />
+
+    <script src="/js/admin/users.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon">Q</span>
+
+          <div>
+            <strong>QuizMaster Pro</strong>
+            <small>Administration</small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation">
+          <a href="/admin">
+            <span>📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions">
+            <span>📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories">
+            <span>📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users" class="active">
+            <span>👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts">
+            <span>🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/dashboard">
+            <span>🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small>Administrator</small>
+          </div>
+        </div>
+      </aside>
+
+      <main class="users-main">
+        <header class="users-header">
+          <div>
+            <p class="page-label">User Management</p>
+
+            <h1>Registered Users</h1>
+
+            <p>
+              View accounts, change roles, activate users and disable accounts.
+            </p>
+          </div>
+
+          <a href="/dashboard" class="secondary-button"> User Dashboard </a>
+        </header>
+
+        <section class="summary-grid">
+          <article class="summary-card">
+            <span class="summary-icon">👥</span>
+
+            <div>
+              <p>Total Users</p>
+              <strong id="totalUsersCount">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon admin">🛡️</span>
+
+            <div>
+              <p>Administrators</p>
+              <strong id="totalAdminsCount">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon active">✅</span>
+
+            <div>
+              <p>Active Accounts</p>
+              <strong id="activeUsersCount">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon disabled">⛔</span>
+
+            <div>
+              <p>Disabled Accounts</p>
+              <strong id="disabledUsersCount">0</strong>
+            </div>
+          </article>
+        </section>
+
+        <section class="users-controls">
+          <div class="search-group">
+            <label for="userSearchInput" class="visually-hidden">
+              Search users
+            </label>
+
+            <input
+              id="userSearchInput"
+              type="search"
+              placeholder="Search by name or email..."
+              autocomplete="off"
+            />
+          </div>
+
+          <div class="filter-group">
+            <select id="roleFilter" aria-label="Filter users by role">
+              <option value="all">All roles</option>
+              <option value="admin">Administrators</option>
+              <option value="user">Regular users</option>
+            </select>
+
+            <select id="statusFilter" aria-label="Filter users by status">
+              <option value="all">All statuses</option>
+              <option value="active">Active</option>
+              <option value="disabled">Disabled</option>
+            </select>
+
+            <select id="sortFilter" aria-label="Sort users">
+              <option value="newest">Newest first</option>
+              <option value="oldest">Oldest first</option>
+              <option value="xp">Highest XP</option>
+              <option value="quizzes">Most quizzes</option>
+              <option value="name">Name A–Z</option>
+            </select>
+
+            <button
+              id="refreshUsersButton"
+              type="button"
+              class="secondary-button"
+            >
+              Refresh
+            </button>
+          </div>
+        </section>
+
+        <section id="usersLoadingState" class="state-card">
+          <div class="spinner"></div>
+          <p>Loading users...</p>
+        </section>
+
+        <section id="usersErrorState" class="state-card hidden">
+          <span class="state-icon">⚠️</span>
+
+          <h2>Unable to load users</h2>
+
+          <p id="usersErrorMessage">Something went wrong.</p>
+
+          <button id="retryUsersButton" type="button" class="primary-button">
+            Try Again
+          </button>
+        </section>
+
+        <section id="usersEmptyState" class="state-card hidden">
+          <span class="state-icon">🔎</span>
+
+          <h2>No users found</h2>
+
+          <p>No users match the selected filters.</p>
+        </section>
+
+        <section id="usersContent" class="users-content hidden">
+          <div class="users-table-card">
+            <div class="users-table-header" aria-hidden="true">
+              <span>User</span>
+              <span>Role</span>
+              <span>Performance</span>
+              <span>Status</span>
+              <span>Actions</span>
+            </div>
+
+            <div id="usersList" class="users-list" aria-live="polite"></div>
+          </div>
+
+          <div class="pagination">
+            <button
+              id="previousPageButton"
+              type="button"
+              class="pagination-button"
+            >
+              ← Previous
+            </button>
+
+            <span id="paginationText"> Page 1 of 1 </span>
+
+            <button id="nextPageButton" type="button" class="pagination-button">
+              Next →
+            </button>
+          </div>
+        </section>
+      </main>
+    </div>
+
+    <!-- User details modal -->
+
+    <div id="userDetailsModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-details-modal></div>
+
+      <section
+        class="modal-panel details-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="userDetailsTitle"
+      >
+        <header class="modal-header">
+          <div>
+            <p class="page-label">User Details</p>
+            <h2 id="userDetailsTitle">Account Information</h2>
+          </div>
+
+          <button
+            type="button"
+            class="modal-close-button"
+            data-close-details-modal
+            aria-label="Close user details"
+          >
+            ×
+          </button>
+        </header>
+
+        <div id="userDetailsLoading" class="modal-loading">
+          <div class="spinner"></div>
+          <p>Loading user details...</p>
+        </div>
+
+        <div id="userDetailsContent" class="hidden">
+          <div class="details-profile">
+            <div id="detailsAvatar" class="details-avatar">U</div>
+
+            <div>
+              <h3 id="detailsName">User</h3>
+              <p id="detailsEmail">user@example.com</p>
+            </div>
+          </div>
+
+          <div class="details-grid">
+            <article>
+              <span>Role</span>
+              <strong id="detailsRole">User</strong>
+            </article>
+
+            <article>
+              <span>Status</span>
+              <strong id="detailsStatus">Active</strong>
+            </article>
+
+            <article>
+              <span>Total XP</span>
+              <strong id="detailsXp">0</strong>
+            </article>
+
+            <article>
+              <span>Quizzes Completed</span>
+              <strong id="detailsQuizzes">0</strong>
+            </article>
+
+            <article>
+              <span>Correct Answers</span>
+              <strong id="detailsCorrect">0</strong>
+            </article>
+
+            <article>
+              <span>Current Streak</span>
+              <strong id="detailsStreak">0</strong>
+            </article>
+
+            <article>
+              <span>Saved Attempts</span>
+              <strong id="detailsAttempts">0</strong>
+            </article>
+
+            <article>
+              <span>Average Accuracy</span>
+              <strong id="detailsAccuracy">0%</strong>
+            </article>
+          </div>
+
+          <div class="details-dates">
+            <p>
+              <span>Joined:</span>
+              <strong id="detailsCreatedAt">Unknown</strong>
+            </p>
+
+            <p>
+              <span>Last login:</span>
+              <strong id="detailsLastLogin">Never</strong>
+            </p>
+
+            <p>
+              <span>Last quiz:</span>
+              <strong id="detailsLastQuiz">Never</strong>
+            </p>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- Role confirmation modal -->
+
+    <div id="roleModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-role-modal></div>
+
+      <section
+        class="modal-panel confirm-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="roleModalTitle"
+      >
+        <span class="confirm-icon">🛡️</span>
+
+        <h2 id="roleModalTitle">Change User Role?</h2>
+
+        <p id="roleModalDescription"></p>
+
+        <p id="roleModalMessage" class="form-message"></p>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" data-close-role-modal>
+            Cancel
+          </button>
+
+          <button id="confirmRoleButton" type="button" class="primary-button">
+            Confirm
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <!-- Status confirmation modal -->
+
+    <div id="statusModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-status-modal></div>
+
+      <section
+        class="modal-panel confirm-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="statusModalTitle"
+      >
+        <span class="confirm-icon" id="statusModalIcon">⛔</span>
+
+        <h2 id="statusModalTitle">Change Account Status?</h2>
+
+        <p id="statusModalDescription"></p>
+
+        <p id="statusModalMessage" class="form-message"></p>
+
+        <div class="modal-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            data-close-status-modal
+          >
+            Cancel
+          </button>
+
+          <button id="confirmStatusButton" type="button" class="danger-button">
+            Confirm
+          </button>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
