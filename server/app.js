@@ -26,6 +26,7 @@ const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminAttemptRoutes = require("./routes/adminAttemptRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
+const passwordResetRoutes = require("./routes/passwordResetRoutes");
 
 /* ============================================================
    Middleware Imports
@@ -38,6 +39,10 @@ const { adminOnly } = require("./middleware/adminMiddleware");
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 
 const app = express();
+
+if (process.env.NODE_ENV === "production") {
+  app.set("trust proxy", 1);
+}
 
 /* ============================================================
    View Engine
@@ -155,6 +160,15 @@ app.get("/register", (req, res) => {
   return res.render("register");
 });
 
+app.get("/forgot-password", (req, res) => {
+  return res.render("forgot-password");
+});
+
+app.get("/reset-password", (req, res) => {
+  return res.render("reset-password", {
+    token: typeof req.query.token === "string" ? req.query.token : "",
+  });
+});
 /* ============================================================
    Protected User Page Routes
 ============================================================ */
@@ -221,6 +235,15 @@ app.get("/settings", protect, (req, res) => {
   });
 });
 
+app.get("/forgot-password", (req, res) => {
+  return res.render("forgot-password");
+});
+
+app.get("/reset-password", (req, res) => {
+  return res.render("reset-password", {
+    token: typeof req.query.token === "string" ? req.query.token : "",
+  });
+});
 /* ============================================================
    Protected Administrator Page Routes
 ============================================================ */
@@ -271,6 +294,8 @@ app.get("/admin/attempts", protect, adminOnly, (req, res) => {
 ============================================================ */
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/password-reset", passwordResetRoutes);
 
 app.use("/api/quiz", quizRoutes);
 
