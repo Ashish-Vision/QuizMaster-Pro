@@ -3,16 +3,26 @@
 const resultState = {
   result: null,
   submissionResponse: null,
+  dailyChallenge: null,
   resultId: null,
   loading: false,
+  reviewVisible: false,
 };
 
 const elements = {
   resultCard: document.getElementById("resultCard"),
   resultError: document.getElementById("resultError"),
+  resultErrorMessage: document.getElementById("resultErrorMessage"),
 
+  resultIcon: document.getElementById("resultIcon"),
+  resultLabel: document.getElementById("resultLabel"),
   resultCategory: document.getElementById("resultCategory"),
 
+  dailyChallengeReward: document.getElementById("dailyChallengeReward"),
+
+  dailyChallengeRewardText: document.getElementById("dailyChallengeRewardText"),
+
+  scoreCircle: document.getElementById("scoreCircle"),
   scoreValue: document.getElementById("scoreValue"),
   scoreTotal: document.getElementById("scoreTotal"),
 
@@ -25,6 +35,19 @@ const elements = {
   timeValue: document.getElementById("timeValue"),
 
   retryQuizButton: document.getElementById("retryQuizButton"),
+
+  reviewAnswersButton: document.getElementById("reviewAnswersButton"),
+
+  reviewSection: document.getElementById("reviewSection"),
+  closeReviewButton: document.getElementById("closeReviewButton"),
+
+  reviewList: document.getElementById("reviewList"),
+
+  reviewCorrectCount: document.getElementById("reviewCorrectCount"),
+
+  reviewWrongCount: document.getElementById("reviewWrongCount"),
+
+  reviewUnansweredCount: document.getElementById("reviewUnansweredCount"),
 };
 
 function getNumber(value) {
@@ -58,18 +81,10 @@ function formatTime(totalSeconds) {
 function getResultIdFromUrl() {
   const pathSegments = window.location.pathname.split("/").filter(Boolean);
 
-  /*
-   * Supports:
-   * /result/:resultId
-   */
   if (pathSegments[0] === "result" && pathSegments[1]) {
     return decodeURIComponent(pathSegments[1]);
   }
 
-  /*
-   * Supports:
-   * /result?resultId=:resultId
-   */
   const searchParams = new URLSearchParams(window.location.search);
 
   return searchParams.get("resultId")?.trim() || null;
@@ -79,11 +94,7 @@ function readStoredJson(key) {
   try {
     const value = sessionStorage.getItem(key);
 
-    if (!value) {
-      return null;
-    }
-
-    return JSON.parse(value);
+    return value ? JSON.parse(value) : null;
   } catch (error) {
     console.error(`Unable to read session storage key "${key}":`, error);
 
@@ -91,7 +102,7 @@ function readStoredJson(key) {
   }
 }
 
-function parseJsonResponse(response) {
+async function parseJsonResponse(response) {
   const contentType = response.headers.get("content-type") || "";
 
   if (!contentType.includes("application/json")) {
@@ -101,33 +112,71 @@ function parseJsonResponse(response) {
   return response.json();
 }
 
+function toggleElement(element, shouldShow) {
+  if (!element) {
+    return;
+  }
+
+  element.classList.toggle("hidden", !shouldShow);
+}
+
 function showResult() {
-  elements.resultError?.classList.add("hidden");
-  elements.resultCard?.classList.remove("hidden");
+  toggleElement(elements.resultError, false);
+  toggleElement(elements.resultCard, true);
 }
 
 function showError(message = "") {
-  elements.resultCard?.classList.add("hidden");
-  elements.resultError?.classList.remove("hidden");
+  toggleElement(elements.resultCard, false);
+  toggleElement(elements.reviewSection, false);
+  toggleElement(elements.resultError, true);
 
-  const errorParagraph = elements.resultError?.querySelector("p");
-
-  if (errorParagraph && message) {
-    errorParagraph.textContent = message;
+  if (elements.resultErrorMessage && message) {
+    elements.resultErrorMessage.textContent = message;
   }
+}
+
+function normalizeQuestion(question) {
+  if (!question) {
+    return null;
+  }
+
+  return {
+    id: question._id || question.id || null,
+    question: question.question || "Question unavailable",
+    options: Array.isArray(question.options) ? question.options : [],
+    explanation: question.explanation || "",
+    difficulty: question.difficulty || "Easy",
+  };
+}
+
+function normalizeAnswer(answer, index) {
+  if (!answer || typeof answer !== "object") {
+    return null;
+  }
+
+  const question = normalizeQuestion(answer.question);
+
+  return {
+    index,
+    question,
+    selectedAnswer:
+      answer.selectedAnswer === null || answer.selectedAnswer === undefined
+        ? null
+        : getNumber(answer.selectedAnswer),
+
+    correctAnswer:
+      answer.correctAnswer === null || answer.correctAnswer === undefined
+        ? null
+        : getNumber(answer.correctAnswer),
+
+    isCorrect: Boolean(answer.isCorrect),
+  };
 }
 
 function normalizeResult(rawResult) {
   if (!rawResult || typeof rawResult !== "object") {
     return null;
   }
-
-  const resultId =
-    rawResult.resultId ||
-    rawResult.id ||
-    rawResult._id ||
-    resultState.resultId ||
-    null;
 
   const correctAnswers = getNumber(rawResult.correctAnswers ?? rawResult.score);
 
@@ -144,7 +193,12 @@ function normalizeResult(rawResult) {
   return {
     ...rawResult,
 
-    resultId,
+    resultId:
+      rawResult.resultId ||
+      rawResult.id ||
+      rawResult._id ||
+      resultState.resultId ||
+      null,
 
     category: rawResult.category.trim(),
 
@@ -165,6 +219,10 @@ function normalizeResult(rawResult) {
     xpEarned: getNumber(rawResult.xpEarned),
 
     timeTakenSeconds: getNumber(rawResult.timeTakenSeconds),
+
+    answers: Array.isArray(rawResult.answers)
+      ? rawResult.answers.map(normalizeAnswer).filter(Boolean)
+      : [],
   };
 }
 
@@ -180,84 +238,303 @@ function getDailyChallengeInformation() {
   return storedDailyChallenge || storedSubmission?.dailyChallenge || null;
 }
 
-function renderResult(rawResult) {
-  const normalizedResult = normalizeResult(rawResult);
+function isDailyChallengeResult(result) {
+  return Boolean(
+    result?.isDailyChallenge ||
+    resultState.dailyChallenge?.completed ||
+    resultState.submissionResponse?.result?.isDailyChallenge,
+  );
+}
 
-  if (!normalizedResult) {
+function renderDailyChallengeInformation(result) {
+  const isDailyChallenge = isDailyChallengeResult(result);
+
+  toggleElement(elements.dailyChallengeReward, isDailyChallenge);
+
+  if (!isDailyChallenge) {
+    return;
+  }
+
+  if (elements.resultIcon) {
+    elements.resultIcon.textContent = "🔥";
+  }
+
+  if (elements.resultLabel) {
+    elements.resultLabel.textContent = "Daily challenge completed";
+  }
+
+  if (elements.dailyChallengeRewardText) {
+    const bonusXp = getNumber(
+      result.dailyChallengeBonusXp ||
+        resultState.dailyChallenge?.rewardXp ||
+        resultState.submissionResponse?.result?.dailyChallengeBonusXp,
+    );
+
+    elements.dailyChallengeRewardText.textContent =
+      bonusXp > 0
+        ? `You earned +${formatNumber(bonusXp)} bonus XP`
+        : "Today's challenge reward has been claimed";
+  }
+
+  if (elements.retryQuizButton) {
+    elements.retryQuizButton.textContent = "Return to Dashboard";
+  }
+}
+
+function renderScoreProgress(result) {
+  if (!elements.scoreCircle) {
+    return;
+  }
+
+  const percentage = Math.min(Math.max(getNumber(result.accuracy), 0), 100);
+
+  elements.scoreCircle.style.setProperty(
+    "--score-progress",
+    `${percentage * 3.6}deg`,
+  );
+
+  elements.scoreCircle.setAttribute(
+    "aria-label",
+    `Score ${result.correctAnswers} out of ${result.totalQuestions}`,
+  );
+}
+
+function renderResult(rawResult) {
+  const result = normalizeResult(rawResult);
+
+  if (!result) {
     showError("The result data is incomplete or invalid.");
 
     return false;
   }
 
-  resultState.result = normalizedResult;
+  resultState.result = result;
+  resultState.dailyChallenge = getDailyChallengeInformation();
 
-  const dailyChallenge = getDailyChallengeInformation();
-
-  const isDailyChallenge = Boolean(
-    normalizedResult.isDailyChallenge || dailyChallenge?.completed,
-  );
+  const isDailyChallenge = isDailyChallengeResult(result);
 
   if (elements.resultCategory) {
     elements.resultCategory.textContent = isDailyChallenge
-      ? `🔥 ${normalizedResult.category} Daily Challenge`
-      : `${normalizedResult.category} Quiz`;
+      ? `🔥 ${result.category} Daily Challenge`
+      : `${result.category} Quiz`;
   }
 
   if (elements.scoreValue) {
-    elements.scoreValue.textContent = formatNumber(
-      normalizedResult.correctAnswers,
-    );
+    elements.scoreValue.textContent = formatNumber(result.correctAnswers);
   }
 
   if (elements.scoreTotal) {
-    elements.scoreTotal.textContent = `/ ${formatNumber(
-      normalizedResult.totalQuestions,
-    )}`;
+    elements.scoreTotal.textContent = `/ ${formatNumber(result.totalQuestions)}`;
   }
 
   if (elements.accuracyValue) {
-    elements.accuracyValue.textContent = formatPercentage(
-      normalizedResult.accuracy,
-    );
+    elements.accuracyValue.textContent = formatPercentage(result.accuracy);
   }
 
   if (elements.correctValue) {
-    elements.correctValue.textContent = formatNumber(
-      normalizedResult.correctAnswers,
-    );
+    elements.correctValue.textContent = formatNumber(result.correctAnswers);
   }
 
   if (elements.wrongValue) {
-    elements.wrongValue.textContent = formatNumber(
-      normalizedResult.wrongAnswers,
-    );
+    elements.wrongValue.textContent = formatNumber(result.wrongAnswers);
   }
 
   if (elements.unansweredValue) {
     elements.unansweredValue.textContent = formatNumber(
-      normalizedResult.unansweredQuestions,
+      result.unansweredQuestions,
     );
   }
 
   if (elements.xpValue) {
-    elements.xpValue.textContent = `+${formatNumber(
-      normalizedResult.xpEarned,
-    )} XP`;
+    elements.xpValue.textContent = `+${formatNumber(result.xpEarned)} XP`;
   }
 
   if (elements.timeValue) {
-    elements.timeValue.textContent = formatTime(
-      normalizedResult.timeTakenSeconds,
-    );
+    elements.timeValue.textContent = formatTime(result.timeTakenSeconds);
   }
 
-  if (elements.retryQuizButton && isDailyChallenge) {
-    elements.retryQuizButton.textContent = "Return to Dashboard";
+  renderScoreProgress(result);
+  renderDailyChallengeInformation(result);
+  renderReview(result);
+
+  if (elements.reviewAnswersButton && result.answers.length === 0) {
+    elements.reviewAnswersButton.disabled = true;
+    elements.reviewAnswersButton.textContent = "Review Unavailable";
   }
 
   showResult();
 
   return true;
+}
+
+function getOptionText(question, answerIndex) {
+  if (answerIndex === null || answerIndex === undefined) {
+    return "Not answered";
+  }
+
+  if (
+    !question ||
+    !Array.isArray(question.options) ||
+    !question.options[answerIndex]
+  ) {
+    return `Option ${answerIndex + 1}`;
+  }
+
+  return question.options[answerIndex];
+}
+
+function createAnswerBlock({ label, value, className, icon }) {
+  const wrapper = document.createElement("div");
+
+  wrapper.className = `review-answer ${className}`.trim();
+
+  const heading = document.createElement("span");
+
+  heading.className = "review-answer-label";
+  heading.textContent = `${icon} ${label}`;
+
+  const answerText = document.createElement("strong");
+
+  answerText.textContent = value;
+
+  wrapper.append(heading, answerText);
+
+  return wrapper;
+}
+
+function createReviewItem(answer) {
+  const question = answer.question;
+
+  const article = document.createElement("article");
+
+  article.className = "review-item";
+
+  if (answer.isCorrect) {
+    article.classList.add("correct");
+  } else if (answer.selectedAnswer === null) {
+    article.classList.add("unanswered");
+  } else {
+    article.classList.add("wrong");
+  }
+
+  const header = document.createElement("div");
+
+  header.className = "review-item-header";
+
+  const questionNumber = document.createElement("span");
+
+  questionNumber.className = "review-question-number";
+  questionNumber.textContent = `Question ${answer.index + 1}`;
+
+  const difficulty = document.createElement("span");
+
+  difficulty.className = `review-difficulty ${String(
+    question?.difficulty || "Easy",
+  ).toLowerCase()}`;
+
+  difficulty.textContent = question?.difficulty || "Easy";
+
+  header.append(questionNumber, difficulty);
+
+  const questionText = document.createElement("h3");
+
+  questionText.textContent = question?.question || "Question unavailable";
+
+  const answersContainer = document.createElement("div");
+
+  answersContainer.className = "review-answer-grid";
+
+  const selectedAnswerText = getOptionText(question, answer.selectedAnswer);
+
+  const correctAnswerText = getOptionText(question, answer.correctAnswer);
+
+  let selectedClass = "selected-answer";
+  let selectedIcon = "➖";
+
+  if (answer.selectedAnswer === null) {
+    selectedClass += " unanswered-answer";
+    selectedIcon = "⚪";
+  } else if (answer.isCorrect) {
+    selectedClass += " correct-answer";
+    selectedIcon = "✅";
+  } else {
+    selectedClass += " wrong-answer";
+    selectedIcon = "❌";
+  }
+
+  answersContainer.append(
+    createAnswerBlock({
+      label: "Your Answer",
+      value: selectedAnswerText,
+      className: selectedClass,
+      icon: selectedIcon,
+    }),
+
+    createAnswerBlock({
+      label: "Correct Answer",
+      value: correctAnswerText,
+      className: "correct-answer",
+      icon: "✅",
+    }),
+  );
+
+  const explanation = document.createElement("div");
+
+  explanation.className = "review-explanation";
+
+  const explanationTitle = document.createElement("span");
+
+  explanationTitle.textContent = "Explanation";
+
+  const explanationText = document.createElement("p");
+
+  explanationText.textContent =
+    question?.explanation || "No explanation is available for this question.";
+
+  explanation.append(explanationTitle, explanationText);
+
+  article.append(header, questionText, answersContainer, explanation);
+
+  return article;
+}
+
+function renderReview(result) {
+  if (!elements.reviewList) {
+    return;
+  }
+
+  elements.reviewList.innerHTML = "";
+
+  if (elements.reviewCorrectCount) {
+    elements.reviewCorrectCount.textContent = formatNumber(
+      result.correctAnswers,
+    );
+  }
+
+  if (elements.reviewWrongCount) {
+    elements.reviewWrongCount.textContent = formatNumber(result.wrongAnswers);
+  }
+
+  if (elements.reviewUnansweredCount) {
+    elements.reviewUnansweredCount.textContent = formatNumber(
+      result.unansweredQuestions,
+    );
+  }
+
+  if (!result.answers.length) {
+    const empty = document.createElement("div");
+
+    empty.className = "review-empty";
+    empty.textContent = "Answer details are not available for this result.";
+
+    elements.reviewList.appendChild(empty);
+
+    return;
+  }
+
+  result.answers.forEach((answer) => {
+    elements.reviewList.appendChild(createReviewItem(answer));
+  });
 }
 
 async function fetchResult(resultId) {
@@ -298,47 +575,27 @@ async function loadResult() {
   }
 
   resultState.loading = true;
-
   resultState.resultId = getResultIdFromUrl();
 
   try {
-    /*
-     * Primary source:
-     * Load the permanent result from MongoDB using
-     * the result ID in the page URL.
-     */
     if (resultState.resultId) {
       const apiResult = await fetchResult(resultState.resultId);
 
-      if (apiResult) {
-        renderResult(apiResult);
-
+      if (apiResult && renderResult(apiResult)) {
         return;
       }
     }
 
-    /*
-     * Fallback:
-     * Supports the old /result page flow that stores
-     * the result only in sessionStorage.
-     */
     const storedResult = readStoredJson("quizmaster_result");
 
-    if (storedResult) {
-      const rendered = renderResult(storedResult);
-
-      if (rendered) {
-        return;
-      }
+    if (storedResult && renderResult(storedResult)) {
+      return;
     }
 
     showError("We could not find your recent quiz result.");
   } catch (error) {
     console.error("Unable to load quiz result:", error);
 
-    /*
-     * Try sessionStorage if the API request fails.
-     */
     const storedResult = readStoredJson("quizmaster_result");
 
     if (storedResult && renderResult(storedResult)) {
@@ -351,6 +608,35 @@ async function loadResult() {
   }
 }
 
+function toggleReview(forceState = null) {
+  if (!resultState.result || !resultState.result.answers.length) {
+    return;
+  }
+
+  resultState.reviewVisible =
+    forceState === null ? !resultState.reviewVisible : Boolean(forceState);
+
+  toggleElement(elements.reviewSection, resultState.reviewVisible);
+
+  if (elements.reviewAnswersButton) {
+    elements.reviewAnswersButton.textContent = resultState.reviewVisible
+      ? "Hide Answers"
+      : "Review Answers";
+
+    elements.reviewAnswersButton.setAttribute(
+      "aria-expanded",
+      String(resultState.reviewVisible),
+    );
+  }
+
+  if (resultState.reviewVisible) {
+    elements.reviewSection?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
+  }
+}
+
 function retryQuiz() {
   const result = resultState.result;
 
@@ -360,11 +646,7 @@ function retryQuiz() {
     return;
   }
 
-  const dailyChallenge = getDailyChallengeInformation();
-
-  const isDailyChallenge = Boolean(
-    result.isDailyChallenge || dailyChallenge?.completed,
-  );
+  const isDailyChallenge = isDailyChallengeResult(result);
 
   sessionStorage.removeItem("quizmaster_result");
 
@@ -372,11 +654,6 @@ function retryQuiz() {
 
   sessionStorage.removeItem("quizmaster_daily_challenge_result");
 
-  /*
-   * Daily challenges may only be completed once.
-   * The button therefore returns to the dashboard
-   * instead of starting the challenge again.
-   */
   if (isDailyChallenge) {
     window.location.href = "/dashboard";
 
@@ -389,5 +666,13 @@ function retryQuiz() {
 }
 
 elements.retryQuizButton?.addEventListener("click", retryQuiz);
+
+elements.reviewAnswersButton?.addEventListener("click", () => {
+  toggleReview();
+});
+
+elements.closeReviewButton?.addEventListener("click", () => {
+  toggleReview(false);
+});
 
 loadResult();
