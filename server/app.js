@@ -25,6 +25,7 @@ const adminQuestionRoutes = require("./routes/adminQuestionRoutes");
 const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminAttemptRoutes = require("./routes/adminAttemptRoutes");
+const settingsRoutes = require("./routes/settingsRoutes");
 
 /* ============================================================
    Middleware Imports
@@ -214,6 +215,12 @@ app.get("/analytics", protect, (req, res) => {
   });
 });
 
+app.get("/settings", protect, (req, res) => {
+  return res.render("settings", {
+    user: req.user,
+  });
+});
+
 /* ============================================================
    Protected Administrator Page Routes
 ============================================================ */
@@ -274,6 +281,8 @@ app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/history", historyRoutes);
 
 app.use("/api/profile", profileRoutes);
+
+app.use("/api/settings", settingsRoutes);
 
 app.use("/api/achievements", achievementRoutes);
 
