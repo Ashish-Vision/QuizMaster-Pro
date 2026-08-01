@@ -27,6 +27,8 @@
       <div class="auth-glow auth-glow-two"></div>
 
       <section class="auth-container">
+        <!-- ================= INTRODUCTION ================= -->
+
         <div class="auth-introduction">
           <p class="auth-label">Welcome Back</p>
 
@@ -46,6 +48,7 @@
 
               <div>
                 <h3>Track your progress</h3>
+
                 <p>View your quiz history, scores and accuracy.</p>
               </div>
             </div>
@@ -55,6 +58,7 @@
 
               <div>
                 <h3>Earn rewards</h3>
+
                 <p>Collect XP, achievements and daily streaks.</p>
               </div>
             </div>
@@ -64,11 +68,14 @@
 
               <div>
                 <h3>Compete globally</h3>
+
                 <p>Climb leaderboards and challenge other players.</p>
               </div>
             </div>
           </div>
         </div>
+
+        <!-- ================= LOGIN CARD ================= -->
 
         <div class="auth-card">
           <div class="auth-card-header">
@@ -78,27 +85,35 @@
           </div>
 
           <div
+            id="loginMessage"
             class="form-message"
-            id="formMessage"
             role="alert"
             aria-live="polite"
           ></div>
 
-          <form class="auth-form" id="loginForm" novalidate>
+          <form id="loginForm" class="auth-form" novalidate>
+            <!-- ================= EMAIL ================= -->
+
             <div class="form-group">
               <label for="loginEmail"> Email address </label>
 
               <input
-                type="email"
                 id="loginEmail"
                 name="email"
+                type="email"
                 placeholder="you@example.com"
                 autocomplete="email"
                 required
               />
 
-              <small class="field-error" id="loginEmailError"></small>
+              <small
+                id="loginEmailError"
+                class="field-error"
+                aria-live="polite"
+              ></small>
             </div>
+
+            <!-- ================= PASSWORD ================= -->
 
             <div class="form-group">
               <div class="label-row">
@@ -111,9 +126,9 @@
 
               <div class="password-wrapper">
                 <input
-                  type="password"
                   id="loginPassword"
                   name="password"
+                  type="password"
                   placeholder="Enter your password"
                   autocomplete="current-password"
                   required
@@ -129,32 +144,47 @@
                 </button>
               </div>
 
-              <small class="field-error" id="loginPasswordError"></small>
+              <small
+                id="loginPasswordError"
+                class="field-error"
+                aria-live="polite"
+              ></small>
             </div>
 
-            <label class="remember-option">
-              <input type="checkbox" id="rememberMe" name="rememberMe" />
+            <!-- ================= REMEMBER ME ================= -->
 
-              <span>Remember me</span>
+            <label class="remember-option">
+              <input id="rememberMe" name="rememberMe" type="checkbox" />
+
+              <span> Remember me </span>
             </label>
 
-            <button type="submit" class="primary-button auth-submit-button">
+            <!-- ================= SUBMIT ================= -->
+
+            <button
+              id="loginButton"
+              type="submit"
+              class="primary-button auth-submit-button"
+            >
               <span class="button-text"> Sign In </span>
 
               <span class="button-loader" aria-hidden="true"></span>
             </button>
           </form>
 
+          <!-- ================= SOCIAL LOGIN ================= -->
+
           <div class="auth-divider">
-            <span>or continue with</span>
+            <span> or continue with </span>
           </div>
 
           <button
+            id="googleLoginButton"
             type="button"
             class="social-auth-button"
-            id="googleLoginButton"
           >
-            <span class="google-icon">G</span>
+            <span class="google-icon"> G </span>
+
             Continue with Google
           </button>
 
@@ -170,6 +200,6 @@
     <%- include("partials/footer") %>
 
     <script src="/js/ui.js"></script>
-    <script src="/js/auth.js"></script>
+    <script src="/js/login.js" defer></script>
   </body>
 </html>

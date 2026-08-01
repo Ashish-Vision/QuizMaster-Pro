@@ -24,6 +24,8 @@
       <div class="auth-glow auth-glow-two"></div>
 
       <section class="auth-container">
+        <!-- ================= INTRODUCTION ================= -->
+
         <div class="auth-introduction">
           <p class="auth-label">Join QuizMaster Pro</p>
 
@@ -55,6 +57,8 @@
           </div>
         </div>
 
+        <!-- ================= REGISTER CARD ================= -->
+
         <div class="auth-card">
           <div class="auth-card-header">
             <h2>Create account</h2>
@@ -63,69 +67,93 @@
           </div>
 
           <div
+            id="registerMessage"
             class="form-message"
-            id="formMessage"
             role="alert"
             aria-live="polite"
           ></div>
 
-          <form class="auth-form" id="registerForm" novalidate>
+          <form id="registerForm" class="auth-form" novalidate>
+            <!-- ================= NAME ================= -->
+
             <div class="form-row">
               <div class="form-group">
                 <label for="firstName"> First name </label>
 
                 <input
-                  type="text"
                   id="firstName"
                   name="firstName"
+                  type="text"
                   placeholder="Ashish"
+                  minlength="2"
+                  maxlength="50"
                   autocomplete="given-name"
                   required
                 />
 
-                <small class="field-error" id="firstNameError"></small>
+                <small
+                  id="firstNameError"
+                  class="field-error"
+                  aria-live="polite"
+                ></small>
               </div>
 
               <div class="form-group">
                 <label for="lastName"> Last name </label>
 
                 <input
-                  type="text"
                   id="lastName"
                   name="lastName"
-                  placeholder="Vision"
+                  type="text"
+                  placeholder="Mamillapalli"
+                  minlength="2"
+                  maxlength="50"
                   autocomplete="family-name"
                   required
                 />
 
-                <small class="field-error" id="lastNameError"></small>
+                <small
+                  id="lastNameError"
+                  class="field-error"
+                  aria-live="polite"
+                ></small>
               </div>
             </div>
+
+            <!-- ================= EMAIL ================= -->
 
             <div class="form-group">
               <label for="registerEmail"> Email address </label>
 
               <input
-                type="email"
                 id="registerEmail"
                 name="email"
+                type="email"
                 placeholder="you@example.com"
                 autocomplete="email"
                 required
               />
 
-              <small class="field-error" id="registerEmailError"></small>
+              <small
+                id="registerEmailError"
+                class="field-error"
+                aria-live="polite"
+              ></small>
             </div>
+
+            <!-- ================= PASSWORD ================= -->
 
             <div class="form-group">
               <label for="registerPassword"> Password </label>
 
               <div class="password-wrapper">
                 <input
-                  type="password"
                   id="registerPassword"
                   name="password"
+                  type="password"
                   placeholder="Minimum 8 characters"
+                  minlength="8"
+                  maxlength="128"
                   autocomplete="new-password"
                   required
                 />
@@ -140,26 +168,34 @@
                 </button>
               </div>
 
-              <div class="password-strength">
-                <span class="strength-bar" id="strengthBar"></span>
+              <div class="password-strength" aria-hidden="true">
+                <span id="strengthBar" class="strength-bar"></span>
               </div>
 
-              <small class="password-strength-text" id="strengthText">
+              <small id="strengthText" class="password-strength-text">
                 Password strength
               </small>
 
-              <small class="field-error" id="registerPasswordError"></small>
+              <small
+                id="registerPasswordError"
+                class="field-error"
+                aria-live="polite"
+              ></small>
             </div>
+
+            <!-- ================= CONFIRM PASSWORD ================= -->
 
             <div class="form-group">
               <label for="confirmPassword"> Confirm password </label>
 
               <div class="password-wrapper">
                 <input
-                  type="password"
                   id="confirmPassword"
                   name="confirmPassword"
+                  type="password"
                   placeholder="Re-enter your password"
+                  minlength="8"
+                  maxlength="128"
                   autocomplete="new-password"
                   required
                 />
@@ -174,37 +210,60 @@
                 </button>
               </div>
 
-              <small class="field-error" id="confirmPasswordError"></small>
+              <small
+                id="confirmPasswordError"
+                class="field-error"
+                aria-live="polite"
+              ></small>
             </div>
 
+            <!-- ================= TERMS ================= -->
+
             <label class="terms-option">
-              <input type="checkbox" id="acceptTerms" name="acceptTerms" />
+              <input
+                id="acceptTerms"
+                name="acceptTerms"
+                type="checkbox"
+                required
+              />
 
               <span>
                 I agree to the
-                <a href="#">Terms of Service</a>
+                <a href="/terms">Terms of Service</a>
                 and
-                <a href="#">Privacy Policy</a>.
+                <a href="/privacy">Privacy Policy</a>.
               </span>
             </label>
 
-            <small class="field-error" id="acceptTermsError"></small>
+            <small
+              id="acceptTermsError"
+              class="field-error"
+              aria-live="polite"
+            ></small>
 
-            <button type="submit" class="primary-button auth-submit-button">
+            <!-- ================= SUBMIT ================= -->
+
+            <button
+              id="registerButton"
+              type="submit"
+              class="primary-button auth-submit-button"
+            >
               <span class="button-text"> Create Account </span>
 
               <span class="button-loader" aria-hidden="true"></span>
             </button>
           </form>
 
+          <!-- ================= SOCIAL REGISTER ================= -->
+
           <div class="auth-divider">
             <span>or register with</span>
           </div>
 
           <button
+            id="googleRegisterButton"
             type="button"
             class="social-auth-button"
-            id="googleRegisterButton"
           >
             <span class="google-icon">G</span>
             Continue with Google
@@ -222,6 +281,15 @@
     <%- include("partials/footer") %>
 
     <script src="/js/ui.js"></script>
-    <script src="/js/auth.js"></script>
+
+    <!--
+      register.js handles:
+      form validation,
+      password visibility,
+      password strength,
+      registration API request,
+      email-verification redirect.
+    -->
+    <script src="/js/register.js" defer></script>
   </body>
 </html>

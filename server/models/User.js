@@ -34,6 +34,28 @@ const userSchema = new mongoose.Schema(
       },
     },
 
+    emailVerified: {
+      type: Boolean,
+      default: false,
+    },
+
+    emailVerifiedAt: {
+      type: Date,
+      default: null,
+    },
+
+    emailVerificationToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+
+    emailVerificationExpires: {
+      type: Date,
+      default: null,
+      select: false,
+    },
+
     password: {
       type: String,
       required: [true, "Password is required."],
@@ -136,6 +158,8 @@ userSchema.methods.toSafeObject = function toSafeObject() {
     lastName: this.lastName,
     fullName: `${this.firstName} ${this.lastName}`,
     email: this.email,
+    emailVerified: this.emailVerified,
+    emailVerifiedAt: this.emailVerifiedAt,
     role: this.role,
     avatar: this.avatar,
     totalXp: this.totalXp,

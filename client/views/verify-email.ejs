@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Verify your QuizMaster Pro email address."
+    />
+
+    <title>Verify Email | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/password-reset.css" />
+
+    <script src="/js/verify-email.js" defer></script>
+  </head>
+
+  <body>
+    <main class="password-reset-page">
+      <section class="password-reset-card">
+        <a href="/login" class="brand">
+          <span class="brand-icon">Q</span>
+          <span>QuizMaster Pro</span>
+        </a>
+
+        <section id="verificationLoadingState" class="token-state">
+          <div class="spinner"></div>
+
+          <p>Verifying your email address...</p>
+        </section>
+
+        <section id="verificationSuccessState" class="token-state hidden">
+          <div class="reset-icon" aria-hidden="true">✅</div>
+
+          <p class="section-label">Verification complete</p>
+
+          <h1>Email Verified</h1>
+
+          <p class="page-description">
+            Your email address has been verified successfully. You can now sign
+            in to QuizMaster Pro.
+          </p>
+
+          <a href="/login" class="primary-link-button"> Continue to Login </a>
+        </section>
+
+        <section id="verificationErrorState" class="token-state hidden">
+          <div class="reset-icon" aria-hidden="true">⚠️</div>
+
+          <p class="section-label">Verification failed</p>
+
+          <h1>Link Unavailable</h1>
+
+          <p id="verificationErrorMessage" class="page-description">
+            This email-verification link is invalid or has expired.
+          </p>
+
+          <a
+            id="resendVerificationLink"
+            href="/resend-verification"
+            class="primary-link-button"
+          >
+            Request New Verification Email
+          </a>
+
+          <a href="/login" class="back-link"> ← Back to login </a>
+        </section>
+      </section>
+    </main>
+  </body>
+</html>

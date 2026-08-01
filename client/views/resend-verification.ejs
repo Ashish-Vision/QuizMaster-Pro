@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Resend your QuizMaster Pro email verification message."
+    />
+
+    <title>Verify Email | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/password-reset.css" />
+
+    <script src="/js/resend-verification.js" defer></script>
+  </head>
+
+  <body>
+    <main class="password-reset-page">
+      <section class="password-reset-card">
+        <a href="/login" class="brand">
+          <span class="brand-icon">Q</span>
+          <span>QuizMaster Pro</span>
+        </a>
+
+        <div class="reset-icon" aria-hidden="true">✉️</div>
+
+        <p class="section-label">Email verification</p>
+
+        <h1>Check Your Email</h1>
+
+        <p class="page-description">
+          We sent an email-verification link to your registered email address.
+          Click the link in that email before signing in.
+        </p>
+
+        <form id="resendVerificationForm">
+          <div class="form-group">
+            <label for="verificationEmail"> Email Address </label>
+
+            <input
+              id="verificationEmail"
+              name="email"
+              type="email"
+              placeholder="Enter your email address"
+              autocomplete="email"
+              required
+            />
+          </div>
+
+          <p
+            id="resendVerificationMessage"
+            class="form-message"
+            aria-live="polite"
+          ></p>
+
+          <button
+            id="resendVerificationButton"
+            type="submit"
+            class="primary-button"
+          >
+            Resend Verification Email
+          </button>
+        </form>
+
+        <div id="verificationInstructions" class="development-reset">
+          <p>Did not receive the email?</p>
+
+          <small>
+            Check your Spam or Promotions folder. You can also request another
+            verification email using the form above.
+          </small>
+        </div>
+
+        <a href="/login" class="back-link"> ← Back to login </a>
+      </section>
+    </main>
+  </body>
+</html>

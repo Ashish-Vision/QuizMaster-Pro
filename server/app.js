@@ -27,6 +27,7 @@ const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminAttemptRoutes = require("./routes/adminAttemptRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const passwordResetRoutes = require("./routes/passwordResetRoutes");
+const emailVerificationRoutes = require("./routes/emailVerificationRoutes");
 
 /* ============================================================
    Middleware Imports
@@ -169,6 +170,14 @@ app.get("/reset-password", (req, res) => {
     token: typeof req.query.token === "string" ? req.query.token : "",
   });
 });
+
+app.get("/verify-email", (req, res) => {
+  return res.render("verify-email");
+});
+
+app.get("/resend-verification", (req, res) => {
+  return res.render("resend-verification");
+});
 /* ============================================================
    Protected User Page Routes
 ============================================================ */
@@ -294,6 +303,8 @@ app.get("/admin/attempts", protect, adminOnly, (req, res) => {
 ============================================================ */
 
 app.use("/api/auth", authRoutes);
+
+app.use("/api/email-verification", emailVerificationRoutes);
 
 app.use("/api/password-reset", passwordResetRoutes);
 
