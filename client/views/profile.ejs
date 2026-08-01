@@ -1,255 +1,735 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
+  <head>
+    <meta charset="UTF-8" />
 
-  <title>Profile | QuizMaster Pro</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
 
-  <link rel="stylesheet" href="/css/profile.css" />
-</head>
-<body>
-  <main class="profile-page">
-    <header class="profile-header">
-      <div>
-        <p class="profile-label">QuizMaster Pro</p>
-        <h1>My Profile</h1>
-        <p class="profile-subtitle">
-          View your account details and quiz performance.
-        </p>
-      </div>
+    <meta
+      name="description"
+      content="View your QuizMaster Pro profile, level, ranking, achievements and quiz performance."
+    />
 
-      <nav class="profile-navigation">
-        <a href="/dashboard">Dashboard</a>
-        <a href="/history">History</a>
-        <a href="/leaderboard">Leaderboard</a>
-      </nav>
-    </header>
+    <title>Profile | QuizMaster Pro</title>
 
-    <section class="profile-card">
-      <div class="profile-identity">
-        <div
-          id="profileAvatar"
-          class="profile-avatar"
-          aria-label="Profile avatar"
-        >
-          <span id="profileInitials">
-            <%= `${user.firstName?.[0] || ""}${user.lastName?.[0] || ""}` %>
-          </span>
-        </div>
+    <link rel="stylesheet" href="/css/profile.css" />
 
+    <script src="/js/profile.js" defer></script>
+  </head>
+
+  <body>
+    <main class="profile-page">
+      <header class="profile-header">
         <div>
-          <h2 id="profileFullName">
-            <%= user.firstName %> <%= user.lastName %>
-          </h2>
+          <p class="profile-label">QuizMaster Pro</p>
 
-          <p id="profileEmail">
-            <%= user.email %>
+          <h1>My Profile</h1>
+
+          <p class="profile-subtitle">
+            Track your level, ranking, achievements, quiz activity and account
+            progress.
           </p>
-
-          <span id="profileRole" class="profile-role">
-            <%= user.role %>
-          </span>
         </div>
-      </div>
 
-      <button
-        id="editProfileButton"
-        class="primary-button"
-        type="button"
+        <nav
+          class="profile-navigation"
+          aria-label="Profile navigation"
+        >
+          <a href="/dashboard">Dashboard</a>
+          <a href="/history">History</a>
+          <a href="/achievements">Achievements</a>
+          <a href="/leaderboard">Leaderboard</a>
+        </nav>
+      </header>
+
+      <section
+        id="profileLoading"
+        class="profile-state-card"
       >
-        Edit Profile
-      </button>
-    </section>
+        <div
+          class="profile-spinner"
+          aria-hidden="true"
+        ></div>
 
-    <section class="statistics-section">
-      <div class="section-heading">
-        <div>
-          <p class="section-label">Performance</p>
-          <h2>Your Statistics</h2>
-        </div>
-      </div>
+        <p>Loading your profile...</p>
+      </section>
 
-      <div class="statistics-grid">
-        <article class="stat-card">
-          <span class="stat-label">Total XP</span>
-          <strong id="totalXp">0</strong>
-        </article>
+      <section
+        id="profileError"
+        class="profile-state-card hidden"
+      >
+        <span
+          class="profile-state-icon"
+          aria-hidden="true"
+        >
+          ⚠️
+        </span>
 
-        <article class="stat-card">
-          <span class="stat-label">Quizzes Completed</span>
-          <strong id="quizzesCompleted">0</strong>
-        </article>
+        <h2>Unable to load profile</h2>
 
-        <article class="stat-card">
-          <span class="stat-label">Correct Answers</span>
-          <strong id="correctAnswers">0</strong>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-label">Current Streak</span>
-          <strong id="currentStreak">0</strong>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-label">Highest Score</span>
-          <strong id="highestScore">0</strong>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-label">Average Accuracy</span>
-          <strong id="averageAccuracy">0%</strong>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-label">Highest Accuracy</span>
-          <strong id="highestAccuracy">0%</strong>
-        </article>
-
-        <article class="stat-card">
-          <span class="stat-label">Average Time</span>
-          <strong id="averageTime">0 sec</strong>
-        </article>
-      </div>
-    </section>
-
-    <section class="details-grid">
-      <article class="details-card">
-        <div class="section-heading">
-          <div>
-            <p class="section-label">Category</p>
-            <h2>Favorite Category</h2>
-          </div>
-        </div>
-
-        <div id="favoriteCategoryContent">
-          <p>No quiz category data available.</p>
-        </div>
-      </article>
-
-      <article class="details-card">
-        <div class="section-heading">
-          <div>
-            <p class="section-label">Account</p>
-            <h2>Account Details</h2>
-          </div>
-        </div>
-
-        <dl class="account-details">
-          <div>
-            <dt>Joined</dt>
-            <dd id="createdAt">-</dd>
-          </div>
-
-          <div>
-            <dt>Last Login</dt>
-            <dd id="lastLoginAt">-</dd>
-          </div>
-
-          <div>
-            <dt>Last Quiz</dt>
-            <dd id="lastQuizDate">-</dd>
-          </div>
-
-          <div>
-            <dt>Total XP Earned</dt>
-            <dd id="totalXpEarned">0</dd>
-          </div>
-        </dl>
-      </article>
-    </section>
-  </main>
-
-  <div
-    id="profileModal"
-    class="modal hidden"
-    aria-hidden="true"
-  >
-    <div class="modal-backdrop" data-close-modal></div>
-
-    <section
-      class="modal-content"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="editProfileTitle"
-    >
-      <div class="modal-header">
-        <div>
-          <p class="section-label">Account</p>
-          <h2 id="editProfileTitle">Edit Profile</h2>
-        </div>
+        <p id="profileErrorMessage">
+          Something went wrong.
+        </p>
 
         <button
+          id="profileRetryButton"
           type="button"
-          class="close-button"
-          aria-label="Close profile editor"
-          data-close-modal
+          class="primary-button"
         >
-          ×
+          Try Again
         </button>
+      </section>
+
+      <div
+        id="profileContent"
+        class="hidden"
+      >
+        <!-- ==================================================
+             PROFILE HERO
+        =================================================== -->
+
+        <section class="profile-hero">
+          <div class="profile-hero-glow"></div>
+
+          <div class="profile-identity">
+            <div
+              id="profileAvatar"
+              class="profile-avatar"
+              aria-label="Profile avatar"
+            >
+              <span id="profileInitials">
+                <%= `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}` %>
+              </span>
+            </div>
+
+            <div class="profile-identity-content">
+              <div class="profile-name-row">
+                <div>
+                  <h2 id="profileFullName">
+                    <%= user?.firstName || "Player" %>
+                    <%= user?.lastName || "" %>
+                  </h2>
+
+                  <p id="profileEmail">
+                    <%= user?.email || "" %>
+                  </p>
+                </div>
+
+                <div class="profile-badges">
+                  <span
+                    id="profileRole"
+                    class="profile-role"
+                  >
+                    <%= user?.role || "user" %>
+                  </span>
+
+                  <span
+                    id="emailVerifiedBadge"
+                    class="verification-badge"
+                  >
+                    Verification pending
+                  </span>
+                </div>
+              </div>
+
+              <div class="profile-level-heading">
+                <span
+                  id="profileLevel"
+                  class="level-badge"
+                >
+                  Level 1
+                </span>
+
+                <strong id="profileRankTitle">
+                  Beginner
+                </strong>
+              </div>
+
+              <div class="level-progress-wrapper">
+                <div class="level-progress-header">
+                  <span id="levelXpText">
+                    0 XP
+                  </span>
+
+                  <span id="levelProgressText">
+                    0%
+                  </span>
+                </div>
+
+                <div
+                  id="levelProgressTrack"
+                  class="level-progress-track"
+                  role="progressbar"
+                  aria-label="Level progress"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                >
+                  <div
+                    id="levelProgressBar"
+                    class="level-progress-bar"
+                  ></div>
+                </div>
+
+                <p id="nextLevelText">
+                  Complete quizzes to earn XP and level up.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <button
+            id="editProfileButton"
+            class="primary-button profile-edit-button"
+            type="button"
+          >
+            Edit Profile
+          </button>
+        </section>
+
+        <!-- ==================================================
+             RANK AND PROFILE COMPLETION
+        =================================================== -->
+
+        <section
+          class="profile-overview-grid"
+          aria-label="Profile overview"
+        >
+          <article class="overview-card rank-overview-card">
+            <div
+              class="overview-icon"
+              aria-hidden="true"
+            >
+              🏆
+            </div>
+
+            <div class="overview-content">
+              <p class="overview-label">
+                Global Rank
+              </p>
+
+              <div class="overview-heading-row">
+                <h2 id="globalRank">
+                  --
+                </h2>
+
+                <span
+                  id="globalRankBadge"
+                  class="overview-badge"
+                >
+                  Ranking
+                </span>
+              </div>
+
+              <p id="globalRankText">
+                Loading ranking information...
+              </p>
+
+              <a
+                href="/leaderboard"
+                class="overview-link"
+              >
+                View Leaderboard →
+              </a>
+            </div>
+          </article>
+
+          <article class="overview-card completion-overview-card">
+            <div
+              class="overview-icon"
+              aria-hidden="true"
+            >
+              📋
+            </div>
+
+            <div class="overview-content">
+              <p class="overview-label">
+                Profile Completion
+              </p>
+
+              <div class="overview-heading-row">
+                <h2 id="completionPercent">
+                  0%
+                </h2>
+
+                <span
+                  id="completionBadge"
+                  class="overview-badge"
+                >
+                  In Progress
+                </span>
+              </div>
+
+              <div
+                id="completionTrack"
+                class="completion-track"
+                role="progressbar"
+                aria-label="Profile completion"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+              >
+                <div
+                  id="completionBar"
+                  class="completion-fill"
+                ></div>
+              </div>
+
+              <p id="completionText">
+                Loading profile completion...
+              </p>
+
+              <small id="completionMissing"></small>
+            </div>
+          </article>
+        </section>
+
+        <!-- ==================================================
+             STATISTICS
+        =================================================== -->
+
+        <section class="statistics-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-label">Performance</p>
+
+              <h2>Your Statistics</h2>
+            </div>
+
+            <a
+              href="/analytics"
+              class="section-link"
+            >
+              View Analytics →
+            </a>
+          </div>
+
+          <div class="statistics-grid">
+            <article class="stat-card">
+              <span
+                class="stat-icon"
+                aria-hidden="true"
+              >
+                ⚡
+              </span>
+
+              <div>
+                <span class="stat-label">
+                  Total XP
+                </span>
+
+                <strong id="totalXp">0</strong>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span
+                class="stat-icon"
+                aria-hidden="true"
+              >
+                🧠
+              </span>
+
+              <div>
+                <span class="stat-label">
+                  Quizzes Completed
+                </span>
+
+                <strong id="quizzesCompleted">0</strong>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span
+                class="stat-icon"
+                aria-hidden="true"
+              >
+                ✅
+              </span>
+
+              <div>
+                <span class="stat-label">
+                  Correct Answers
+                </span>
+
+                <strong id="correctAnswers">0</strong>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span
+                class="stat-icon"
+                aria-hidden="true"
+              >
+                🔥
+              </span>
+
+              <div>
+                <span class="stat-label">
+                  Current Streak
+                </span>
+
+                <strong id="currentStreak">0</strong>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span
+                class="stat-icon"
+                aria-hidden="true"
+              >
+                🎯
+              </span>
+
+              <div>
+                <span class="stat-label">
+                  Average Accuracy
+                </span>
+
+                <strong id="averageAccuracy">0%</strong>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span
+                class="stat-icon"
+                aria-hidden="true"
+              >
+                💯
+              </span>
+
+              <div>
+                <span class="stat-label">
+                  Perfect Scores
+                </span>
+
+                <strong id="perfectScores">0</strong>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span
+                class="stat-icon"
+                aria-hidden="true"
+              >
+                ⏱️
+              </span>
+
+              <div>
+                <span class="stat-label">
+                  Total Quiz Time
+                </span>
+
+                <strong id="totalTime">0m</strong>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span
+                class="stat-icon"
+                aria-hidden="true"
+              >
+                🏅
+              </span>
+
+              <div>
+                <span class="stat-label">
+                  Achievements
+                </span>
+
+                <strong id="achievementCount">0</strong>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <!-- ==================================================
+             ACHIEVEMENTS AND RECENT ATTEMPTS
+        =================================================== -->
+
+        <section class="activity-grid">
+          <article class="activity-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">
+                  Milestones
+                </p>
+
+                <h2>Recent Achievements</h2>
+              </div>
+
+              <a
+                href="/achievements"
+                class="section-link"
+              >
+                View All →
+              </a>
+            </div>
+
+            <div
+              id="recentAchievementsList"
+              class="achievement-list"
+              aria-live="polite"
+            >
+              <div class="content-loading">
+                Loading achievements...
+              </div>
+            </div>
+          </article>
+
+          <article class="activity-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">
+                  Latest Activity
+                </p>
+
+                <h2>Recent Quiz Attempts</h2>
+              </div>
+
+              <a
+                href="/history"
+                class="section-link"
+              >
+                View History →
+              </a>
+            </div>
+
+            <div
+              id="recentAttemptsList"
+              class="attempt-list"
+              aria-live="polite"
+            >
+              <div class="content-loading">
+                Loading quiz attempts...
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- ==================================================
+             FAVORITE CATEGORY AND ACCOUNT
+        =================================================== -->
+
+        <section class="details-grid">
+          <article class="details-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">
+                  Category
+                </p>
+
+                <h2>Favorite Category</h2>
+              </div>
+            </div>
+
+            <div id="favoriteCategoryContent">
+              <div class="content-loading">
+                Loading category statistics...
+              </div>
+            </div>
+          </article>
+
+          <article class="details-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">
+                  Account
+                </p>
+
+                <h2>Account Details</h2>
+              </div>
+
+              <a
+                href="/settings"
+                class="section-link"
+              >
+                Settings →
+              </a>
+            </div>
+
+            <dl class="account-details">
+              <div>
+                <dt>Email Status</dt>
+
+                <dd id="emailVerificationStatus">
+                  Checking...
+                </dd>
+              </div>
+
+              <div>
+                <dt>Joined</dt>
+
+                <dd id="createdAt">-</dd>
+              </div>
+
+              <div>
+                <dt>Last Login</dt>
+
+                <dd id="lastLoginAt">-</dd>
+              </div>
+
+              <div>
+                <dt>Last Quiz</dt>
+
+                <dd id="lastQuizDate">-</dd>
+              </div>
+
+              <div>
+                <dt>Total XP Earned</dt>
+
+                <dd id="totalXpEarned">0</dd>
+              </div>
+
+              <div>
+                <dt>Highest Score</dt>
+
+                <dd id="highestScore">0</dd>
+              </div>
+
+              <div>
+                <dt>Highest Accuracy</dt>
+
+                <dd id="highestAccuracy">0%</dd>
+              </div>
+
+              <div>
+                <dt>Average Quiz Time</dt>
+
+                <dd id="averageTime">0 sec</dd>
+              </div>
+            </dl>
+          </article>
+        </section>
       </div>
+    </main>
 
-      <form id="profileForm">
-        <div class="form-group">
-          <label for="firstName">First Name</label>
-          <input
-            id="firstName"
-            name="firstName"
-            type="text"
-            minlength="2"
-            maxlength="50"
-            required
-          />
-        </div>
+    <!-- ==================================================
+         EDIT PROFILE MODAL
+    =================================================== -->
 
-        <div class="form-group">
-          <label for="lastName">Last Name</label>
-          <input
-            id="lastName"
-            name="lastName"
-            type="text"
-            minlength="2"
-            maxlength="50"
-            required
-          />
-        </div>
+    <div
+      id="profileModal"
+      class="modal hidden"
+      aria-hidden="true"
+    >
+      <div
+        class="modal-backdrop"
+        data-close-modal
+      ></div>
 
-        <div class="form-group">
-          <label for="avatar">Avatar URL</label>
-          <input
-            id="avatar"
-            name="avatar"
-            type="url"
-            placeholder="https://example.com/avatar.jpg"
-          />
-        </div>
+      <section
+        class="modal-content"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="editProfileTitle"
+      >
+        <div class="modal-header">
+          <div>
+            <p class="section-label">
+              Account
+            </p>
 
-        <p id="profileMessage" class="form-message"></p>
+            <h2 id="editProfileTitle">
+              Edit Profile
+            </h2>
+          </div>
 
-        <div class="form-actions">
           <button
             type="button"
-            class="secondary-button"
+            class="close-button"
+            aria-label="Close profile editor"
             data-close-modal
           >
-            Cancel
-          </button>
-
-          <button
-            id="saveProfileButton"
-            type="submit"
-            class="primary-button"
-          >
-            Save Changes
+            ×
           </button>
         </div>
-      </form>
-    </section>
-  </div>
 
-  <script src="/js/profile.js" defer></script>
-</body>
+        <form
+          id="profileForm"
+          novalidate
+        >
+          <div class="form-row">
+            <div class="form-group">
+              <label for="firstName">
+                First Name
+              </label>
+
+              <input
+                id="firstName"
+                name="firstName"
+                type="text"
+                minlength="2"
+                maxlength="50"
+                autocomplete="given-name"
+                required
+              />
+            </div>
+
+            <div class="form-group">
+              <label for="lastName">
+                Last Name
+              </label>
+
+              <input
+                id="lastName"
+                name="lastName"
+                type="text"
+                minlength="2"
+                maxlength="50"
+                autocomplete="family-name"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="avatar">
+              Avatar URL
+            </label>
+
+            <input
+              id="avatar"
+              name="avatar"
+              type="url"
+              placeholder="https://example.com/avatar.jpg"
+              autocomplete="url"
+            />
+
+            <small>
+              Leave empty to use your initials.
+            </small>
+          </div>
+
+          <p
+            id="profileMessage"
+            class="form-message"
+            role="alert"
+            aria-live="polite"
+          ></p>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="secondary-button"
+              data-close-modal
+            >
+              Cancel
+            </button>
+
+            <button
+              id="saveProfileButton"
+              type="submit"
+              class="primary-button"
+            >
+              Save Changes
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </body>
 </html>

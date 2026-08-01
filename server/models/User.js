@@ -3,6 +3,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const validator = require("validator");
+const { getLevelInformation } = require("../services/levelService");
 
 const userSchema = new mongoose.Schema(
   {
@@ -152,6 +153,8 @@ userSchema.methods.comparePassword = async function comparePassword(
 };
 
 userSchema.methods.toSafeObject = function toSafeObject() {
+  const levelInformation = getLevelInformation(this.totalXp);
+
   return {
     id: this._id,
     firstName: this.firstName,
@@ -169,6 +172,13 @@ userSchema.methods.toSafeObject = function toSafeObject() {
     lastQuizDate: this.lastQuizDate,
     lastLoginAt: this.lastLoginAt,
     createdAt: this.createdAt,
+
+    level: levelInformation.level,
+    rankTitle: levelInformation.rankTitle,
+    levelProgress: levelInformation.progressPercentage,
+    xpRemainingForNextLevel: levelInformation.xpRemainingForNextLevel,
+    nextLevelTitle: levelInformation.nextLevelTitle || null,
+    isMaximumLevel: levelInformation.isMaximumLevel,
   };
 };
 

@@ -60,6 +60,14 @@ const elements = {
   avatar: document.getElementById("avatar"),
   profileMessage: document.getElementById("profileMessage"),
   saveProfileButton: document.getElementById("saveProfileButton"),
+
+  globalRank: document.getElementById("globalRank"),
+  globalRankText: document.getElementById("globalRankText"),
+
+  completionPercent: document.getElementById("completionPercent"),
+  completionBar: document.getElementById("completionBar"),
+  completionText: document.getElementById("completionText"),
+  completionMissing: document.getElementById("completionMissing"),
 };
 
 function toggleElement(element, shouldShow) {
@@ -684,6 +692,7 @@ function renderProfile(profile) {
 
   renderAvatar(profile);
   renderLevel(profile);
+  renderOverview(profile);
   renderVerification(profile);
   renderStatistics(profile);
   renderAccountDetails(profile);
@@ -919,4 +928,28 @@ if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initializeProfilePage);
 } else {
   initializeProfilePage();
+}
+function renderOverview(profile) {
+  if (profile.ranking) {
+    elements.globalRank.textContent = "#" + profile.ranking.rank;
+
+    elements.globalRankText.textContent = `of ${profile.ranking.totalPlayers} players • Top ${profile.ranking.topPercentage}%`;
+  }
+
+  if (profile.profileCompletion) {
+    elements.completionPercent.textContent =
+      profile.profileCompletion.completionPercentage + "%";
+
+    elements.completionBar.style.width =
+      profile.profileCompletion.completionPercentage + "%";
+
+    elements.completionText.textContent = `${profile.profileCompletion.completedItems} / ${profile.profileCompletion.totalItems} completed`;
+
+    if (profile.profileCompletion.missingItems.length) {
+      elements.completionMissing.textContent =
+        "Missing: " + profile.profileCompletion.missingItems.join(", ");
+    } else {
+      elements.completionMissing.textContent = "Profile Complete 🎉";
+    }
+  }
 }

@@ -5,6 +5,10 @@ const { createQuizNotifications } = require("../services/notificationService");
 const Question = require("../models/Question");
 const Score = require("../models/Score");
 const User = require("../models/User");
+const {
+  getLevelInformation,
+  didLevelIncrease,
+} = require("../services/levelService");
 
 const {
   checkAndUnlockAchievements,
@@ -342,7 +346,7 @@ async function submitQuiz(req, res, next) {
       timeTakenSeconds,
       completedAt: new Date(),
     });
-
+    const previousTotalXp = user.totalXp || 0;
     user.totalXp += xpEarned;
     user.quizzesCompleted += 1;
     user.correctAnswers += correctAnswers;
@@ -350,6 +354,9 @@ async function submitQuiz(req, res, next) {
     user.lastQuizDate = new Date();
 
     await user.save();
+    const levelChange = didLevelIncrease(previousTotalXp, user.totalXp);
+
+    const levelInformation = getLevelInformation(user.totalXp);
 
     let newlyUnlockedAchievements = [];
 
@@ -413,9 +420,42 @@ async function submitQuiz(req, res, next) {
 
       userStats: {
         totalXp: user.totalXp,
+
         quizzesCompleted: user.quizzesCompleted,
+
         correctAnswers: user.correctAnswers,
+
         currentStreak: user.currentStreak,
+
+        level: levelInformation.level,
+
+        rankTitle: levelInformation.rankTitle,
+
+        levelProgress: levelInformation.progressPercentage,
+
+        currentLevelMinimumXp: levelInformation.currentLevelMinimumXp,
+
+        nextLevelMinimumXp: levelInformation.nextLevelMinimumXp,
+
+        xpEarnedInCurrentLevel: levelInformation.xpEarnedInCurrentLevel,
+
+        xpRequiredForNextLevel: levelInformation.xpRequiredForNextLevel,
+
+        xpRemainingForNextLevel: levelInformation.xpRemainingForNextLevel,
+
+        nextLevelTitle: levelInformation.nextLevelTitle,
+
+        isMaximumLevel: levelInformation.isMaximumLevel,
+
+        leveledUp: levelChange.leveledUp,
+
+        previousLevel: levelChange.previousLevel,
+
+        currentLevel: levelChange.currentLevel,
+
+        previousRankTitle: levelChange.previousRankTitle,
+
+        currentRankTitle: levelChange.currentRankTitle,
       },
 
       newlyUnlockedAchievements,
