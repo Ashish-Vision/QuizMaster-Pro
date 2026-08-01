@@ -7,6 +7,7 @@ const resultState = {
   resultId: null,
   loading: false,
   reviewVisible: false,
+  animationFrameIds: new Set(),
 };
 
 const elements = {
@@ -39,6 +40,7 @@ const elements = {
   reviewAnswersButton: document.getElementById("reviewAnswersButton"),
 
   reviewSection: document.getElementById("reviewSection"),
+
   closeReviewButton: document.getElementById("closeReviewButton"),
 
   reviewList: document.getElementById("reviewList"),
@@ -49,6 +51,10 @@ const elements = {
 
   reviewUnansweredCount: document.getElementById("reviewUnansweredCount"),
 };
+
+/* ============================================================
+   Number and Formatting Helpers
+============================================================ */
 
 function getNumber(value) {
   const number = Number(value);
@@ -77,6 +83,166 @@ function formatTime(totalSeconds) {
     `${String(seconds).padStart(2, "0")}`
   );
 }
+
+/* ============================================================
+   Animation Helpers
+============================================================ */
+
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function cancelResultAnimations() {
+  resultState.animationFrameIds.forEach((animationFrameId) => {
+    window.cancelAnimationFrame(animationFrameId);
+  });
+
+  resultState.animationFrameIds.clear();
+}
+
+function animateNumber({
+  element,
+  from = 0,
+  to = 0,
+  duration = 900,
+  formatter = formatNumber,
+  delay = 0,
+}) {
+  if (!element) {
+    return;
+  }
+
+  const startValue = getNumber(from);
+  const targetValue = getNumber(to);
+
+  if (prefersReducedMotion() || duration <= 0 || startValue === targetValue) {
+    element.textContent = formatter(targetValue);
+
+    return;
+  }
+
+  let animationStartTime = null;
+  let delayStartTime = null;
+
+  function animationStep(timestamp) {
+    if (delayStartTime === null) {
+      delayStartTime = timestamp;
+    }
+
+    if (timestamp - delayStartTime < delay) {
+      const delayFrameId = window.requestAnimationFrame(animationStep);
+
+      resultState.animationFrameIds.add(delayFrameId);
+
+      return;
+    }
+
+    if (animationStartTime === null) {
+      animationStartTime = timestamp;
+    }
+
+    const elapsed = timestamp - animationStartTime;
+
+    const progress = Math.min(elapsed / duration, 1);
+
+    /*
+     * Ease-out cubic:
+     * starts quickly and slows near the target.
+     */
+    const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+    const currentValue =
+      startValue + (targetValue - startValue) * easedProgress;
+
+    element.textContent = formatter(currentValue);
+
+    if (progress < 1) {
+      const frameId = window.requestAnimationFrame(animationStep);
+
+      resultState.animationFrameIds.add(frameId);
+    } else {
+      element.textContent = formatter(targetValue);
+    }
+  }
+
+  const frameId = window.requestAnimationFrame(animationStep);
+
+  resultState.animationFrameIds.add(frameId);
+}
+
+function animateResultStatistics(result) {
+  cancelResultAnimations();
+
+  animateNumber({
+    element: elements.scoreValue,
+    from: 0,
+    to: result.correctAnswers,
+    duration: 700,
+    delay: 100,
+    formatter(value) {
+      return formatNumber(Math.round(value));
+    },
+  });
+
+  animateNumber({
+    element: elements.accuracyValue,
+    from: 0,
+    to: result.accuracy,
+    duration: 850,
+    delay: 180,
+    formatter(value) {
+      return `${value.toFixed(value >= 100 ? 0 : 1)}%`;
+    },
+  });
+
+  animateNumber({
+    element: elements.correctValue,
+    from: 0,
+    to: result.correctAnswers,
+    duration: 700,
+    delay: 220,
+    formatter(value) {
+      return formatNumber(Math.round(value));
+    },
+  });
+
+  animateNumber({
+    element: elements.wrongValue,
+    from: 0,
+    to: result.wrongAnswers,
+    duration: 700,
+    delay: 280,
+    formatter(value) {
+      return formatNumber(Math.round(value));
+    },
+  });
+
+  animateNumber({
+    element: elements.unansweredValue,
+    from: 0,
+    to: result.unansweredQuestions,
+    duration: 700,
+    delay: 340,
+    formatter(value) {
+      return formatNumber(Math.round(value));
+    },
+  });
+
+  animateNumber({
+    element: elements.xpValue,
+    from: 0,
+    to: result.xpEarned,
+    duration: 1200,
+    delay: 400,
+    formatter(value) {
+      return `+${formatNumber(Math.round(value))} XP`;
+    },
+  });
+}
+
+/* ============================================================
+   URL and Storage Helpers
+============================================================ */
 
 function getResultIdFromUrl() {
   const pathSegments = window.location.pathname.split("/").filter(Boolean);
@@ -112,6 +278,10 @@ async function parseJsonResponse(response) {
   return response.json();
 }
 
+/* ============================================================
+   Visibility Helpers
+============================================================ */
+
 function toggleElement(element, shouldShow) {
   if (!element) {
     return;
@@ -122,18 +292,27 @@ function toggleElement(element, shouldShow) {
 
 function showResult() {
   toggleElement(elements.resultError, false);
+
   toggleElement(elements.resultCard, true);
 }
 
 function showError(message = "") {
+  cancelResultAnimations();
+
   toggleElement(elements.resultCard, false);
+
   toggleElement(elements.reviewSection, false);
+
   toggleElement(elements.resultError, true);
 
   if (elements.resultErrorMessage && message) {
     elements.resultErrorMessage.textContent = message;
   }
 }
+
+/* ============================================================
+   Result Normalization
+============================================================ */
 
 function normalizeQuestion(question) {
   if (!question) {
@@ -142,9 +321,13 @@ function normalizeQuestion(question) {
 
   return {
     id: question._id || question.id || null,
+
     question: question.question || "Question unavailable",
+
     options: Array.isArray(question.options) ? question.options : [],
+
     explanation: question.explanation || "",
+
     difficulty: question.difficulty || "Easy",
   };
 }
@@ -159,6 +342,7 @@ function normalizeAnswer(answer, index) {
   return {
     index,
     question,
+
     selectedAnswer:
       answer.selectedAnswer === null || answer.selectedAnswer === undefined
         ? null
@@ -226,6 +410,10 @@ function normalizeResult(rawResult) {
   };
 }
 
+/* ============================================================
+   Daily Challenge Information
+============================================================ */
+
 function getDailyChallengeInformation() {
   const storedDailyChallenge = readStoredJson(
     "quizmaster_daily_challenge_result",
@@ -281,6 +469,10 @@ function renderDailyChallengeInformation(result) {
   }
 }
 
+/* ============================================================
+   Result Rendering
+============================================================ */
+
 function renderScoreProgress(result) {
   if (!elements.scoreCircle) {
     return;
@@ -309,6 +501,7 @@ function renderResult(rawResult) {
   }
 
   resultState.result = result;
+
   resultState.dailyChallenge = getDailyChallengeInformation();
 
   const isDailyChallenge = isDailyChallengeResult(result);
@@ -319,34 +512,37 @@ function renderResult(rawResult) {
       : `${result.category} Quiz`;
   }
 
+  /*
+   * Set initial values before animation starts.
+   */
   if (elements.scoreValue) {
-    elements.scoreValue.textContent = formatNumber(result.correctAnswers);
+    elements.scoreValue.textContent = "0";
   }
 
   if (elements.scoreTotal) {
-    elements.scoreTotal.textContent = `/ ${formatNumber(result.totalQuestions)}`;
+    elements.scoreTotal.textContent = `/ ${formatNumber(
+      result.totalQuestions,
+    )}`;
   }
 
   if (elements.accuracyValue) {
-    elements.accuracyValue.textContent = formatPercentage(result.accuracy);
+    elements.accuracyValue.textContent = "0%";
   }
 
   if (elements.correctValue) {
-    elements.correctValue.textContent = formatNumber(result.correctAnswers);
+    elements.correctValue.textContent = "0";
   }
 
   if (elements.wrongValue) {
-    elements.wrongValue.textContent = formatNumber(result.wrongAnswers);
+    elements.wrongValue.textContent = "0";
   }
 
   if (elements.unansweredValue) {
-    elements.unansweredValue.textContent = formatNumber(
-      result.unansweredQuestions,
-    );
+    elements.unansweredValue.textContent = "0";
   }
 
   if (elements.xpValue) {
-    elements.xpValue.textContent = `+${formatNumber(result.xpEarned)} XP`;
+    elements.xpValue.textContent = "+0 XP";
   }
 
   if (elements.timeValue) {
@@ -354,18 +550,33 @@ function renderResult(rawResult) {
   }
 
   renderScoreProgress(result);
+
   renderDailyChallengeInformation(result);
+
   renderReview(result);
 
   if (elements.reviewAnswersButton && result.answers.length === 0) {
     elements.reviewAnswersButton.disabled = true;
+
     elements.reviewAnswersButton.textContent = "Review Unavailable";
   }
 
   showResult();
 
+  /*
+   * Begin all result animations after
+   * the result card becomes visible.
+   */
+  window.requestAnimationFrame(() => {
+    animateResultStatistics(result);
+  });
+
   return true;
 }
+
+/* ============================================================
+   Review Rendering
+============================================================ */
 
 function getOptionText(question, answerIndex) {
   if (answerIndex === null || answerIndex === undefined) {
@@ -391,6 +602,7 @@ function createAnswerBlock({ label, value, className, icon }) {
   const heading = document.createElement("span");
 
   heading.className = "review-answer-label";
+
   heading.textContent = `${icon} ${label}`;
 
   const answerText = document.createElement("strong");
@@ -424,6 +636,7 @@ function createReviewItem(answer) {
   const questionNumber = document.createElement("span");
 
   questionNumber.className = "review-question-number";
+
   questionNumber.textContent = `Question ${answer.index + 1}`;
 
   const difficulty = document.createElement("span");
@@ -449,16 +662,20 @@ function createReviewItem(answer) {
   const correctAnswerText = getOptionText(question, answer.correctAnswer);
 
   let selectedClass = "selected-answer";
+
   let selectedIcon = "➖";
 
   if (answer.selectedAnswer === null) {
     selectedClass += " unanswered-answer";
+
     selectedIcon = "⚪";
   } else if (answer.isCorrect) {
     selectedClass += " correct-answer";
+
     selectedIcon = "✅";
   } else {
     selectedClass += " wrong-answer";
+
     selectedIcon = "❌";
   }
 
@@ -525,6 +742,7 @@ function renderReview(result) {
     const empty = document.createElement("div");
 
     empty.className = "review-empty";
+
     empty.textContent = "Answer details are not available for this result.";
 
     elements.reviewList.appendChild(empty);
@@ -536,6 +754,10 @@ function renderReview(result) {
     elements.reviewList.appendChild(createReviewItem(answer));
   });
 }
+
+/* ============================================================
+   Result Loading
+============================================================ */
 
 async function fetchResult(resultId) {
   const response = await fetch(
@@ -575,6 +797,7 @@ async function loadResult() {
   }
 
   resultState.loading = true;
+
   resultState.resultId = getResultIdFromUrl();
 
   try {
@@ -608,6 +831,10 @@ async function loadResult() {
   }
 }
 
+/* ============================================================
+   Review Toggle
+============================================================ */
+
 function toggleReview(forceState = null) {
   if (!resultState.result || !resultState.result.answers.length) {
     return;
@@ -637,6 +864,10 @@ function toggleReview(forceState = null) {
   }
 }
 
+/* ============================================================
+   Retry Navigation
+============================================================ */
+
 function retryQuiz() {
   const result = resultState.result;
 
@@ -665,6 +896,10 @@ function retryQuiz() {
   )}`;
 }
 
+/* ============================================================
+   Event Listeners
+============================================================ */
+
 elements.retryQuizButton?.addEventListener("click", retryQuiz);
 
 elements.reviewAnswersButton?.addEventListener("click", () => {
@@ -674,5 +909,7 @@ elements.reviewAnswersButton?.addEventListener("click", () => {
 elements.closeReviewButton?.addEventListener("click", () => {
   toggleReview(false);
 });
+
+window.addEventListener("beforeunload", cancelResultAnimations);
 
 loadResult();
