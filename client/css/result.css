@@ -561,3 +561,180 @@ button {
     transition: none;
   }
 }
+.levelup-overlay {
+  position: fixed;
+  inset: 0;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(10px);
+
+  z-index: 99999;
+}
+
+.levelup-card {
+  width: 430px;
+
+  padding: 45px;
+
+  border-radius: 28px;
+
+  background: #14243a;
+
+  border: 1px solid rgba(124, 92, 255, 0.35);
+
+  text-align: center;
+
+  animation: popup 0.45s ease;
+
+  box-shadow:
+    0 0 40px rgba(124, 92, 255, 0.35),
+    0 0 120px rgba(18, 194, 233, 0.12);
+}
+
+.levelup-icon {
+  font-size: 70px;
+
+  margin-bottom: 20px;
+}
+
+.levelup-card h2 {
+  color: #7c5cff;
+
+  font-size: 42px;
+
+  margin-bottom: 25px;
+}
+
+.level-transition {
+  font-size: 32px;
+
+  font-weight: 700;
+
+  margin-bottom: 15px;
+}
+
+.rank-transition {
+  color: #9aa9bd;
+
+  margin-bottom: 35px;
+}
+
+@keyframes popup {
+  from {
+    transform: scale(0.7);
+
+    opacity: 0;
+  }
+
+  to {
+    transform: scale(1);
+
+    opacity: 1;
+  }
+}
+body.celebration-open {
+  overflow: hidden;
+}
+
+.levelup-xp-message {
+  margin: 0 0 24px;
+  color: var(--success);
+  font-size: 1rem;
+  font-weight: 800;
+}
+
+.levelup-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.levelup-confetti-piece {
+  position: absolute;
+  top: -30px;
+  left: var(--confetti-left);
+  width: var(--confetti-size);
+  height: calc(var(--confetti-size) * 1.7);
+  border-radius: 2px;
+  opacity: 0;
+  animation: levelupConfettiFall var(--confetti-duration)
+    cubic-bezier(0.12, 0.65, 0.35, 1) var(--confetti-delay) forwards;
+}
+
+.levelup-confetti-piece[data-color-index="0"] {
+  background: #7c5cff;
+}
+
+.levelup-confetti-piece[data-color-index="1"] {
+  background: #12c2e9;
+}
+
+.levelup-confetti-piece[data-color-index="2"] {
+  background: #31d0aa;
+}
+
+.levelup-confetti-piece[data-color-index="3"] {
+  background: #f5b942;
+}
+
+.levelup-confetti-piece[data-color-index="4"] {
+  background: #ff647c;
+}
+
+.levelup-confetti-piece[data-color-index="5"] {
+  background: #f5f7fb;
+}
+
+@keyframes levelupConfettiFall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -30px, 0) rotate(0deg);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--confetti-movement), 110vh, 0)
+      rotate(var(--confetti-rotation));
+  }
+}
+
+@media (max-width: 520px) {
+  .levelup-card {
+    width: min(100%, 380px);
+    padding: 32px 22px;
+  }
+
+  .levelup-card h2 {
+    font-size: 2.1rem;
+  }
+
+  .level-transition {
+    font-size: 1.35rem;
+  }
+
+  .rank-transition {
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    gap: 7px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .levelup-card {
+    animation: none;
+  }
+
+  .levelup-confetti-piece {
+    animation: none;
+  }
+}

@@ -161,7 +161,39 @@
         <a href="/dashboard" class="primary-button"> Return to Dashboard </a>
       </section>
     </main>
+    <div
+      id="levelUpOverlay"
+      class="levelup-overlay hidden"
+      role="dialog"
+      aria-modal="true"
+      aria-hidden="true"
+      aria-labelledby="levelUpTitle"
+    >
+      <div class="levelup-card">
+        <div class="levelup-icon">🎉</div>
+
+        <h2 id="levelUpTitle">LEVEL UP!</h2>
+
+        <p class="level-transition">
+          <span id="oldLevel"></span>
+          →
+          <span id="newLevel"></span>
+        </p>
+
+        <div class="rank-transition">
+          <span id="oldRank"></span>
+          →
+          <span id="newRank"></span>
+        </div>
+
+        <button id="continueButton" type="button" class="primary-button">
+          Continue
+        </button>
+      </div>
+    </div>
 
     <script src="/js/result.js" defer></script>
+    <script src="/js/result.js" defer></script>
+    <script src="/js/result-celebrations.js" defer></script>
   </body>
 </html>
