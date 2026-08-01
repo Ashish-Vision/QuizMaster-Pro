@@ -203,6 +203,297 @@
       </section>
 
       <!-- ==================================================
+           DAILY CHALLENGE
+      =================================================== -->
+
+      <section
+        id="dailyChallengeSection"
+        class="daily-challenge-section"
+        aria-labelledby="dailyChallengeSectionTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-label">
+              Today&apos;s Special Quiz
+            </p>
+
+            <h2 id="dailyChallengeSectionTitle">
+              🔥 Daily Challenge
+            </h2>
+          </div>
+
+          <span
+            id="dailyChallengeStatus"
+            class="daily-challenge-status"
+          >
+            Loading...
+          </span>
+        </div>
+
+        <div class="daily-challenge-card">
+          <div
+            class="daily-challenge-glow"
+            aria-hidden="true"
+          ></div>
+
+          <!-- Loading State -->
+
+          <div
+            id="dailyChallengeLoading"
+            class="daily-challenge-state"
+          >
+            <div
+              class="daily-challenge-spinner"
+              aria-hidden="true"
+            ></div>
+
+            <p>
+              Preparing today&apos;s challenge...
+            </p>
+          </div>
+
+          <!-- Error State -->
+
+          <div
+            id="dailyChallengeError"
+            class="daily-challenge-state hidden"
+          >
+            <span
+              class="daily-challenge-state-icon"
+              aria-hidden="true"
+            >
+              ⚠️
+            </span>
+
+            <h3>
+              Daily challenge unavailable
+            </h3>
+
+            <p id="dailyChallengeErrorMessage">
+              Unable to load today&apos;s challenge.
+            </p>
+
+            <button
+              id="dailyChallengeRetryButton"
+              type="button"
+              class="daily-challenge-secondary-button"
+            >
+              Try Again
+            </button>
+          </div>
+
+          <!-- Challenge Content -->
+
+          <div
+            id="dailyChallengeContent"
+            class="daily-challenge-content hidden"
+          >
+            <div class="daily-challenge-main">
+              <div
+                id="dailyChallengeIcon"
+                class="daily-challenge-icon"
+                aria-hidden="true"
+              >
+                🔥
+              </div>
+
+              <div class="daily-challenge-information">
+                <div class="daily-challenge-title-row">
+                  <div>
+                    <p class="daily-challenge-eyebrow">
+                      Daily Challenge
+                    </p>
+
+                    <h3 id="dailyChallengeTitle">
+                      Today&apos;s Challenge
+                    </h3>
+                  </div>
+
+                  <span
+                    id="dailyChallengeDifficulty"
+                    class="daily-challenge-difficulty"
+                  >
+                    Mixed
+                  </span>
+                </div>
+
+                <p
+                  id="dailyChallengeDescription"
+                  class="daily-challenge-description"
+                >
+                  Complete today&apos;s special quiz to earn bonus XP.
+                </p>
+
+                <div class="daily-challenge-category-row">
+                  <span class="daily-challenge-category-label">
+                    Category
+                  </span>
+
+                  <strong id="dailyChallengeCategory">
+                    Loading...
+                  </strong>
+                </div>
+
+                <div class="daily-challenge-meta-grid">
+                  <article class="daily-challenge-meta-card">
+                    <span
+                      class="daily-challenge-meta-icon"
+                      aria-hidden="true"
+                    >
+                      🧠
+                    </span>
+
+                    <div>
+                      <small>
+                        Questions
+                      </small>
+
+                      <strong id="dailyChallengeQuestionCount">
+                        5 Questions
+                      </strong>
+                    </div>
+                  </article>
+
+                  <article class="daily-challenge-meta-card">
+                    <span
+                      class="daily-challenge-meta-icon"
+                      aria-hidden="true"
+                    >
+                      ⚡
+                    </span>
+
+                    <div>
+                      <small>
+                        Bonus Reward
+                      </small>
+
+                      <strong id="dailyChallengeRewardXp">
+                        +100 XP
+                      </strong>
+                    </div>
+                  </article>
+
+                  <article class="daily-challenge-meta-card">
+                    <span
+                      class="daily-challenge-meta-icon"
+                      aria-hidden="true"
+                    >
+                      🏆
+                    </span>
+
+                    <div>
+                      <small>
+                        Reward Badge
+                      </small>
+
+                      <strong id="dailyChallengeRewardBadge">
+                        Daily Challenger
+                      </strong>
+                    </div>
+                  </article>
+
+                  <article class="daily-challenge-meta-card">
+                    <span
+                      class="daily-challenge-meta-icon"
+                      aria-hidden="true"
+                    >
+                      ⏳
+                    </span>
+
+                    <div>
+                      <small>
+                        Time Remaining
+                      </small>
+
+                      <strong id="dailyChallengeCountdown">
+                        00:00:00
+                      </strong>
+                    </div>
+                  </article>
+                </div>
+
+                <button
+                  id="dailyChallengeStartButton"
+                  type="button"
+                  class="daily-challenge-start-button"
+                >
+                  Start Daily Challenge
+                </button>
+              </div>
+            </div>
+
+            <!-- Completed State -->
+
+            <div
+              id="dailyChallengeCompleted"
+              class="daily-challenge-completed hidden"
+            >
+              <div class="daily-challenge-completed-heading">
+                <span aria-hidden="true">
+                  ✅
+                </span>
+
+                <div>
+                  <p>
+                    Challenge Completed
+                  </p>
+
+                  <h3>
+                    Excellent work!
+                  </h3>
+                </div>
+              </div>
+
+              <div class="daily-challenge-completed-grid">
+                <div>
+                  <span>
+                    Score
+                  </span>
+
+                  <strong id="dailyChallengeCompletedScore">
+                    0 / 0
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Accuracy
+                  </span>
+
+                  <strong id="dailyChallengeCompletedAccuracy">
+                    0%
+                  </strong>
+                </div>
+
+                <div>
+                  <span>
+                    Bonus XP
+                  </span>
+
+                  <strong id="dailyChallengeCompletedXp">
+                    +0 XP
+                  </strong>
+                </div>
+              </div>
+
+              <p>
+                You have completed today&apos;s challenge.
+                Come back tomorrow for a new one.
+              </p>
+
+              <a
+                id="dailyChallengeResultLink"
+                href="/history"
+                class="daily-challenge-result-link hidden"
+              >
+                View Challenge Result →
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ==================================================
            SEARCH
       =================================================== -->
 
@@ -725,6 +1016,11 @@
 
     <script
       src="/js/dashboard.js"
+      defer
+    ></script>
+
+    <script
+      src="/js/daily-challenge.js"
       defer
     ></script>
 
