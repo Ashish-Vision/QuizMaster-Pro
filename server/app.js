@@ -20,25 +20,30 @@ const historyRoutes = require("./routes/historyRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const achievementRoutes = require("./routes/achievementRoutes");
 const analyticsRoutes = require("./routes/analyticsRoutes");
+const settingsRoutes = require("./routes/settingsRoutes");
+const passwordResetRoutes = require("./routes/passwordResetRoutes");
+const emailVerificationRoutes = require("./routes/emailVerificationRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
+const dailyChallengeRoutes = require("./routes/dailyChallengeRoutes");
+
 const adminRoutes = require("./routes/adminRoutes");
 const adminQuestionRoutes = require("./routes/adminQuestionRoutes");
 const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminAttemptRoutes = require("./routes/adminAttemptRoutes");
-const settingsRoutes = require("./routes/settingsRoutes");
-const passwordResetRoutes = require("./routes/passwordResetRoutes");
-const emailVerificationRoutes = require("./routes/emailVerificationRoutes");
-const notificationRoutes = require("./routes/notificationRoutes");
 
 /* ============================================================
    Middleware Imports
 ============================================================ */
 
 const { protect } = require("./middleware/authMiddleware");
-
 const { adminOnly } = require("./middleware/adminMiddleware");
 
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
+
+/* ============================================================
+   Application
+============================================================ */
 
 const app = express();
 
@@ -79,8 +84,9 @@ app.use(
   cors({
     origin(origin, callback) {
       /*
-       * Requests from browsers normally include Origin.
-       * Direct navigation, Postman and server requests may not.
+       * Browser requests normally include an Origin header.
+       * Direct navigation, Postman and server-to-server
+       * requests may not include one.
        */
       if (!origin) {
         return callback(null, true);
@@ -179,6 +185,7 @@ app.get("/verify-email", (req, res) => {
 app.get("/resend-verification", (req, res) => {
   return res.render("resend-verification");
 });
+
 /* ============================================================
    Protected User Page Routes
 ============================================================ */
@@ -245,35 +252,15 @@ app.get("/settings", protect, (req, res) => {
   });
 });
 
-app.get("/forgot-password", (req, res) => {
-  return res.render("forgot-password");
-});
-
-app.get("/reset-password", (req, res) => {
-  return res.render("reset-password", {
-    token: typeof req.query.token === "string" ? req.query.token : "",
-  });
-});
-
 app.get("/notifications", protect, (req, res) => {
   return res.render("notifications", {
     user: req.user,
   });
 });
+
 /* ============================================================
    Protected Administrator Page Routes
 ============================================================ */
-
-app.get("/admin", protect, adminOnly, (req, res) => {
-  return res.render("admin/dashboard", {
-    user: req.user,
-  });
-});
-
-/*
- * These routes are being prepared for later phases.
- * They can all use the same dashboard layout temporarily.
- */
 
 app.get("/admin", protect, adminOnly, (req, res) => {
   return res.render("admin/dashboard", {
@@ -317,6 +304,8 @@ app.use("/api/password-reset", passwordResetRoutes);
 
 app.use("/api/quiz", quizRoutes);
 
+app.use("/api/daily-challenge", dailyChallengeRoutes);
+
 app.use("/api/users", userRoutes);
 
 app.use("/api/leaderboard", leaderboardRoutes);
@@ -331,6 +320,12 @@ app.use("/api/achievements", achievementRoutes);
 
 app.use("/api/analytics", analyticsRoutes);
 
+app.use("/api/notifications", notificationRoutes);
+
+/* ============================================================
+   Administrator API Routes
+============================================================ */
+
 app.use("/api/admin/attempts", adminAttemptRoutes);
 
 app.use("/api/admin/users", adminUserRoutes);
@@ -340,8 +335,6 @@ app.use("/api/admin/categories", adminCategoryRoutes);
 app.use("/api/admin/questions", adminQuestionRoutes);
 
 app.use("/api/admin", adminRoutes);
-
-app.use("/api/notifications", notificationRoutes);
 
 /* ============================================================
    Health Check

@@ -53,10 +53,6 @@ const dailyChallengeCompletionSchema = new mongoose.Schema(
 
 const dailyChallengeSchema = new mongoose.Schema(
   {
-    /*
-     * Stored in YYYY-MM-DD format using UTC.
-     * Only one challenge may exist for each date.
-     */
     dateKey: {
       type: String,
       required: true,
@@ -95,9 +91,9 @@ const dailyChallengeSchema = new mongoose.Schema(
 
     difficulty: {
       type: String,
-      enum: ["Easy", "Medium", "Hard"],
+      enum: ["Easy", "Medium", "Hard", "Mixed"],
       required: true,
-      default: "Medium",
+      default: "Mixed",
       index: true,
     },
 
@@ -199,11 +195,7 @@ dailyChallengeSchema.path("questions").validate(function validateQuestions(
 dailyChallengeSchema.path("expiresAt").validate(function validateExpiration(
   expiresAt,
 ) {
-  if (!this.startsAt || !expiresAt) {
-    return false;
-  }
-
-  return expiresAt > this.startsAt;
+  return Boolean(this.startsAt && expiresAt && expiresAt > this.startsAt);
 }, "Daily challenge expiration must be after its start time.");
 
 dailyChallengeSchema.methods.hasUserCompleted = function hasUserCompleted(
