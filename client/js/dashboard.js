@@ -33,6 +33,19 @@ const elements = {
   dashboardAchievementsList: document.getElementById(
     "dashboardAchievementsList",
   ),
+  notificationButton: document.getElementById("notificationButton"),
+
+  notificationBadge: document.getElementById("notificationBadge"),
+
+  notificationDropdown: document.getElementById("notificationDropdown"),
+
+  notificationDropdownCount: document.getElementById(
+    "notificationDropdownCount",
+  ),
+
+  notificationDropdownList: document.getElementById("notificationDropdownList"),
+
+  markDropdownReadButton: document.getElementById("markDropdownReadButton"),
 };
 
 /* ============================================================
