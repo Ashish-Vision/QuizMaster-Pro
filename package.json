@@ -11,7 +11,8 @@
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
     "seed:questions": "node server/database/seedQuestions.js",
-    "reset:questions": "node server/database/resetQuestions.js"
+    "reset:questions": "node server/database/resetQuestions.js",
+    "test:email": "node scripts/testEmailConnection.js"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +32,7 @@
     "mongoose": "^9.9.0",
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
+    "nodemailer": "^9.0.3",
     "socket.io": "^4.8.3",
     "uuid": "^14.0.1",
     "validator": "^13.15.35"

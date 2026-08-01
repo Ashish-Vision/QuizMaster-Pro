@@ -6,6 +6,8 @@ const validator = require("validator");
 
 const User = require("../models/User");
 
+const { sendPasswordResetEmail } = require("../services/emailService");
+
 const RESET_TOKEN_EXPIRY_MINUTES = 15;
 
 function normalizeEmail(value) {
@@ -69,6 +71,41 @@ async function requestPasswordReset(req, res, next) {
     });
 
     const resetUrl = createResetUrl(req, rawToken);
+
+    try {
+      await sendPasswordResetEmail({
+        to: user.email,
+        firstName: user.firstName,
+        resetUrl,
+        expiresInMinutes: RESET_TOKEN_EXPIRY_MINUTES,
+      });
+    } catch (emailError) {
+      /*
+       * Invalidate the token because the user did not
+       * receive the corresponding reset URL.
+       */
+      user.passwordResetToken = null;
+      user.passwordResetExpires = null;
+
+      await user.save({
+        validateBeforeSave: false,
+      });
+
+      console.error("Password-reset email failed:", emailError.message);
+
+      if (process.env.NODE_ENV === "production") {
+        return res.status(503).json({
+          success: false,
+          message:
+            "Password-reset email could not be sent. Please try again later.",
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: `Email delivery failed: ${emailError.message}`,
+      });
+    }
 
     /*
      * During local development, return the reset URL so the
