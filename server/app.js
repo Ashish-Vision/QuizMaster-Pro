@@ -28,6 +28,7 @@ const adminAttemptRoutes = require("./routes/adminAttemptRoutes");
 const settingsRoutes = require("./routes/settingsRoutes");
 const passwordResetRoutes = require("./routes/passwordResetRoutes");
 const emailVerificationRoutes = require("./routes/emailVerificationRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 /* ============================================================
    Middleware Imports
@@ -253,6 +254,12 @@ app.get("/reset-password", (req, res) => {
     token: typeof req.query.token === "string" ? req.query.token : "",
   });
 });
+
+app.get("/notifications", protect, (req, res) => {
+  return res.render("notifications", {
+    user: req.user,
+  });
+});
 /* ============================================================
    Protected Administrator Page Routes
 ============================================================ */
@@ -333,6 +340,8 @@ app.use("/api/admin/categories", adminCategoryRoutes);
 app.use("/api/admin/questions", adminQuestionRoutes);
 
 app.use("/api/admin", adminRoutes);
+
+app.use("/api/notifications", notificationRoutes);
 
 /* ============================================================
    Health Check

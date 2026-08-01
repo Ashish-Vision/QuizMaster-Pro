@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="View your QuizMaster Pro notifications."
+    />
+
+    <title>Notifications | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/notifications.css" />
+
+    <script src="/js/notifications.js" defer></script>
+  </head>
+
+  <body>
+    <main class="notifications-page">
+      <header class="notifications-header">
+        <a href="/dashboard" class="brand">
+          <span class="brand-icon">Q</span>
+          <span>QuizMaster Pro</span>
+        </a>
+
+        <nav class="header-navigation">
+          <a href="/dashboard">Dashboard</a>
+          <a href="/profile">Profile</a>
+
+          <span class="current-user"> <%= user?.firstName || "Player" %> </span>
+        </nav>
+      </header>
+
+      <section class="notifications-hero">
+        <div>
+          <p class="section-label">Activity center</p>
+
+          <h1>Your Notifications</h1>
+
+          <p>
+            Review quiz results, XP rewards, streak updates and unlocked
+            achievements.
+          </p>
+        </div>
+
+        <div class="hero-icon" aria-hidden="true">🔔</div>
+      </section>
+
+      <section class="notifications-toolbar">
+        <div class="filter-buttons">
+          <button type="button" class="filter-button active" data-filter="all">
+            All
+          </button>
+
+          <button type="button" class="filter-button" data-filter="unread">
+            Unread
+          </button>
+
+          <button type="button" class="filter-button" data-filter="quiz">
+            Quiz
+          </button>
+
+          <button type="button" class="filter-button" data-filter="achievement">
+            Achievements
+          </button>
+
+          <button type="button" class="filter-button" data-filter="xp">
+            XP
+          </button>
+
+          <button type="button" class="filter-button" data-filter="streak">
+            Streak
+          </button>
+        </div>
+
+        <button id="markAllReadButton" type="button" class="secondary-button">
+          Mark All as Read
+        </button>
+      </section>
+
+      <section id="notificationsLoading" class="state-card">
+        <div class="spinner"></div>
+
+        <p>Loading notifications...</p>
+      </section>
+
+      <section id="notificationsError" class="state-card hidden">
+        <span class="state-icon">⚠️</span>
+
+        <h2>Unable to load notifications</h2>
+
+        <p id="notificationsErrorMessage">Something went wrong.</p>
+
+        <button
+          id="notificationsRetryButton"
+          type="button"
+          class="primary-button"
+        >
+          Try Again
+        </button>
+      </section>
+
+      <section id="notificationsContent" class="notifications-content hidden">
+        <div class="notifications-summary">
+          <span>
+            <strong id="notificationTotal">0</strong>
+            notifications
+          </span>
+
+          <span>
+            <strong id="notificationUnread">0</strong>
+            unread
+          </span>
+        </div>
+
+        <div
+          id="notificationsList"
+          class="notifications-list"
+          aria-live="polite"
+        ></div>
+
+        <div id="notificationsEmpty" class="empty-state hidden">
+          <span aria-hidden="true">🔕</span>
+
+          <h2>No notifications found</h2>
+
+          <p>
+            New quiz results, achievements and account updates will appear here.
+          </p>
+        </div>
+
+        <nav
+          id="notificationsPagination"
+          class="pagination hidden"
+          aria-label="Notifications pagination"
+        >
+          <button id="previousPageButton" type="button">Previous</button>
+
+          <span id="paginationText"> Page 1 of 1 </span>
+
+          <button id="nextPageButton" type="button">Next</button>
+        </nav>
+      </section>
+    </main>
+  </body>
+</html>

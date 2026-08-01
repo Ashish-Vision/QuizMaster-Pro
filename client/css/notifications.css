@@ -1,0 +1,576 @@
+:root {
+  --background: #07111f;
+  --surface: rgba(13, 27, 45, 0.94);
+  --surface-light: #14243a;
+  --surface-hover: #1a2f4b;
+  --primary: #7c5cff;
+  --secondary: #14c8e8;
+  --success: #31d0aa;
+  --warning: #f5b942;
+  --danger: #ff647c;
+  --text: #f6f8fc;
+  --muted: #9cabbe;
+  --border: rgba(255, 255, 255, 0.1);
+  --shadow: 0 24px 70px rgba(0, 0, 0, 0.34);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(124, 92, 255, 0.18),
+      transparent 32%
+    ),
+    radial-gradient(
+      circle at bottom right,
+      rgba(20, 200, 232, 0.12),
+      transparent 30%
+    ),
+    var(--background);
+
+  color: var(--text);
+
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  border: 0;
+  font: inherit;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.notifications-page {
+  width: min(100%, 1120px);
+
+  margin: 0 auto;
+
+  padding: 28px 20px 60px;
+}
+
+.notifications-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 24px;
+
+  padding: 17px 22px;
+
+  border: 1px solid var(--border);
+  border-radius: 20px;
+
+  background: rgba(13, 27, 45, 0.82);
+
+  box-shadow: var(--shadow);
+}
+
+.brand {
+  display: flex;
+
+  align-items: center;
+
+  gap: 11px;
+
+  font-weight: 850;
+}
+
+.brand-icon {
+  display: grid;
+
+  width: 38px;
+  height: 38px;
+
+  place-items: center;
+
+  border-radius: 12px;
+
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+}
+
+.header-navigation {
+  display: flex;
+
+  align-items: center;
+
+  gap: 20px;
+}
+
+.header-navigation a {
+  color: var(--muted);
+}
+
+.header-navigation a:hover {
+  color: var(--text);
+}
+
+.current-user {
+  padding: 9px 13px;
+
+  border: 1px solid var(--border);
+  border-radius: 12px;
+
+  background: var(--surface-light);
+}
+
+.notifications-hero {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 30px;
+
+  margin-top: 28px;
+
+  padding: 42px;
+
+  border: 1px solid var(--border);
+  border-radius: 28px;
+
+  background:
+    linear-gradient(135deg, rgba(124, 92, 255, 0.19), rgba(20, 200, 232, 0.09)),
+    var(--surface);
+
+  box-shadow: var(--shadow);
+}
+
+.section-label {
+  color: var(--secondary);
+
+  font-size: 0.8rem;
+  font-weight: 850;
+
+  letter-spacing: 0.13em;
+
+  text-transform: uppercase;
+}
+
+.notifications-hero h1 {
+  margin-top: 10px;
+
+  font-size: clamp(2rem, 5vw, 3.4rem);
+}
+
+.notifications-hero p:last-child {
+  max-width: 650px;
+
+  margin-top: 14px;
+
+  color: var(--muted);
+
+  line-height: 1.7;
+}
+
+.hero-icon {
+  display: grid;
+
+  width: 110px;
+  height: 110px;
+
+  flex-shrink: 0;
+
+  place-items: center;
+
+  border: 1px solid var(--border);
+  border-radius: 28px;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  font-size: 3.6rem;
+}
+
+.notifications-toolbar {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 18px;
+
+  margin-top: 28px;
+}
+
+.filter-buttons {
+  display: flex;
+
+  flex-wrap: wrap;
+
+  gap: 10px;
+}
+
+.filter-button,
+.secondary-button {
+  padding: 10px 15px;
+
+  border: 1px solid var(--border);
+  border-radius: 11px;
+
+  background: var(--surface);
+
+  color: var(--muted);
+
+  cursor: pointer;
+}
+
+.filter-button.active {
+  border-color: var(--primary);
+
+  background: rgba(124, 92, 255, 0.18);
+
+  color: var(--text);
+}
+
+.secondary-button {
+  color: var(--secondary);
+
+  font-weight: 800;
+}
+
+.secondary-button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.5;
+}
+
+.notifications-content {
+  margin-top: 24px;
+}
+
+.notifications-summary {
+  display: flex;
+
+  justify-content: space-between;
+
+  margin-bottom: 14px;
+
+  color: var(--muted);
+}
+
+.notifications-summary strong {
+  color: var(--text);
+}
+
+.notifications-list {
+  display: grid;
+
+  gap: 14px;
+}
+
+.notification-card {
+  display: grid;
+
+  grid-template-columns: auto minmax(0, 1fr) auto;
+
+  align-items: center;
+
+  gap: 18px;
+
+  padding: 20px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background: var(--surface);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+
+  cursor: default;
+}
+
+.notification-card[role="link"] {
+  cursor: pointer;
+}
+
+.notification-card:hover {
+  transform: translateY(-2px);
+
+  background: var(--surface-hover);
+}
+
+.notification-card.unread {
+  border-color: rgba(124, 92, 255, 0.45);
+
+  background:
+    linear-gradient(135deg, rgba(124, 92, 255, 0.11), rgba(20, 200, 232, 0.04)),
+    var(--surface);
+}
+
+.notification-icon {
+  display: grid;
+
+  width: 52px;
+  height: 52px;
+
+  place-items: center;
+
+  border-radius: 16px;
+
+  background: rgba(124, 92, 255, 0.14);
+
+  font-size: 1.5rem;
+}
+
+.notification-heading {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 16px;
+}
+
+.notification-heading h2 {
+  font-size: 1rem;
+}
+
+.notification-heading time {
+  color: var(--muted);
+
+  font-size: 0.76rem;
+}
+
+.notification-card-content > p {
+  margin-top: 7px;
+
+  color: var(--muted);
+
+  line-height: 1.55;
+}
+
+.notification-metadata {
+  margin-top: 10px;
+}
+
+.notification-metadata span {
+  display: inline-flex;
+
+  padding: 5px 9px;
+
+  border-radius: 999px;
+
+  background: rgba(20, 200, 232, 0.1);
+
+  color: var(--secondary);
+
+  font-size: 0.68rem;
+  font-weight: 850;
+
+  text-transform: uppercase;
+}
+
+.notification-actions {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 8px;
+}
+
+.notification-actions button {
+  padding: 8px 11px;
+
+  border-radius: 9px;
+
+  cursor: pointer;
+
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.read-button {
+  background: rgba(49, 208, 170, 0.13);
+
+  color: var(--success);
+}
+
+.delete-button {
+  background: rgba(255, 100, 124, 0.12);
+
+  color: var(--danger);
+}
+
+.state-card,
+.empty-state {
+  display: flex;
+
+  min-height: 300px;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  margin-top: 28px;
+
+  padding: 30px;
+
+  border: 1px solid var(--border);
+  border-radius: 22px;
+
+  background: var(--surface);
+
+  color: var(--muted);
+
+  text-align: center;
+}
+
+.empty-state {
+  margin-top: 0;
+}
+
+.empty-state > span,
+.state-icon {
+  font-size: 2rem;
+}
+
+.empty-state h2,
+.state-card h2 {
+  margin-top: 12px;
+
+  color: var(--text);
+}
+
+.empty-state p,
+.state-card p {
+  margin-top: 8px;
+}
+
+.spinner {
+  width: 46px;
+  height: 46px;
+
+  margin-bottom: 15px;
+
+  border: 4px solid rgba(255, 255, 255, 0.09);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+
+  animation: spin 700ms linear infinite;
+}
+
+.primary-button {
+  margin-top: 18px;
+
+  padding: 11px 18px;
+
+  border-radius: 11px;
+
+  background: var(--primary);
+
+  color: white;
+
+  cursor: pointer;
+
+  font-weight: 800;
+}
+
+.pagination {
+  display: flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 18px;
+
+  margin-top: 24px;
+}
+
+.pagination button {
+  padding: 10px 15px;
+
+  border-radius: 10px;
+
+  background: var(--surface-light);
+
+  color: var(--text);
+
+  cursor: pointer;
+}
+
+.pagination button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.45;
+}
+
+.pagination span {
+  color: var(--muted);
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 760px) {
+  .notifications-page {
+    padding: 18px 14px 45px;
+  }
+
+  .notifications-header,
+  .notifications-hero,
+  .notifications-toolbar {
+    align-items: flex-start;
+
+    flex-direction: column;
+  }
+
+  .header-navigation {
+    width: 100%;
+
+    flex-wrap: wrap;
+  }
+
+  .hero-icon {
+    width: 84px;
+    height: 84px;
+
+    font-size: 2.8rem;
+  }
+
+  .notification-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .notification-actions {
+    grid-column: 1 / -1;
+
+    flex-direction: row;
+
+    justify-content: flex-end;
+  }
+
+  .notification-heading {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 5px;
+  }
+}

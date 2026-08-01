@@ -3,148 +3,214 @@
   <head>
     <meta charset="UTF-8" />
 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0"
+    />
 
-    <meta name="description" content="QuizMaster Pro user dashboard" />
+    <meta
+      name="description"
+      content="QuizMaster Pro user dashboard"
+    />
 
     <title>Dashboard | QuizMaster Pro</title>
 
-    <link rel="stylesheet" href="/css/dashboard.css" />
+    <link
+      rel="stylesheet"
+      href="/css/dashboard.css"
+    />
   </head>
 
   <body>
     <main class="dashboard">
-      <!-- ================= HEADER ================= -->
+      <!-- ==================================================
+           HEADER
+      =================================================== -->
 
       <header class="header">
-        <a href="/dashboard" class="logo">
-          <span aria-hidden="true">🧠</span>
-          <span>QuizMaster Pro</span>
+        <a
+          href="/dashboard"
+          class="logo"
+        >
+          <span aria-hidden="true">
+            🧠
+          </span>
+
+          <span>
+            QuizMaster Pro
+          </span>
         </a>
 
         <div class="user-area">
-          <nav class="dashboard-navigation">
-            <a href="/profile" class="header-link"> 👤 Profile </a>
+          <nav
+            class="dashboard-navigation"
+            aria-label="Dashboard navigation"
+          >
+            <a
+              href="/profile"
+              class="header-link"
+            >
+              👤 Profile
+            </a>
 
-            <a href="/history" class="header-link"> 📜 History </a>
+            <a
+              href="/history"
+              class="header-link"
+            >
+              📜 History
+            </a>
 
-            <a href="/leaderboard" class="header-link"> 🏆 Leaderboard </a>
+            <a
+              href="/leaderboard"
+              class="header-link"
+            >
+              🏆 Leaderboard
+            </a>
 
-            <a href="/achievements" class="header-link"> 🥇 Achievements </a>
+            <a
+              href="/achievements"
+              class="header-link"
+            >
+              🥇 Achievements
+            </a>
 
-            <a href="/analytics" class="header-link"> 📊 Analytics </a>
+            <a
+              href="/analytics"
+              class="header-link"
+            >
+              📊 Analytics
+            </a>
 
-            <a href="/settings" class="header-link">⚙️ Settings</a>
+            <a
+              href="/settings"
+              class="header-link"
+            >
+              ⚙️ Settings
+            </a>
 
             <% if (user?.role === "admin") { %>
-  <a href="/admin" class="header-link">
-    🛡️ Admin
-  </a>
-<% } %>
+              <a
+                href="/admin"
+                class="header-link"
+              >
+                🛡️ Admin
+              </a>
+            <% } %>
           </nav>
+
+          <!-- ==============================================
+               NOTIFICATION BELL
+          =============================================== -->
+
+          <div class="notification-wrapper">
+            <button
+              id="notificationButton"
+              type="button"
+              class="notification-button"
+              aria-label="Open notifications"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              <span aria-hidden="true">
+                🔔
+              </span>
+
+              <span
+                id="notificationBadge"
+                class="notification-badge hidden"
+                aria-label="Unread notifications"
+              >
+                0
+              </span>
+            </button>
+
+            <section
+              id="notificationDropdown"
+              class="notification-dropdown hidden"
+              aria-label="Recent notifications"
+            >
+              <div class="notification-dropdown-header">
+                <div>
+                  <p>
+                    Notifications
+                  </p>
+
+                  <small id="notificationDropdownCount">
+                    0 unread
+                  </small>
+                </div>
+
+                <button
+                  id="markDropdownReadButton"
+                  type="button"
+                  disabled
+                >
+                  Mark all read
+                </button>
+              </div>
+
+              <div
+                id="notificationDropdownList"
+                class="notification-dropdown-list"
+                aria-live="polite"
+              >
+                <div class="notification-dropdown-state">
+                  Loading notifications...
+                </div>
+              </div>
+
+              <a
+                href="/notifications"
+                class="notification-dropdown-footer"
+              >
+                View all notifications →
+              </a>
+            </section>
+          </div>
+
           <span class="welcome">
             Welcome,
-            <strong> <%= user?.firstName || "Player" %> </strong>
+
+            <strong>
+              <%= user?.firstName || "Player" %>
+            </strong>
           </span>
 
-          <button id="logoutButton" type="button">Logout</button>
+          <button
+            id="logoutButton"
+            type="button"
+          >
+            Logout
+          </button>
         </div>
       </header>
 
-      <!-- ================= HERO ================= -->
+      <!-- ==================================================
+           HERO
+      =================================================== -->
 
       <section class="hero">
         <div>
-          <h1>Welcome Back 👋</h1>
+          <h1>
+            Welcome Back 👋
+          </h1>
 
           <p>
-            Ready to improve your rank today? Pick a category, test your
-            knowledge and earn more XP.
+            Ready to improve your rank today? Pick a category,
+            test your knowledge and earn more XP.
           </p>
         </div>
       </section>
 
-      <!-- ================= QUICK ACTIONS ================= -->
-
-      <section
-        class="quick-actions-section"
-        aria-labelledby="quickActionsTitle"
-      >
-        <div class="section-heading">
-          <div>
-            <p class="section-label">Navigation</p>
-
-            <h2 id="quickActionsTitle">Quick Actions</h2>
-          </div>
-        </div>
-
-        <div class="quick-actions-grid">
-          <a href="/quiz" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">🧠</span>
-
-            <div>
-              <h3>Start Quiz</h3>
-
-              <p>Select a category and test your knowledge.</p>
-            </div>
-
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
-          </a>
-
-          <a href="/profile" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">👤</span>
-
-            <div>
-              <h3>My Profile</h3>
-
-              <p>View your profile, performance and account information.</p>
-            </div>
-
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
-          </a>
-
-          <a href="/history" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">📜</span>
-
-            <div>
-              <h3>Quiz History</h3>
-
-              <p>Review your previous quiz attempts and results.</p>
-            </div>
-
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
-          </a>
-
-          <a href="/leaderboard" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">🏆</span>
-
-            <div>
-              <h3>Leaderboard</h3>
-
-              <p>Compare your XP and ranking with other players.</p>
-            </div>
-
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
-          </a>
-
-          <a href="/achievements" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">🥇</span>
-
-            <div>
-              <h3>Achievements</h3>
-
-              <p>View unlocked badges and upcoming achievement goals.</p>
-            </div>
-
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
-          </a>
-        </div>
-      </section>
-
-      <!-- ================= SEARCH ================= -->
+      <!-- ==================================================
+           SEARCH
+      =================================================== -->
 
       <section class="search-section">
-        <label for="searchInput" class="visually-hidden">
+        <label
+          for="searchInput"
+          class="visually-hidden"
+        >
           Search quiz categories
         </label>
 
@@ -156,7 +222,9 @@
         />
       </section>
 
-      <!-- ================= QUICK ACTIONS ================= -->
+      <!-- ==================================================
+           QUICK ACTIONS
+      =================================================== -->
 
       <section
         class="quick-actions-section"
@@ -164,133 +232,354 @@
       >
         <div class="section-heading">
           <div>
-            <p class="section-label">Navigation</p>
+            <p class="section-label">
+              Navigation
+            </p>
 
-            <h2 id="quickActionsTitle">Quick Actions</h2>
+            <h2 id="quickActionsTitle">
+              Quick Actions
+            </h2>
           </div>
         </div>
 
         <div class="quick-actions-grid">
-          <a href="#categoriesTitle" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">🧠</span>
+          <a
+            href="#categoriesTitle"
+            class="quick-action-card"
+          >
+            <span
+              class="quick-action-icon"
+              aria-hidden="true"
+            >
+              🧠
+            </span>
 
             <div>
-              <h3>Start Quiz</h3>
+              <h3>
+                Start Quiz
+              </h3>
 
-              <p>Select a category and test your knowledge.</p>
+              <p>
+                Select a category and test your knowledge.
+              </p>
             </div>
 
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
+            <span
+              class="quick-action-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
           </a>
 
-          <a href="/profile" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">👤</span>
+          <a
+            href="/profile"
+            class="quick-action-card"
+          >
+            <span
+              class="quick-action-icon"
+              aria-hidden="true"
+            >
+              👤
+            </span>
 
             <div>
-              <h3>My Profile</h3>
+              <h3>
+                My Profile
+              </h3>
 
-              <p>View your profile, performance and account information.</p>
+              <p>
+                View your profile, performance and account information.
+              </p>
             </div>
 
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
+            <span
+              class="quick-action-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
           </a>
 
-          <a href="/history" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">📜</span>
+          <a
+            href="/history"
+            class="quick-action-card"
+          >
+            <span
+              class="quick-action-icon"
+              aria-hidden="true"
+            >
+              📜
+            </span>
 
             <div>
-              <h3>Quiz History</h3>
+              <h3>
+                Quiz History
+              </h3>
 
-              <p>Review your previous quiz attempts and results.</p>
+              <p>
+                Review your previous quiz attempts and results.
+              </p>
             </div>
 
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
+            <span
+              class="quick-action-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
           </a>
 
-          <a href="/leaderboard" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">🏆</span>
-
-            <a href="/analytics" class="quick-action-card">
-              <span class="quick-action-icon" aria-hidden="true"> 📊 </span>
-
-              <div>
-                <h3>Analytics</h3>
-
-                <p>
-                  Explore your accuracy, category strengths and performance
-                  trends.
-                </p>
-              </div>
-
-              <span class="quick-action-arrow" aria-hidden="true"> → </span>
-            </a>
+          <a
+            href="/leaderboard"
+            class="quick-action-card"
+          >
+            <span
+              class="quick-action-icon"
+              aria-hidden="true"
+            >
+              🏆
+            </span>
 
             <div>
-              <h3>Leaderboard</h3>
+              <h3>
+                Leaderboard
+              </h3>
 
-              <p>Compare your XP and ranking with other players.</p>
+              <p>
+                Compare your XP and ranking with other players.
+              </p>
             </div>
 
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
+            <span
+              class="quick-action-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
           </a>
 
-          <a href="/achievements" class="quick-action-card">
-            <span class="quick-action-icon" aria-hidden="true">🥇</span>
+          <a
+            href="/achievements"
+            class="quick-action-card"
+          >
+            <span
+              class="quick-action-icon"
+              aria-hidden="true"
+            >
+              🥇
+            </span>
 
             <div>
-              <h3>Achievements</h3>
+              <h3>
+                Achievements
+              </h3>
 
-              <p>View unlocked badges and upcoming achievement goals.</p>
+              <p>
+                View unlocked badges and upcoming achievement goals.
+              </p>
             </div>
 
-            <span class="quick-action-arrow" aria-hidden="true">→</span>
+            <span
+              class="quick-action-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
+          </a>
+
+          <a
+            href="/analytics"
+            class="quick-action-card"
+          >
+            <span
+              class="quick-action-icon"
+              aria-hidden="true"
+            >
+              📊
+            </span>
+
+            <div>
+              <h3>
+                Analytics
+              </h3>
+
+              <p>
+                Explore your accuracy, strengths and performance trends.
+              </p>
+            </div>
+
+            <span
+              class="quick-action-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
+          </a>
+
+          <a
+            href="/notifications"
+            class="quick-action-card"
+          >
+            <span
+              class="quick-action-icon"
+              aria-hidden="true"
+            >
+              🔔
+            </span>
+
+            <div>
+              <h3>
+                Notifications
+              </h3>
+
+              <p>
+                Review quiz rewards, achievements and activity updates.
+              </p>
+            </div>
+
+            <span
+              class="quick-action-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
+          </a>
+
+          <a
+            href="/settings"
+            class="quick-action-card"
+          >
+            <span
+              class="quick-action-icon"
+              aria-hidden="true"
+            >
+              ⚙️
+            </span>
+
+            <div>
+              <h3>
+                Settings
+              </h3>
+
+              <p>
+                Manage your profile, password and account preferences.
+              </p>
+            </div>
+
+            <span
+              class="quick-action-arrow"
+              aria-hidden="true"
+            >
+              →
+            </span>
           </a>
         </div>
       </section>
 
-      <!-- ================= CATEGORIES ================= -->
+      <!-- ==================================================
+           CATEGORIES
+      =================================================== -->
 
-      <section aria-labelledby="categoriesTitle">
-        <h2 id="categoriesTitle" class="section-title">Quiz Categories</h2>
+      <section
+        class="categories-section"
+        aria-labelledby="categoriesTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-label">
+              Test your knowledge
+            </p>
 
-        <div id="categoriesContainer" class="category-grid" aria-live="polite">
-          <div class="category-loading">Loading quiz categories...</div>
+            <h2
+              id="categoriesTitle"
+              class="section-title"
+            >
+              Quiz Categories
+            </h2>
+          </div>
+        </div>
+
+        <div
+          id="categoriesContainer"
+          class="category-grid"
+          aria-live="polite"
+        >
+          <div class="category-loading">
+            Loading quiz categories...
+          </div>
         </div>
       </section>
 
-      <!-- ================= STATISTICS ================= -->
+      <!-- ==================================================
+           STATISTICS
+      =================================================== -->
 
-      <section aria-labelledby="statisticsTitle">
-        <h2 id="statisticsTitle" class="section-title">Your Statistics</h2>
+      <section
+        class="statistics-section"
+        aria-labelledby="statisticsTitle"
+      >
+        <div class="section-heading">
+          <div>
+            <p class="section-label">
+              Performance
+            </p>
+
+            <h2
+              id="statisticsTitle"
+              class="section-title"
+            >
+              Your Statistics
+            </h2>
+          </div>
+        </div>
 
         <div class="stats-grid">
           <article class="stat-card">
-            <h3>Total XP</h3>
+            <h3>
+              Total XP
+            </h3>
 
-            <h1><%= user?.totalXp || 0 %></h1>
+            <h1>
+              <%= user?.totalXp || 0 %>
+            </h1>
           </article>
 
           <article class="stat-card">
-            <h3>Quizzes Completed</h3>
+            <h3>
+              Quizzes Completed
+            </h3>
 
-            <h1><%= user?.quizzesCompleted || 0 %></h1>
+            <h1>
+              <%= user?.quizzesCompleted || 0 %>
+            </h1>
           </article>
 
           <article class="stat-card">
-            <h3>Correct Answers</h3>
+            <h3>
+              Correct Answers
+            </h3>
 
-            <h1><%= user?.correctAnswers || 0 %></h1>
+            <h1>
+              <%= user?.correctAnswers || 0 %>
+            </h1>
           </article>
 
           <article class="stat-card">
-            <h3>Current Streak</h3>
+            <h3>
+              Current Streak
+            </h3>
 
-            <h1><%= user?.currentStreak || 0 %></h1>
+            <h1>
+              <%= user?.currentStreak || 0 %>
+            </h1>
           </article>
         </div>
       </section>
 
-      <!-- ================= ACHIEVEMENTS SUMMARY ================= -->
+      <!-- ==================================================
+           ACHIEVEMENTS SUMMARY
+      =================================================== -->
 
       <section
         class="dashboard-achievements-section"
@@ -298,12 +587,19 @@
       >
         <div class="section-heading">
           <div>
-            <p class="section-label">Milestones</p>
+            <p class="section-label">
+              Milestones
+            </p>
 
-            <h2 id="dashboardAchievementsTitle">🥇 Achievements</h2>
+            <h2 id="dashboardAchievementsTitle">
+              🥇 Achievements
+            </h2>
           </div>
 
-          <a href="/achievements" class="view-full-leaderboard-link">
+          <a
+            href="/achievements"
+            class="view-full-leaderboard-link"
+          >
             View All Achievements →
           </a>
         </div>
@@ -311,12 +607,18 @@
         <div class="achievement-summary-card">
           <div class="achievement-summary-header">
             <div>
-              <p>Your achievement progress</p>
+              <p>
+                Your achievement progress
+              </p>
 
-              <strong id="dashboardAchievementProgress"> Loading... </strong>
+              <strong id="dashboardAchievementProgress">
+                Loading...
+              </strong>
             </div>
 
-            <span id="dashboardAchievementPercentage"> 0% </span>
+            <span id="dashboardAchievementPercentage">
+              0%
+            </span>
           </div>
 
           <div
@@ -344,44 +646,91 @@
           </div>
         </div>
       </section>
-      <!-- ================= LEADERBOARD ================= -->
 
-      <section class="leaderboard-section" aria-labelledby="leaderboardTitle">
+      <!-- ==================================================
+           LEADERBOARD
+      =================================================== -->
+
+      <section
+        class="leaderboard-section"
+        aria-labelledby="leaderboardTitle"
+      >
         <div class="section-heading">
           <div>
-            <p class="section-label">Global Rankings</p>
+            <p class="section-label">
+              Global Rankings
+            </p>
 
-            <h2 id="leaderboardTitle">🏆 Leaderboard</h2>
+            <h2 id="leaderboardTitle">
+              🏆 Leaderboard
+            </h2>
           </div>
 
           <div class="leaderboard-heading-actions">
-            <span id="leaderboardPlayerCount" class="leaderboard-player-count">
+            <span
+              id="leaderboardPlayerCount"
+              class="leaderboard-player-count"
+            >
               0 players
             </span>
 
-            <a href="/leaderboard" class="view-full-leaderboard-link">
+            <a
+              href="/leaderboard"
+              class="view-full-leaderboard-link"
+            >
               View Full Leaderboard →
             </a>
           </div>
         </div>
 
         <div class="leaderboard-card">
-          <div class="leaderboard-table-header" aria-hidden="true">
-            <span>Rank</span>
-            <span>Player</span>
-            <span>Quizzes</span>
-            <span>XP</span>
+          <div
+            class="leaderboard-table-header"
+            aria-hidden="true"
+          >
+            <span>
+              Rank
+            </span>
+
+            <span>
+              Player
+            </span>
+
+            <span>
+              Quizzes
+            </span>
+
+            <span>
+              XP
+            </span>
           </div>
 
-          <div id="leaderboardList" aria-live="polite">
-            <div class="leaderboard-loading">Loading leaderboard...</div>
+          <div
+            id="leaderboardList"
+            aria-live="polite"
+          >
+            <div class="leaderboard-loading">
+              Loading leaderboard...
+            </div>
           </div>
         </div>
 
-        <div id="currentUserRank" class="current-user-rank" hidden></div>
+        <div
+          id="currentUserRank"
+          class="current-user-rank"
+          hidden
+        ></div>
       </section>
     </main>
 
-    <script src="/js/dashboard.js" defer></script>
+    <script
+      src="/js/dashboard.js"
+      defer
+    ></script>
+
+    <script
+      src="/js/dashboard-notifications.js"
+      defer
+    ></script>
   </body>
 </html>

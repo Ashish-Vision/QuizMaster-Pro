@@ -1100,3 +1100,311 @@ section {
     flex-direction: column;
   }
 }
+/* ============================================================
+   Notification Bell
+============================================================ */
+
+.notification-wrapper {
+  position: relative;
+}
+
+.notification-button {
+  position: relative;
+
+  display: grid;
+
+  width: 42px;
+  height: 42px;
+
+  place-items: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.05);
+
+  color: inherit;
+
+  cursor: pointer;
+
+  font-size: 1.1rem;
+}
+
+.notification-button:hover {
+  background: rgba(124, 92, 255, 0.15);
+}
+
+.notification-badge {
+  position: absolute;
+
+  top: -5px;
+  right: -5px;
+
+  display: grid;
+
+  min-width: 20px;
+  height: 20px;
+
+  padding: 0 5px;
+
+  place-items: center;
+
+  border: 2px solid #07111f;
+  border-radius: 999px;
+
+  background: #ff647c;
+  color: white;
+
+  font-size: 0.65rem;
+  font-weight: 900;
+}
+
+.notification-dropdown {
+  position: absolute;
+
+  top: calc(100% + 12px);
+  right: 0;
+
+  z-index: 1000;
+
+  width: min(390px, calc(100vw - 32px));
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+
+  background: #0d1b2d;
+
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
+.notification-dropdown-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  gap: 15px;
+
+  padding: 16px 18px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.notification-dropdown-header p {
+  font-weight: 850;
+}
+
+.notification-dropdown-header small {
+  display: block;
+
+  margin-top: 3px;
+
+  color: #9cabbe;
+}
+
+.notification-dropdown-header button {
+  border: 0;
+
+  background: transparent;
+
+  color: #14c8e8;
+
+  cursor: pointer;
+
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.notification-dropdown-header button:disabled {
+  cursor: not-allowed;
+
+  opacity: 0.5;
+}
+
+.notification-dropdown-list {
+  max-height: 390px;
+
+  overflow-y: auto;
+}
+
+.notification-dropdown-item {
+  display: grid;
+
+  grid-template-columns: auto minmax(0, 1fr);
+
+  gap: 12px;
+
+  padding: 15px 18px;
+
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+
+  color: inherit;
+
+  text-decoration: none;
+}
+
+.notification-dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.notification-dropdown-item.unread {
+  background: rgba(124, 92, 255, 0.11);
+}
+
+.notification-dropdown-icon {
+  display: grid;
+
+  width: 40px;
+  height: 40px;
+
+  place-items: center;
+
+  border-radius: 12px;
+
+  background: rgba(124, 92, 255, 0.14);
+
+  font-size: 1.15rem;
+}
+
+.notification-dropdown-content strong {
+  display: block;
+
+  font-size: 0.85rem;
+}
+
+.notification-dropdown-content p {
+  display: -webkit-box;
+
+  margin-top: 4px;
+
+  overflow: hidden;
+
+  color: #9cabbe;
+
+  font-size: 0.76rem;
+  line-height: 1.45;
+
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.notification-dropdown-content small {
+  display: block;
+
+  margin-top: 6px;
+
+  color: #14c8e8;
+
+  font-size: 0.68rem;
+}
+
+.notification-dropdown-footer {
+  display: block;
+
+  padding: 13px 18px;
+
+  color: #14c8e8;
+
+  text-align: center;
+  text-decoration: none;
+
+  font-size: 0.8rem;
+  font-weight: 850;
+}
+
+.notification-dropdown-footer:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.notification-dropdown-state {
+  padding: 32px 18px;
+
+  color: #9cabbe;
+
+  text-align: center;
+
+  font-size: 0.8rem;
+}
+
+@media (max-width: 760px) {
+  .notification-dropdown {
+    position: fixed;
+
+    top: 78px;
+    right: 16px;
+    left: 16px;
+
+    width: auto;
+  }
+}
+/* ============================================================
+   Notification Dropdown Layer Fix
+============================================================ */
+
+.dashboard {
+  overflow: visible;
+}
+
+.header {
+  position: relative;
+  z-index: 1000;
+  overflow: visible;
+}
+
+.user-area {
+  position: relative;
+  overflow: visible;
+}
+
+.notification-wrapper {
+  position: relative;
+  z-index: 1100;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+
+  z-index: 9999;
+
+  width: min(390px, calc(100vw - 32px));
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 18px;
+
+  background: #0d1b2d;
+
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55);
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+}
+
+.hero::after {
+  pointer-events: none;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .notification-dropdown {
+    position: fixed;
+
+    top: 78px;
+    right: 16px;
+    left: 16px;
+
+    width: auto;
+
+    z-index: 9999;
+  }
+}

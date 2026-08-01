@@ -1,7 +1,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
-
+const { createQuizNotifications } = require("../services/notificationService");
 const Question = require("../models/Question");
 const Score = require("../models/Score");
 const User = require("../models/User");
@@ -324,6 +324,7 @@ async function submitQuiz(req, res, next) {
       });
     }
 
+    const previousStreak = user.currentStreak || 0;
     const newStreak = calculateNewStreak(user);
 
     const scoreDocument = await Score.create({
@@ -368,11 +369,28 @@ async function submitQuiz(req, res, next) {
         }),
       );
     } catch (achievementError) {
-      /*
-       * Achievement errors should not make an
-       * otherwise successful quiz submission fail.
-       */
       console.error("Achievement check failed:", achievementError);
+    }
+
+    try {
+      const createdNotifications = await createQuizNotifications({
+        userId,
+        resultId: scoreDocument._id,
+        category: normalizedCategory,
+        score: correctAnswers,
+        totalQuestions,
+        accuracy,
+        xpEarned,
+        currentStreak: user.currentStreak,
+        previousStreak,
+        achievements: newlyUnlockedAchievements,
+      });
+
+      console.log(
+        `Created ${createdNotifications.length} notifications for user ${userId}.`,
+      );
+    } catch (notificationError) {
+      console.error("Quiz notification creation failed:", notificationError);
     }
 
     return res.status(201).json({
