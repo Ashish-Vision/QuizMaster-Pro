@@ -1,10 +1,13 @@
 "use strict";
 
 const mongoose = require("mongoose");
-const { createQuizNotifications } = require("../services/notificationService");
+
 const Question = require("../models/Question");
 const Score = require("../models/Score");
 const User = require("../models/User");
+
+const { createQuizNotifications } = require("../services/notificationService");
+
 const {
   getLevelInformation,
   didLevelIncrease,
@@ -14,10 +17,19 @@ const {
   checkAndUnlockAchievements,
 } = require("../services/achievementService");
 
-/**
- * Returns a day number without considering hours, minutes or seconds.
- * This helps calculate daily quiz streaks.
- */
+const {
+  getDailyChallengeDocument,
+  completeDailyChallenge,
+} = require("../services/dailyChallengeService");
+
+/* ============================================================
+   Utility Functions
+============================================================ */
+
+function getUserId(req) {
+  return req.user?._id || req.user?.id || null;
+}
+
 function getDayNumber(date) {
   const parsedDate = new Date(date);
 
@@ -37,29 +49,71 @@ function calculateNewStreak(user) {
   }
 
   const todayDayNumber = getDayNumber(new Date());
+
   const lastQuizDayNumber = getDayNumber(user.lastQuizDate);
 
   const differenceInDays = todayDayNumber - lastQuizDayNumber;
 
-  /*
-   * User already completed a quiz today.
-   */
   if (differenceInDays === 0) {
     return Math.max(user.currentStreak || 0, 1);
   }
 
-  /*
-   * User completed a quiz yesterday.
-   */
   if (differenceInDays === 1) {
     return (user.currentStreak || 0) + 1;
   }
 
-  /*
-   * Streak was broken.
-   */
   return 1;
 }
+
+function normalizeObjectIdList(values) {
+  return values.map((value) => String(value)).sort();
+}
+
+function haveSameQuestionIds(submittedIds, expectedIds) {
+  if (submittedIds.length !== expectedIds.length) {
+    return false;
+  }
+
+  const normalizedSubmitted = normalizeObjectIdList(submittedIds);
+
+  const normalizedExpected = normalizeObjectIdList(expectedIds);
+
+  return normalizedSubmitted.every(
+    (value, index) => value === normalizedExpected[index],
+  );
+}
+
+function getDailyChallengeErrorResponse(reason) {
+  switch (reason) {
+    case "not_found":
+      return {
+        statusCode: 404,
+        message: "The daily challenge could not be found.",
+      };
+
+    case "expired":
+      return {
+        statusCode: 410,
+        message: "The daily challenge has expired.",
+      };
+
+    case "already_completed":
+      return {
+        statusCode: 409,
+        message: "You have already completed today's daily challenge.",
+      };
+
+    default:
+      return {
+        statusCode: 409,
+        message: "The daily challenge could not be completed.",
+      };
+  }
+}
+
+/* ============================================================
+   Categories
+============================================================ */
 
 async function getCategories(req, res, next) {
   try {
@@ -77,6 +131,10 @@ async function getCategories(req, res, next) {
     return next(error);
   }
 }
+
+/* ============================================================
+   Start Standard Quiz
+============================================================ */
 
 async function startQuiz(req, res, next) {
   try {
@@ -104,11 +162,13 @@ async function startQuiz(req, res, next) {
           category,
         },
       },
+
       {
         $sample: {
           size: limit,
         },
       },
+
       {
         $project: {
           question: 1,
@@ -137,9 +197,15 @@ async function startQuiz(req, res, next) {
   }
 }
 
+/* ============================================================
+   Submit Quiz
+============================================================ */
+
 async function submitQuiz(req, res, next) {
+  let scoreDocument = null;
+
   try {
-    const userId = req.user?._id || req.user?.id;
+    const userId = getUserId(req);
 
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return res.status(401).json({
@@ -153,6 +219,7 @@ async function submitQuiz(req, res, next) {
       answers,
       remainingSeconds = 0,
       quizDurationSeconds = 600,
+      dailyChallengeId = null,
     } = req.body;
 
     if (typeof category !== "string" || category.trim().length === 0) {
@@ -175,7 +242,54 @@ async function submitQuiz(req, res, next) {
 
     const normalizedCategory = category.trim();
 
+    const isDailyChallenge = Boolean(dailyChallengeId);
+
+    let dailyChallenge = null;
+
+    if (isDailyChallenge) {
+      if (!mongoose.Types.ObjectId.isValid(dailyChallengeId)) {
+        return res.status(400).json({
+          success: false,
+          message: "The daily challenge ID is invalid.",
+        });
+      }
+
+      dailyChallenge = await getDailyChallengeDocument({
+        challengeId: dailyChallengeId,
+        populateQuestions: false,
+      });
+
+      if (!dailyChallenge) {
+        return res.status(404).json({
+          success: false,
+          message: "The daily challenge was not found.",
+        });
+      }
+
+      if (!dailyChallenge.isCurrentlyAvailable()) {
+        return res.status(410).json({
+          success: false,
+          message: "The daily challenge has expired.",
+        });
+      }
+
+      if (dailyChallenge.hasUserCompleted(userId)) {
+        return res.status(409).json({
+          success: false,
+          message: "You have already completed today's daily challenge.",
+        });
+      }
+
+      if (dailyChallenge.category !== normalizedCategory) {
+        return res.status(400).json({
+          success: false,
+          message: "The submitted category does not match the daily challenge.",
+        });
+      }
+    }
+
     const submittedQuestionIds = [];
+
     const submittedAnswers = new Map();
 
     for (const answer of answers) {
@@ -220,6 +334,20 @@ async function submitQuiz(req, res, next) {
       submittedAnswers.set(questionId, selectedAnswer);
     }
 
+    if (isDailyChallenge) {
+      const challengeQuestionIds = dailyChallenge.questions.map((questionId) =>
+        String(questionId?._id || questionId),
+      );
+
+      if (!haveSameQuestionIds(submittedQuestionIds, challengeQuestionIds)) {
+        return res.status(400).json({
+          success: false,
+          message:
+            "The submitted questions do not match today's daily challenge.",
+        });
+      }
+    }
+
     const questions = await Question.find({
       _id: {
         $in: submittedQuestionIds,
@@ -227,7 +355,15 @@ async function submitQuiz(req, res, next) {
 
       category: normalizedCategory,
     }).select(
-      "_id question options correctAnswer explanation category difficulty",
+      [
+        "_id",
+        "question",
+        "options",
+        "correctAnswer",
+        "explanation",
+        "category",
+        "difficulty",
+      ].join(" "),
     );
 
     if (questions.length !== submittedQuestionIds.length) {
@@ -293,15 +429,25 @@ async function submitQuiz(req, res, next) {
     );
 
     /*
-     * XP rules:
-     * 10 XP per correct answer.
-     * 20 bonus XP when accuracy is at least 80%.
+     * Standard quiz XP:
+     * 10 XP for each correct answer.
+     * 20 XP performance bonus for 80%+
      */
     const baseXp = correctAnswers * 10;
 
     const performanceBonus = accuracy >= 80 ? 20 : 0;
 
-    const xpEarned = baseXp + performanceBonus;
+    const standardXpEarned = baseXp + performanceBonus;
+
+    /*
+     * The daily reward is additional to the
+     * standard score-based XP.
+     */
+    const dailyChallengeBonusXp = isDailyChallenge
+      ? Math.max(Number(dailyChallenge.rewardXp) || 0, 0)
+      : 0;
+
+    const totalXpEarned = standardXpEarned + dailyChallengeBonusXp;
 
     const parsedDuration = Number(quizDurationSeconds);
 
@@ -318,7 +464,13 @@ async function submitQuiz(req, res, next) {
     const timeTakenSeconds = safeDuration - safeRemainingSeconds;
 
     const user = await User.findById(userId).select(
-      "totalXp quizzesCompleted correctAnswers currentStreak lastQuizDate",
+      [
+        "totalXp",
+        "quizzesCompleted",
+        "correctAnswers",
+        "currentStreak",
+        "lastQuizDate",
+      ].join(" "),
     );
 
     if (!user) {
@@ -329,9 +481,10 @@ async function submitQuiz(req, res, next) {
     }
 
     const previousStreak = user.currentStreak || 0;
+
     const newStreak = calculateNewStreak(user);
 
-    const scoreDocument = await Score.create({
+    scoreDocument = await Score.create({
       user: userId,
       category: normalizedCategory,
       answers: evaluatedAnswers,
@@ -342,18 +495,65 @@ async function submitQuiz(req, res, next) {
       unansweredQuestions,
       totalQuestions,
       accuracy,
-      xpEarned,
+      xpEarned: totalXpEarned,
       timeTakenSeconds,
       completedAt: new Date(),
     });
+
+    let dailyChallengeCompletion = null;
+
+    if (isDailyChallenge) {
+      dailyChallengeCompletion = await completeDailyChallenge({
+        challengeId: dailyChallengeId,
+
+        userId,
+
+        resultId: scoreDocument._id,
+
+        score: correctAnswers,
+
+        totalQuestions,
+
+        accuracy,
+
+        xpAwarded: dailyChallengeBonusXp,
+      });
+
+      if (
+        !dailyChallengeCompletion.success ||
+        dailyChallengeCompletion.alreadyCompleted
+      ) {
+        await Score.deleteOne({
+          _id: scoreDocument._id,
+        });
+
+        scoreDocument = null;
+
+        const errorResponse = getDailyChallengeErrorResponse(
+          dailyChallengeCompletion.reason,
+        );
+
+        return res.status(errorResponse.statusCode).json({
+          success: false,
+          message: errorResponse.message,
+        });
+      }
+    }
+
     const previousTotalXp = user.totalXp || 0;
-    user.totalXp += xpEarned;
+
+    user.totalXp += totalXpEarned;
+
     user.quizzesCompleted += 1;
+
     user.correctAnswers += correctAnswers;
+
     user.currentStreak = newStreak;
+
     user.lastQuizDate = new Date();
 
     await user.save();
+
     const levelChange = didLevelIncrease(previousTotalXp, user.totalXp);
 
     const levelInformation = getLevelInformation(user.totalXp);
@@ -382,14 +582,23 @@ async function submitQuiz(req, res, next) {
     try {
       const createdNotifications = await createQuizNotifications({
         userId,
+
         resultId: scoreDocument._id,
+
         category: normalizedCategory,
+
         score: correctAnswers,
+
         totalQuestions,
+
         accuracy,
-        xpEarned,
+
+        xpEarned: totalXpEarned,
+
         currentStreak: user.currentStreak,
+
         previousStreak,
+
         achievements: newlyUnlockedAchievements,
       });
 
@@ -402,21 +611,56 @@ async function submitQuiz(req, res, next) {
 
     return res.status(201).json({
       success: true,
-      message: "Quiz submitted successfully.",
+
+      message: isDailyChallenge
+        ? "Daily challenge completed successfully."
+        : "Quiz submitted successfully.",
 
       result: {
         resultId: scoreDocument._id,
+
         category: normalizedCategory,
+
         score: correctAnswers,
+
         totalQuestions,
+
         attemptedQuestions,
+
         correctAnswers,
+
         wrongAnswers,
+
         unansweredQuestions,
+
         accuracy,
-        xpEarned,
+
+        xpEarned: totalXpEarned,
+
+        standardXpEarned,
+
+        dailyChallengeBonusXp,
+
         timeTakenSeconds,
+
+        isDailyChallenge,
+
+        dailyChallengeId: isDailyChallenge ? dailyChallengeId : null,
       },
+
+      dailyChallenge: isDailyChallenge
+        ? {
+            completed: true,
+
+            challengeId: dailyChallengeId,
+
+            rewardXp: dailyChallengeBonusXp,
+
+            rewardBadge: dailyChallenge.rewardBadge,
+
+            completion: dailyChallengeCompletion.completion,
+          }
+        : null,
 
       userStats: {
         totalXp: user.totalXp,
@@ -461,13 +705,31 @@ async function submitQuiz(req, res, next) {
       newlyUnlockedAchievements,
     });
   } catch (error) {
+    /*
+     * Remove a provisional score if an unexpected
+     * error occurs before the submission finishes.
+     */
+    if (scoreDocument?._id) {
+      try {
+        await Score.deleteOne({
+          _id: scoreDocument._id,
+        });
+      } catch (cleanupError) {
+        console.error("Quiz score cleanup failed:", cleanupError);
+      }
+    }
+
     return next(error);
   }
 }
 
+/* ============================================================
+   Result
+============================================================ */
+
 async function getResult(req, res, next) {
   try {
-    const userId = req.user?._id || req.user?.id;
+    const userId = getUserId(req);
 
     const { resultId } = req.params;
 
@@ -485,7 +747,7 @@ async function getResult(req, res, next) {
       .populate({
         path: "answers.question",
 
-        select: "question options explanation difficulty",
+        select: ["question", "options", "explanation", "difficulty"].join(" "),
       })
       .lean();
 
