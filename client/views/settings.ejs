@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Manage your QuizMaster Pro account settings and security."
+    />
+
+    <title>Settings | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/settings.css" />
+
+    <script src="/js/settings.js" defer></script>
+  </head>
+
+  <body>
+    <main class="settings-page">
+      <header class="settings-header">
+        <a href="/dashboard" class="brand">
+          <span class="brand-icon">Q</span>
+
+          <span>QuizMaster Pro</span>
+        </a>
+
+        <nav class="header-navigation">
+          <a href="/dashboard">Dashboard</a>
+
+          <a href="/profile">Profile</a>
+
+          <span class="current-user"> <%= user?.firstName || "Player" %> </span>
+        </nav>
+      </header>
+
+      <section class="settings-hero">
+        <div>
+          <p class="section-label">Account settings</p>
+
+          <h1>Manage Your Account</h1>
+
+          <p>Update your personal details and keep your account secure.</p>
+        </div>
+
+        <div class="hero-icon" aria-hidden="true">⚙️</div>
+      </section>
+
+      <section id="settingsLoadingState" class="state-card">
+        <div class="spinner"></div>
+
+        <p>Loading account settings...</p>
+      </section>
+
+      <section id="settingsErrorState" class="state-card hidden">
+        <span class="state-icon">⚠️</span>
+
+        <h2>Unable to load settings</h2>
+
+        <p id="settingsErrorMessage">Something went wrong.</p>
+
+        <button id="retrySettingsButton" type="button" class="primary-button">
+          Try Again
+        </button>
+      </section>
+
+      <section id="settingsContent" class="settings-content hidden">
+        <aside class="account-summary-card">
+          <div id="accountAvatar" class="account-avatar">U</div>
+
+          <h2 id="accountName">QuizMaster User</h2>
+
+          <p id="accountEmail">user@example.com</p>
+
+          <span id="accountRole" class="role-badge"> User </span>
+
+          <div class="account-stats">
+            <article>
+              <span>Total XP</span>
+              <strong id="accountXp">0</strong>
+            </article>
+
+            <article>
+              <span>Quizzes</span>
+              <strong id="accountQuizzes">0</strong>
+            </article>
+
+            <article>
+              <span>Correct</span>
+              <strong id="accountCorrect">0</strong>
+            </article>
+
+            <article>
+              <span>Streak</span>
+              <strong id="accountStreak">0</strong>
+            </article>
+          </div>
+
+          <div class="account-dates">
+            <p>
+              <span>Joined</span>
+              <strong id="accountCreatedAt"> Unknown </strong>
+            </p>
+
+            <p>
+              <span>Last login</span>
+              <strong id="accountLastLogin"> Never </strong>
+            </p>
+          </div>
+        </aside>
+
+        <div class="settings-panels">
+          <section class="settings-card">
+            <div class="settings-card-header">
+              <div>
+                <p class="section-label">Personal information</p>
+
+                <h2>Profile Details</h2>
+              </div>
+
+              <span class="card-icon">👤</span>
+            </div>
+
+            <form id="profileSettingsForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="settingsFirstName"> First Name </label>
+
+                  <input
+                    id="settingsFirstName"
+                    name="firstName"
+                    type="text"
+                    minlength="2"
+                    maxlength="50"
+                    autocomplete="given-name"
+                    required
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="settingsLastName"> Last Name </label>
+
+                  <input
+                    id="settingsLastName"
+                    name="lastName"
+                    type="text"
+                    minlength="2"
+                    maxlength="50"
+                    autocomplete="family-name"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label for="settingsEmail"> Email Address </label>
+
+                <input
+                  id="settingsEmail"
+                  name="email"
+                  type="email"
+                  autocomplete="email"
+                  required
+                />
+
+                <small>
+                  This email is used for login and account recovery.
+                </small>
+              </div>
+
+              <p
+                id="profileSettingsMessage"
+                class="form-message"
+                aria-live="polite"
+              ></p>
+
+              <div class="form-actions">
+                <button
+                  id="saveProfileButton"
+                  type="submit"
+                  class="primary-button"
+                >
+                  Save Profile
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="settings-card">
+            <div class="settings-card-header">
+              <div>
+                <p class="section-label">Account security</p>
+
+                <h2>Change Password</h2>
+              </div>
+
+              <span class="card-icon">🔒</span>
+            </div>
+
+            <form id="passwordSettingsForm">
+              <div class="form-group">
+                <label for="currentPassword"> Current Password </label>
+
+                <div class="password-field">
+                  <input
+                    id="currentPassword"
+                    name="currentPassword"
+                    type="password"
+                    autocomplete="current-password"
+                    required
+                  />
+
+                  <button
+                    type="button"
+                    class="password-toggle"
+                    data-password-target="currentPassword"
+                    aria-label="Show current password"
+                  >
+                    Show
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="newPassword"> New Password </label>
+
+                  <div class="password-field">
+                    <input
+                      id="newPassword"
+                      name="newPassword"
+                      type="password"
+                      minlength="8"
+                      maxlength="128"
+                      autocomplete="new-password"
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      class="password-toggle"
+                      data-password-target="newPassword"
+                      aria-label="Show new password"
+                    >
+                      Show
+                    </button>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="confirmPassword"> Confirm Password </label>
+
+                  <div class="password-field">
+                    <input
+                      id="confirmPassword"
+                      name="confirmPassword"
+                      type="password"
+                      minlength="8"
+                      maxlength="128"
+                      autocomplete="new-password"
+                      required
+                    />
+
+                    <button
+                      type="button"
+                      class="password-toggle"
+                      data-password-target="confirmPassword"
+                      aria-label="Show confirmed password"
+                    >
+                      Show
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div class="password-requirements">
+                <p>Password requirements:</p>
+
+                <ul>
+                  <li>At least 8 characters</li>
+                  <li>Different from your current password</li>
+                  <li>Both new password fields must match</li>
+                </ul>
+              </div>
+
+              <p
+                id="passwordSettingsMessage"
+                class="form-message"
+                aria-live="polite"
+              ></p>
+
+              <div class="form-actions">
+                <button
+                  id="changePasswordButton"
+                  type="submit"
+                  class="primary-button"
+                >
+                  Change Password
+                </button>
+              </div>
+            </form>
+          </section>
+
+          <section class="security-notice">
+            <span aria-hidden="true">🛡️</span>
+
+            <div>
+              <h3>Security reminder</h3>
+
+              <p>
+                Use a unique password and never share your login details with
+                anyone.
+              </p>
+            </div>
+          </section>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
