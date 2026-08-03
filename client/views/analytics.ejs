@@ -7,7 +7,7 @@
 
     <meta
       name="description"
-      content="QuizMaster Pro personal performance analytics"
+      content="View detailed QuizMaster Pro performance analytics, category insights, activity, accuracy and quiz progress."
     />
 
     <title>Analytics | QuizMaster Pro</title>
@@ -19,23 +19,39 @@
 
   <body>
     <main class="analytics-page">
+      <!-- =====================================================
+           Header
+      ====================================================== -->
+
       <header class="analytics-header">
-        <a href="/dashboard" class="analytics-logo">
+        <a
+          href="/dashboard"
+          class="analytics-logo"
+          aria-label="QuizMaster Pro dashboard"
+        >
           <span aria-hidden="true">🧠</span>
+
           <span>QuizMaster Pro</span>
         </a>
 
-        <nav class="analytics-navigation">
+        <nav class="analytics-navigation" aria-label="Analytics navigation">
           <a href="/dashboard">Dashboard</a>
+
           <a href="/history">History</a>
+
           <a href="/leaderboard">Leaderboard</a>
+
           <a href="/achievements">Achievements</a>
-          <a href="/analytics" class="active">Analytics</a>
+
+          <a href="/analytics" class="active" aria-current="page">
+            Analytics
+          </a>
+
           <a href="/profile">Profile</a>
         </nav>
 
-        <a href="/profile" class="analytics-user">
-          <span class="analytics-avatar">
+        <a href="/profile" class="analytics-user" aria-label="Open profile">
+          <span class="analytics-avatar" aria-hidden="true">
             <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "U"
             %>
           </span>
@@ -44,6 +60,10 @@
         </a>
       </header>
 
+      <!-- =====================================================
+           Hero
+      ====================================================== -->
+
       <section class="analytics-hero">
         <div>
           <p class="section-label">Performance insights</p>
@@ -51,120 +71,314 @@
           <h1>Your Analytics</h1>
 
           <p>
-            Track your quiz performance, accuracy, category strengths and recent
-            progress.
+            Track your quiz performance, category strengths, answer accuracy,
+            activity and recent progress.
           </p>
         </div>
 
         <a href="#categoryAnalytics" class="primary-link"> View Categories </a>
       </section>
 
-      <section id="analyticsLoading" class="analytics-state">
-        <div class="spinner"></div>
+      <!-- =====================================================
+           Loading State
+      ====================================================== -->
+
+      <section id="analyticsLoading" class="analytics-state" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
 
         <p>Loading your analytics...</p>
       </section>
 
-      <section id="analyticsError" class="analytics-state hidden">
-        <span class="state-icon">⚠️</span>
+      <!-- =====================================================
+           Error State
+      ====================================================== -->
+
+      <section
+        id="analyticsError"
+        class="analytics-state hidden"
+        aria-live="assertive"
+      >
+        <span class="state-icon" aria-hidden="true"> ⚠️ </span>
 
         <h2>Unable to load analytics</h2>
 
-        <p id="analyticsErrorMessage">Something went wrong.</p>
+        <p id="analyticsErrorMessage">
+          Something went wrong while loading your analytics.
+        </p>
 
         <button id="analyticsRetryButton" type="button">Try Again</button>
       </section>
 
+      <!-- =====================================================
+           Analytics Content
+      ====================================================== -->
+
       <div id="analyticsContent" class="hidden">
-        <section
-          class="analytics-summary-grid"
-          aria-label="Performance summary"
-        >
-          <article class="analytics-stat-card">
-            <span>📝</span>
+        <!-- ===================================================
+             Overview Cards
+        ==================================================== -->
 
-            <div>
-              <p>Total Quizzes</p>
-              <strong id="totalQuizzes">0</strong>
+        <section class="analytics-overview" aria-label="Analytics overview">
+          <article class="overview-card xp-card">
+            <div class="overview-icon" aria-hidden="true">⚡</div>
+
+            <div class="overview-content">
+              <span>Total XP</span>
+
+              <h2 id="totalXpEarned">0</h2>
+
+              <small>Experience earned</small>
             </div>
           </article>
 
-          <article class="analytics-stat-card">
-            <span>🎯</span>
+          <article class="overview-card accuracy-card">
+            <div class="overview-icon" aria-hidden="true">🎯</div>
 
-            <div>
-              <p>Average Accuracy</p>
-              <strong id="averageAccuracy">0%</strong>
+            <div class="overview-content">
+              <span>Accuracy</span>
+
+              <h2 id="averageAccuracy">0%</h2>
+
+              <small>Average accuracy</small>
             </div>
           </article>
 
-          <article class="analytics-stat-card">
-            <span>🏆</span>
+          <article class="overview-card quiz-card">
+            <div class="overview-icon" aria-hidden="true">📚</div>
 
-            <div>
-              <p>Best Accuracy</p>
-              <strong id="bestAccuracy">0%</strong>
+            <div class="overview-content">
+              <span>Total Quizzes</span>
+
+              <h2 id="totalQuizzes">0</h2>
+
+              <small>Completed attempts</small>
             </div>
           </article>
 
-          <article class="analytics-stat-card">
-            <span>⚡</span>
+          <article class="overview-card streak-card">
+            <div class="overview-icon" aria-hidden="true">🔥</div>
 
-            <div>
-              <p>Total XP</p>
-              <strong id="totalXpEarned">0</strong>
+            <div class="overview-content">
+              <span>Current Streak</span>
+
+              <h2 id="currentStreak">0 days</h2>
+
+              <small>Keep learning daily</small>
             </div>
           </article>
         </section>
 
-        <section class="answer-summary-section">
+        <!-- ===================================================
+             Monthly Performance
+        ==================================================== -->
+
+        <section class="analytics-section">
           <div class="section-heading">
             <div>
-              <p class="section-label">Answer breakdown</p>
+              <p class="section-label">Progress</p>
 
-              <h2>Question Performance</h2>
+              <h2>Monthly Performance</h2>
             </div>
+
+            <p class="section-description">
+              Compare monthly XP, quiz activity and accuracy.
+            </p>
           </div>
 
-          <div class="answer-summary-grid">
-            <article>
-              <span class="answer-icon correct">✓</span>
-              <p>Correct Answers</p>
-              <strong id="correctAnswers">0</strong>
-            </article>
-
-            <article>
-              <span class="answer-icon wrong">✕</span>
-              <p>Wrong Answers</p>
-              <strong id="wrongAnswers">0</strong>
-            </article>
-
-            <article>
-              <span class="answer-icon unanswered">−</span>
-              <p>Unanswered</p>
-              <strong id="unansweredAnswers">0</strong>
-            </article>
-
-            <article>
-              <span class="answer-icon time">⏱</span>
-              <p>Average Time</p>
-              <strong id="averageTime">0m 0s</strong>
-            </article>
+          <div class="chart-card">
+            <div
+              id="monthlyPerformanceChart"
+              class="monthly-chart"
+              aria-live="polite"
+            ></div>
           </div>
         </section>
 
+        <!-- ===================================================
+             Answer Distribution and Comparison
+        ==================================================== -->
+
+        <section class="analytics-two-column">
+          <article class="analytics-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">Answers</p>
+
+                <h2>Question Distribution</h2>
+              </div>
+            </div>
+
+            <div class="answer-distribution">
+              <div class="distribution-item">
+                <div class="distribution-header">
+                  <span>Correct</span>
+
+                  <strong id="correctPercentage"> 0% </strong>
+                </div>
+
+                <div
+                  class="progress-track"
+                  role="progressbar"
+                  aria-label="Correct answer percentage"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  id="correctProgressTrack"
+                >
+                  <div
+                    id="correctProgress"
+                    class="progress-fill success-fill"
+                  ></div>
+                </div>
+
+                <small>
+                  <span id="correctAnswers">0</span>
+                  correct answers
+                </small>
+              </div>
+
+              <div class="distribution-item">
+                <div class="distribution-header">
+                  <span>Wrong</span>
+
+                  <strong id="wrongPercentage"> 0% </strong>
+                </div>
+
+                <div
+                  class="progress-track"
+                  role="progressbar"
+                  aria-label="Wrong answer percentage"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  id="wrongProgressTrack"
+                >
+                  <div
+                    id="wrongProgress"
+                    class="progress-fill danger-fill"
+                  ></div>
+                </div>
+
+                <small>
+                  <span id="wrongAnswers">0</span>
+                  wrong answers
+                </small>
+              </div>
+
+              <div class="distribution-item">
+                <div class="distribution-header">
+                  <span>Unanswered</span>
+
+                  <strong id="unansweredPercentage"> 0% </strong>
+                </div>
+
+                <div
+                  class="progress-track"
+                  role="progressbar"
+                  aria-label="Unanswered question percentage"
+                  aria-valuemin="0"
+                  aria-valuemax="100"
+                  aria-valuenow="0"
+                  id="unansweredProgressTrack"
+                >
+                  <div
+                    id="unansweredProgress"
+                    class="progress-fill warning-fill"
+                  ></div>
+                </div>
+
+                <small>
+                  <span id="unansweredAnswers">0</span>
+                  unanswered questions
+                </small>
+              </div>
+            </div>
+          </article>
+
+          <article class="analytics-card">
+            <div class="section-heading">
+              <div>
+                <p class="section-label">Improvement</p>
+
+                <h2>Performance Comparison</h2>
+              </div>
+            </div>
+
+            <div class="comparison-grid">
+              <div class="comparison-box">
+                <span>Recent Accuracy</span>
+
+                <strong id="recentAccuracy"> 0% </strong>
+
+                <small id="recentQuizCount"> Latest quizzes </small>
+              </div>
+
+              <div class="comparison-box">
+                <span>Previous Accuracy</span>
+
+                <strong id="previousAccuracy"> 0% </strong>
+
+                <small id="previousQuizCount"> Previous quizzes </small>
+              </div>
+
+              <div class="comparison-box">
+                <span>Accuracy Change</span>
+
+                <strong id="accuracyChange"> 0% </strong>
+
+                <small>Recent vs previous</small>
+              </div>
+
+              <div class="comparison-box">
+                <span>XP Change</span>
+
+                <strong id="xpChange"> 0 XP </strong>
+
+                <small>Average XP difference</small>
+              </div>
+
+              <div class="comparison-box full-width">
+                <span>Performance Trend</span>
+
+                <strong id="performanceDirection" class="performance-direction">
+                  Stable
+                </strong>
+
+                <small id="performanceComparisonText">
+                  Complete more quizzes to generate a comparison.
+                </small>
+              </div>
+            </div>
+          </article>
+        </section>
+
+        <!-- ===================================================
+             Performance Highlights
+        ==================================================== -->
+
         <section class="performance-highlights">
-          <article class="highlight-card">
+          <article class="highlight-card strongest-highlight">
+            <div class="highlight-icon" aria-hidden="true">🏆</div>
+
             <p>Strongest Category</p>
 
             <h2 id="strongestCategory">No data yet</h2>
 
             <span id="strongestCategoryAccuracy">
-              Complete quizzes to see your strongest category.
+              Complete quizzes to discover your strongest category.
             </span>
+
+            <div class="highlight-progress-track">
+              <div
+                id="strongestCategoryProgress"
+                class="highlight-progress-fill success-fill"
+              ></div>
+            </div>
           </article>
 
-          <article class="highlight-card">
+          <article class="highlight-card weakest-highlight">
+            <div class="highlight-icon" aria-hidden="true">📈</div>
+
             <p>Needs Improvement</p>
 
             <h2 id="weakestCategory">No data yet</h2>
@@ -172,16 +386,126 @@
             <span id="weakestCategoryAccuracy">
               Complete quizzes to view category insights.
             </span>
+
+            <div class="highlight-progress-track">
+              <div
+                id="weakestCategoryProgress"
+                class="highlight-progress-fill warning-fill"
+              ></div>
+            </div>
           </article>
 
           <article class="highlight-card">
-            <p>Current Streak</p>
+            <div class="highlight-icon" aria-hidden="true">🎯</div>
 
-            <h2 id="currentStreak">0 days</h2>
+            <p>Best Accuracy</p>
 
-            <span> Complete quizzes on consecutive days. </span>
+            <h2 id="bestAccuracy">0%</h2>
+
+            <span> Your highest accuracy from a completed quiz. </span>
+          </article>
+
+          <article class="highlight-card">
+            <div class="highlight-icon" aria-hidden="true">💯</div>
+
+            <p>Perfect Scores</p>
+
+            <h2 id="perfectScores">0</h2>
+
+            <span> Quizzes completed with 100% accuracy. </span>
           </article>
         </section>
+
+        <!-- ===================================================
+             Time Analytics
+        ==================================================== -->
+
+        <section class="answer-summary-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-label">Speed</p>
+
+              <h2>Quiz Time Performance</h2>
+            </div>
+          </div>
+
+          <div class="answer-summary-grid">
+            <article>
+              <span class="answer-icon time" aria-hidden="true"> ⏱ </span>
+
+              <p>Average Time</p>
+
+              <strong id="averageTime"> 0m 0s </strong>
+            </article>
+
+            <article>
+              <span class="answer-icon correct" aria-hidden="true"> ⚡ </span>
+
+              <p>Fastest Quiz</p>
+
+              <strong id="fastestQuiz"> 0m 0s </strong>
+            </article>
+
+            <article>
+              <span class="answer-icon wrong" aria-hidden="true"> 🐢 </span>
+
+              <p>Longest Quiz</p>
+
+              <strong id="longestQuiz"> 0m 0s </strong>
+            </article>
+
+            <article>
+              <span class="answer-icon unanswered" aria-hidden="true">
+                📝
+              </span>
+
+              <p>Total Questions</p>
+
+              <strong id="totalQuestions"> 0 </strong>
+            </article>
+          </div>
+        </section>
+
+        <!-- ===================================================
+             Fourteen-Day Activity
+        ==================================================== -->
+
+        <section class="analytics-section activity-section">
+          <div class="section-heading">
+            <div>
+              <p class="section-label">Activity</p>
+
+              <h2>Last 14 Days</h2>
+            </div>
+
+            <p class="section-description">
+              Daily quiz activity, XP and accuracy.
+            </p>
+          </div>
+
+          <div class="activity-card">
+            <div
+              id="dailyActivityGrid"
+              class="daily-activity-grid"
+              aria-live="polite"
+            ></div>
+
+            <div class="activity-legend">
+              <span>Less</span>
+
+              <i class="activity-level level-0"></i>
+              <i class="activity-level level-1"></i>
+              <i class="activity-level level-2"></i>
+              <i class="activity-level level-3"></i>
+
+              <span>More</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- ===================================================
+             Category Analytics
+        ==================================================== -->
 
         <section id="categoryAnalytics" class="category-analytics-section">
           <div class="section-heading">
@@ -190,20 +514,32 @@
 
               <h2>Category Analytics</h2>
             </div>
+
+            <p class="section-description">
+              Compare quizzes, accuracy, best scores and earned XP.
+            </p>
           </div>
 
           <div class="analytics-table-card">
             <div class="analytics-table-header">
               <span>Category</span>
+
               <span>Quizzes</span>
+
               <span>Accuracy</span>
+
               <span>Best</span>
+
               <span>XP</span>
             </div>
 
             <div id="categoryAnalyticsList" aria-live="polite"></div>
           </div>
         </section>
+
+        <!-- ===================================================
+             Recent Performance
+        ==================================================== -->
 
         <section class="recent-performance-section">
           <div class="section-heading">
@@ -216,10 +552,26 @@
             <a href="/history" class="secondary-link"> View Full History → </a>
           </div>
 
-          <div id="recentPerformanceGrid" class="recent-performance-grid"></div>
+          <div
+            id="recentPerformanceGrid"
+            class="recent-performance-grid"
+            aria-live="polite"
+          ></div>
         </section>
+
+        <!-- ===================================================
+             Generated Information
+        ==================================================== -->
+
+        <footer class="analytics-footer">
+          <p>
+            Analytics last updated:
+            <span id="analyticsGeneratedAt"> Not available </span>
+          </p>
+
+          <a href="/quiz"> Take Another Quiz </a>
+        </footer>
       </div>
     </main>
   </body>
 </html>
-  
