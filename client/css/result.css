@@ -738,3 +738,409 @@ body.celebration-open {
     animation: none;
   }
 }
+/* ============================================================
+   Achievement Celebration
+============================================================ */
+
+.achievement-celebration-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: 20px;
+  background: rgba(2, 7, 18, 0.82);
+  backdrop-filter: blur(12px);
+}
+
+.achievement-celebration-overlay.hidden {
+  display: none;
+}
+
+.achievement-celebration-card {
+  position: relative;
+  z-index: 2;
+  width: min(100%, 470px);
+  padding: 42px 34px;
+  border: 1px solid rgba(245, 185, 66, 0.34);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top, rgba(245, 185, 66, 0.15), transparent 42%),
+    var(--surface-light);
+  box-shadow:
+    0 0 50px rgba(245, 185, 66, 0.18),
+    0 34px 90px rgba(0, 0, 0, 0.5);
+  text-align: center;
+}
+
+.achievement-card-enter {
+  animation: achievementCardEnter 0.45s ease;
+}
+
+.achievement-celebration-icon {
+  display: grid;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto;
+  place-items: center;
+  border: 1px solid rgba(245, 185, 66, 0.32);
+  border-radius: 30px;
+  background: rgba(245, 185, 66, 0.12);
+  box-shadow: 0 0 38px rgba(245, 185, 66, 0.18);
+  font-size: 3rem;
+}
+
+.achievement-celebration-label {
+  margin-top: 24px;
+  color: var(--warning);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+
+.achievement-celebration-card h2 {
+  margin-top: 10px;
+  font-size: clamp(1.8rem, 5vw, 2.6rem);
+  letter-spacing: -0.04em;
+}
+
+.achievement-celebration-description {
+  margin: 15px auto 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.achievement-celebration-meta {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 24px;
+}
+
+.achievement-celebration-meta span {
+  padding: 7px 11px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(7, 17, 31, 0.38);
+  color: var(--muted);
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.achievement-celebration-button {
+  width: 100%;
+  margin-top: 28px;
+}
+
+.achievement-celebration-confetti {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.achievement-confetti-piece {
+  position: absolute;
+  top: -30px;
+  left: var(--achievement-left);
+  width: var(--achievement-size);
+  height: calc(var(--achievement-size) * 1.6);
+  border-radius: 2px;
+  opacity: 0;
+  animation: achievementConfettiFall var(--achievement-duration)
+    cubic-bezier(0.12, 0.65, 0.35, 1) var(--achievement-delay) forwards;
+}
+
+.achievement-confetti-piece[data-color-index="0"] {
+  background: #f5b942;
+}
+
+.achievement-confetti-piece[data-color-index="1"] {
+  background: #7c5cff;
+}
+
+.achievement-confetti-piece[data-color-index="2"] {
+  background: #12c2e9;
+}
+
+.achievement-confetti-piece[data-color-index="3"] {
+  background: #31d0aa;
+}
+
+.achievement-confetti-piece[data-color-index="4"] {
+  background: #ff647c;
+}
+
+.achievement-confetti-piece[data-color-index="5"] {
+  background: #f5f7fb;
+}
+
+@keyframes achievementCardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(20px) scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes achievementConfettiFall {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -30px, 0) rotate(0deg);
+  }
+
+  10% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    transform: translate3d(var(--achievement-movement), 110vh, 0)
+      rotate(var(--achievement-rotation));
+  }
+}
+
+@media (max-width: 520px) {
+  .achievement-celebration-card {
+    padding: 34px 22px;
+    border-radius: 24px;
+  }
+
+  .achievement-celebration-icon {
+    width: 82px;
+    height: 82px;
+    border-radius: 25px;
+    font-size: 2.5rem;
+  }
+
+  .achievement-celebration-meta {
+    align-items: center;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .achievement-card-enter,
+  .achievement-confetti-piece {
+    animation: none;
+  }
+}
+/* ============================================================
+   Daily Challenge Reward Celebration
+============================================================ */
+
+.daily-reward-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100001;
+  display: grid;
+  place-items: center;
+  overflow: auto;
+  padding: 20px;
+  background: rgba(2, 7, 18, 0.84);
+  backdrop-filter: blur(12px);
+}
+
+.daily-reward-overlay.hidden {
+  display: none;
+}
+
+.daily-reward-card {
+  position: relative;
+  width: min(100%, 500px);
+  padding: 42px 34px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 126, 60, 0.32);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at top, rgba(255, 126, 60, 0.18), transparent 42%),
+    var(--surface-light);
+  box-shadow:
+    0 0 55px rgba(255, 126, 60, 0.16),
+    0 34px 90px rgba(0, 0, 0, 0.52);
+  text-align: center;
+  animation: dailyRewardEnter 0.45s ease;
+}
+
+.daily-reward-card::before {
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  top: -130px;
+  right: -100px;
+  border-radius: 50%;
+  background: rgba(245, 185, 66, 0.12);
+  content: "";
+  filter: blur(20px);
+}
+
+.daily-reward-fire {
+  position: relative;
+  display: grid;
+  width: 96px;
+  height: 96px;
+  margin: 0 auto;
+  place-items: center;
+  border: 1px solid rgba(255, 126, 60, 0.3);
+  border-radius: 30px;
+  background: linear-gradient(
+    145deg,
+    rgba(255, 126, 60, 0.2),
+    rgba(245, 185, 66, 0.1)
+  );
+  box-shadow: 0 0 38px rgba(255, 126, 60, 0.2);
+  font-size: 3rem;
+}
+
+.daily-reward-label {
+  margin-top: 24px;
+  color: var(--warning);
+  font-size: 0.78rem;
+  font-weight: 850;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.daily-reward-card h2 {
+  margin-top: 9px;
+  font-size: clamp(2rem, 6vw, 2.8rem);
+  letter-spacing: -0.04em;
+}
+
+.daily-reward-description {
+  margin-top: 12px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.daily-reward-badge {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 26px;
+  padding: 16px;
+  border: 1px solid rgba(245, 185, 66, 0.24);
+  border-radius: 18px;
+  background: rgba(245, 185, 66, 0.08);
+  text-align: left;
+}
+
+.daily-reward-badge > span {
+  display: grid;
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+  place-items: center;
+  border-radius: 15px;
+  background: rgba(245, 185, 66, 0.12);
+  font-size: 1.5rem;
+}
+
+.daily-reward-badge small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.75rem;
+}
+
+.daily-reward-badge strong {
+  display: block;
+  margin-top: 4px;
+  color: var(--warning);
+}
+
+.daily-reward-xp {
+  margin-top: 20px;
+  padding: 22px;
+  border: 1px solid rgba(49, 208, 170, 0.25);
+  border-radius: 18px;
+  background: rgba(49, 208, 170, 0.08);
+}
+
+.daily-reward-xp span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.daily-reward-xp strong {
+  display: block;
+  margin-top: 5px;
+  color: var(--success);
+  font-size: 2rem;
+}
+
+.daily-reward-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.daily-reward-grid article {
+  padding: 15px 10px;
+  border: 1px solid var(--border);
+  border-radius: 15px;
+  background: rgba(7, 17, 31, 0.36);
+}
+
+.daily-reward-grid span {
+  display: block;
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.daily-reward-grid strong {
+  display: block;
+  margin-top: 6px;
+  font-size: 1rem;
+}
+
+.daily-reward-footer {
+  margin-top: 22px;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.daily-reward-button {
+  width: 100%;
+  margin-top: 25px;
+}
+
+@keyframes dailyRewardEnter {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.88);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@media (max-width: 540px) {
+  .daily-reward-card {
+    padding: 34px 22px;
+    border-radius: 24px;
+  }
+
+  .daily-reward-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .daily-reward-badge {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .daily-reward-card {
+    animation: none;
+  }
+}
