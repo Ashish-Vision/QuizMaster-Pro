@@ -3,6 +3,9 @@
 const profileState = {
   profile: null,
   isLoading: false,
+  selectedAvatarFile: null,
+  avatarPreviewUrl: null,
+  isUploadingAvatar: false,
 };
 
 const elements = {
@@ -57,7 +60,19 @@ const elements = {
   profileForm: document.getElementById("profileForm"),
   firstName: document.getElementById("firstName"),
   lastName: document.getElementById("lastName"),
-  avatar: document.getElementById("avatar"),
+  avatarFile: document.getElementById("avatarFile"),
+
+  avatarPreview: document.getElementById("avatarPreview"),
+
+  avatarPreviewInitials: document.getElementById("avatarPreviewInitials"),
+
+  avatarFileName: document.getElementById("avatarFileName"),
+
+  uploadAvatarButton: document.getElementById("uploadAvatarButton"),
+
+  removeAvatarButton: document.getElementById("removeAvatarButton"),
+
+  avatarUploadMessage: document.getElementById("avatarUploadMessage"),
   profileMessage: document.getElementById("profileMessage"),
   saveProfileButton: document.getElementById("saveProfileButton"),
 
@@ -65,9 +80,22 @@ const elements = {
   globalRankText: document.getElementById("globalRankText"),
 
   completionPercent: document.getElementById("completionPercent"),
+
   completionBar: document.getElementById("completionBar"),
+
   completionText: document.getElementById("completionText"),
+
   completionMissing: document.getElementById("completionMissing"),
+
+  weeklyCurrentStreak: document.getElementById("weeklyCurrentStreak"),
+
+  weeklyLongestStreak: document.getElementById("weeklyLongestStreak"),
+
+  weeklyXp: document.getElementById("weeklyXp"),
+
+  weeklyQuizzes: document.getElementById("weeklyQuizzes"),
+
+  weeklyCalendar: document.getElementById("weeklyCalendar"),
 };
 
 function toggleElement(element, shouldShow) {
@@ -670,6 +698,147 @@ function renderAccountDetails(profile) {
   }
 }
 
+function renderWeeklyActivity(weeklyActivity = {}) {
+  const days = Array.isArray(weeklyActivity.days) ? weeklyActivity.days : [];
+
+  const currentStreak = Number(weeklyActivity.currentStreak || 0);
+
+  const longestStreak = Number(weeklyActivity.longestWeeklyStreak || 0);
+
+  const weeklyXp = Number(weeklyActivity.xpEarned || 0);
+
+  const weeklyQuizzes = Number(weeklyActivity.quizzesCompleted || 0);
+
+  if (elements.weeklyCurrentStreak) {
+    elements.weeklyCurrentStreak.textContent = `${formatNumber(currentStreak)} ${
+      currentStreak === 1 ? "day" : "days"
+    }`;
+  }
+
+  if (elements.weeklyLongestStreak) {
+    elements.weeklyLongestStreak.textContent = `${formatNumber(longestStreak)} ${
+      longestStreak === 1 ? "day" : "days"
+    }`;
+  }
+
+  if (elements.weeklyXp) {
+    elements.weeklyXp.textContent = `${formatNumber(weeklyXp)} XP`;
+  }
+
+  if (elements.weeklyQuizzes) {
+    elements.weeklyQuizzes.textContent = formatNumber(weeklyQuizzes);
+  }
+
+  if (!elements.weeklyCalendar) {
+    return;
+  }
+
+  elements.weeklyCalendar.innerHTML = "";
+
+  if (days.length === 0) {
+    const emptyState = document.createElement("div");
+
+    emptyState.className = "weekly-calendar-empty";
+
+    emptyState.textContent = "No weekly activity is available yet.";
+
+    elements.weeklyCalendar.appendChild(emptyState);
+
+    return;
+  }
+
+  days.forEach((day) => {
+    const dayCard = document.createElement("article");
+
+    dayCard.className = "weekly-day-card";
+
+    if (day.isActive) {
+      dayCard.classList.add("active");
+    }
+
+    if (day.isToday) {
+      dayCard.classList.add("today");
+    }
+
+    const quizCount = Number(day.quizCount || 0);
+    const xpEarned = Number(day.xpEarned || 0);
+    const accuracy = Number(day.averageAccuracy || 0);
+
+    dayCard.tabIndex = 0;
+
+    dayCard.setAttribute(
+      "aria-label",
+      [
+        day.dayLabel || "Day",
+        quizCount === 1 ? "1 quiz" : `${quizCount} quizzes`,
+        `${xpEarned} XP`,
+        `${accuracy.toFixed(1)} percent accuracy`,
+      ].join(", "),
+    );
+
+    dayCard.title = [
+      day.dateKey || "",
+      `${quizCount} ${quizCount === 1 ? "quiz" : "quizzes"}`,
+      `${xpEarned} XP`,
+      `${accuracy.toFixed(1)}% accuracy`,
+    ].join(" • ");
+
+    const dayName = document.createElement("span");
+
+    dayName.className = "weekly-day-name";
+
+    dayName.textContent = day.dayLabel || "-";
+
+    const activityIcon = document.createElement("span");
+
+    activityIcon.className = "weekly-day-icon";
+
+    if (day.isToday && day.isActive) {
+      activityIcon.textContent = "🔥";
+    } else if (day.isActive) {
+      activityIcon.textContent = "✓";
+    } else if (day.isToday) {
+      activityIcon.textContent = "•";
+    } else {
+      activityIcon.textContent = "—";
+    }
+
+    const dateText = document.createElement("span");
+
+    dateText.className = "weekly-day-date";
+
+    if (day.date) {
+      const date = new Date(day.date);
+
+      dateText.textContent = Number.isNaN(date.getTime())
+        ? day.dateKey || ""
+        : date.toLocaleDateString(undefined, {
+            day: "2-digit",
+            month: "short",
+            timeZone: "UTC",
+          });
+    } else {
+      dateText.textContent = day.dateKey || "";
+    }
+
+    const quizText = document.createElement("strong");
+
+    quizText.className = "weekly-day-quizzes";
+
+    quizText.textContent = quizCount === 1 ? "1 quiz" : `${quizCount} quizzes`;
+
+    const xpText = document.createElement("small");
+
+    xpText.className = "weekly-day-xp";
+
+    xpText.textContent = `+${formatNumber(xpEarned)} XP`;
+
+    dayCard.append(dayName, activityIcon, dateText, quizText, xpText);
+
+    elements.weeklyCalendar.appendChild(dayCard);
+  });
+}
+
 function renderProfile(profile) {
   profileState.profile = profile;
 
@@ -702,6 +871,7 @@ function renderProfile(profile) {
   renderRecentAchievements(profile.recentAchievements);
 
   renderRecentAttempts(profile.recentAttempts);
+  renderWeeklyActivity(profile.weeklyActivity);
 
   window.requestAnimationFrame(() => {
     animateVisibleCards();
@@ -762,6 +932,297 @@ async function loadProfile() {
   }
 }
 
+const MAX_AVATAR_SIZE_BYTES = 5 * 1024 * 1024;
+
+const ALLOWED_AVATAR_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+
+function clearAvatarMessage() {
+  if (!elements.avatarUploadMessage) {
+    return;
+  }
+
+  elements.avatarUploadMessage.textContent = "";
+  elements.avatarUploadMessage.className = "form-message";
+}
+
+function showAvatarMessage(message, type = "error") {
+  if (!elements.avatarUploadMessage) {
+    return;
+  }
+
+  elements.avatarUploadMessage.textContent = message;
+
+  elements.avatarUploadMessage.className =
+    type === "success"
+      ? "form-message success-message"
+      : "form-message error-message";
+}
+
+function releaseAvatarPreviewUrl() {
+  if (!profileState.avatarPreviewUrl) {
+    return;
+  }
+
+  URL.revokeObjectURL(profileState.avatarPreviewUrl);
+  profileState.avatarPreviewUrl = null;
+}
+
+function setAvatarPreview(imageUrl = "") {
+  if (!elements.avatarPreview || !elements.avatarPreviewInitials) {
+    return;
+  }
+
+  const profile = profileState.profile || {};
+
+  elements.avatarPreviewInitials.textContent =
+    getInitials(profile.firstName, profile.lastName) || "U";
+
+  if (imageUrl) {
+    elements.avatarPreview.style.backgroundImage = `url("${imageUrl}")`;
+
+    elements.avatarPreview.classList.add("has-image");
+  } else {
+    elements.avatarPreview.style.backgroundImage = "";
+    elements.avatarPreview.classList.remove("has-image");
+  }
+}
+
+function resetAvatarSelector() {
+  releaseAvatarPreviewUrl();
+
+  profileState.selectedAvatarFile = null;
+
+  if (elements.avatarFile) {
+    elements.avatarFile.value = "";
+  }
+
+  if (elements.avatarFileName) {
+    elements.avatarFileName.textContent = "No image selected";
+  }
+
+  if (elements.uploadAvatarButton) {
+    elements.uploadAvatarButton.disabled = true;
+  }
+
+  setAvatarPreview(profileState.profile?.avatar || "");
+
+  clearAvatarMessage();
+}
+
+function validateAvatarFile(file) {
+  if (!file) {
+    return "Select an image before uploading.";
+  }
+
+  if (!ALLOWED_AVATAR_TYPES.has(file.type)) {
+    return "Only JPEG, PNG and WebP images are allowed.";
+  }
+
+  if (file.size > MAX_AVATAR_SIZE_BYTES) {
+    return "Profile picture cannot exceed 5 MB.";
+  }
+
+  return "";
+}
+
+function handleAvatarFileSelection(event) {
+  clearAvatarMessage();
+  releaseAvatarPreviewUrl();
+
+  const file = event.target.files?.[0] || null;
+
+  const validationMessage = validateAvatarFile(file);
+
+  if (validationMessage) {
+    profileState.selectedAvatarFile = null;
+
+    if (elements.avatarFile) {
+      elements.avatarFile.value = "";
+    }
+
+    if (elements.avatarFileName) {
+      elements.avatarFileName.textContent = "No image selected";
+    }
+
+    if (elements.uploadAvatarButton) {
+      elements.uploadAvatarButton.disabled = true;
+    }
+
+    setAvatarPreview(profileState.profile?.avatar || "");
+
+    showAvatarMessage(validationMessage);
+
+    return;
+  }
+
+  profileState.selectedAvatarFile = file;
+
+  profileState.avatarPreviewUrl = URL.createObjectURL(file);
+
+  setAvatarPreview(profileState.avatarPreviewUrl);
+
+  if (elements.avatarFileName) {
+    elements.avatarFileName.textContent = `${file.name} (${(
+      file.size /
+      (1024 * 1024)
+    ).toFixed(2)} MB)`;
+  }
+
+  if (elements.uploadAvatarButton) {
+    elements.uploadAvatarButton.disabled = false;
+  }
+}
+
+async function uploadProfileAvatar() {
+  const file = profileState.selectedAvatarFile;
+
+  const validationMessage = validateAvatarFile(file);
+
+  if (validationMessage) {
+    showAvatarMessage(validationMessage);
+    return;
+  }
+
+  if (profileState.isUploadingAvatar) {
+    return;
+  }
+
+  profileState.isUploadingAvatar = true;
+
+  const originalText =
+    elements.uploadAvatarButton?.textContent || "Upload Picture";
+
+  if (elements.uploadAvatarButton) {
+    elements.uploadAvatarButton.disabled = true;
+    elements.uploadAvatarButton.textContent = "Uploading...";
+  }
+
+  clearAvatarMessage();
+
+  try {
+    const formData = new FormData();
+
+    formData.append("avatar", file);
+
+    const response = await fetch("/api/profile/avatar", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+      },
+      body: formData,
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to upload profile picture.");
+    }
+
+    if (profileState.profile) {
+      profileState.profile.avatar = data.avatar || "";
+    }
+
+    renderAvatar(profileState.profile);
+
+    setAvatarPreview(data.avatar || "");
+
+    releaseAvatarPreviewUrl();
+    profileState.selectedAvatarFile = null;
+
+    if (elements.avatarFile) {
+      elements.avatarFile.value = "";
+    }
+
+    if (elements.avatarFileName) {
+      elements.avatarFileName.textContent = "Profile picture uploaded";
+    }
+
+    showAvatarMessage(
+      data.message || "Profile picture uploaded successfully.",
+      "success",
+    );
+
+    /*
+     * Reload profile data so profile-completion
+     * percentage is refreshed.
+     */
+    await loadProfile();
+  } catch (error) {
+    console.error("Avatar upload error:", error);
+
+    showAvatarMessage(error.message || "Unable to upload profile picture.");
+  } finally {
+    profileState.isUploadingAvatar = false;
+
+    if (elements.uploadAvatarButton) {
+      elements.uploadAvatarButton.textContent = originalText;
+
+      elements.uploadAvatarButton.disabled = !profileState.selectedAvatarFile;
+    }
+  }
+}
+
+async function removeProfileAvatar() {
+  if (!profileState.profile?.avatar) {
+    showAvatarMessage("There is no profile picture to remove.");
+
+    return;
+  }
+
+  const shouldRemove = window.confirm("Remove your current profile picture?");
+
+  if (!shouldRemove) {
+    return;
+  }
+
+  const originalText =
+    elements.removeAvatarButton?.textContent || "Remove Picture";
+
+  if (elements.removeAvatarButton) {
+    elements.removeAvatarButton.disabled = true;
+    elements.removeAvatarButton.textContent = "Removing...";
+  }
+
+  clearAvatarMessage();
+
+  try {
+    const response = await fetch("/api/profile/avatar", {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to remove profile picture.");
+    }
+
+    profileState.profile.avatar = "";
+
+    renderAvatar(profileState.profile);
+    resetAvatarSelector();
+
+    showAvatarMessage(
+      data.message || "Profile picture removed successfully.",
+      "success",
+    );
+
+    await loadProfile();
+  } catch (error) {
+    console.error("Avatar removal error:", error);
+
+    showAvatarMessage(error.message || "Unable to remove profile picture.");
+  } finally {
+    if (elements.removeAvatarButton) {
+      elements.removeAvatarButton.disabled = false;
+      elements.removeAvatarButton.textContent = originalText;
+    }
+  }
+}
 function openProfileModal() {
   const profile = profileState.profile;
 
@@ -769,23 +1230,29 @@ function openProfileModal() {
     return;
   }
 
-  elements.firstName.value = profile.firstName || "";
+  if (elements.firstName) {
+    elements.firstName.value = profile.firstName || "";
+  }
 
-  elements.lastName.value = profile.lastName || "";
+  if (elements.lastName) {
+    elements.lastName.value = profile.lastName || "";
+  }
 
-  elements.avatar.value = profile.avatar || "";
+  resetAvatarSelector();
 
-  elements.profileMessage.textContent = "";
+  if (elements.removeAvatarButton) {
+    elements.removeAvatarButton.disabled = !profile.avatar;
+  }
 
-  elements.profileMessage.className = "form-message";
+  clearProfileMessage();
+  clearAvatarMessage();
 
   elements.profileModal.classList.remove("hidden");
-
   elements.profileModal.setAttribute("aria-hidden", "false");
 
   document.body.classList.add("modal-open");
 
-  elements.firstName.focus();
+  elements.firstName?.focus();
 }
 
 function closeProfileModal() {
@@ -794,20 +1261,54 @@ function closeProfileModal() {
   }
 
   elements.profileModal.classList.add("hidden");
-
   elements.profileModal.setAttribute("aria-hidden", "true");
 
   document.body.classList.remove("modal-open");
 
+  releaseAvatarPreviewUrl();
+
+  profileState.selectedAvatarFile = null;
+
+  if (elements.avatarFile) {
+    elements.avatarFile.value = "";
+  }
+
   elements.editProfileButton?.focus();
 }
 
+/* ============================================================
+   Profile Form Messages
+============================================================ */
+
+function clearProfileMessage() {
+  if (!elements.profileMessage) {
+    return;
+  }
+
+  elements.profileMessage.textContent = "";
+  elements.profileMessage.className = "form-message";
+}
+
+function showProfileMessage(message, type = "error") {
+  if (!elements.profileMessage) {
+    return;
+  }
+
+  elements.profileMessage.textContent = message || "";
+
+  elements.profileMessage.className =
+    type === "success"
+      ? "form-message success-message"
+      : "form-message error-message";
+}
+
+/* ============================================================
+   Profile Form Validation
+============================================================ */
+
 function validateProfileForm() {
-  const firstName = elements.firstName.value.trim();
-
-  const lastName = elements.lastName.value.trim();
-
-  const avatar = elements.avatar.value.trim();
+  const firstName = elements.firstName?.value.trim() || "";
+  const lastName = elements.lastName?.value.trim() || "";
 
   if (firstName.length < 2 || firstName.length > 50) {
     throw new Error("First name must contain between 2 and 50 characters.");
@@ -817,88 +1318,84 @@ function validateProfileForm() {
     throw new Error("Last name must contain between 2 and 50 characters.");
   }
 
-  if (avatar && !/^https?:\/\/.+/i.test(avatar)) {
-    throw new Error("Avatar must be a valid HTTP or HTTPS URL.");
-  }
-
   return {
     firstName,
     lastName,
-    avatar,
   };
 }
+
+/* ============================================================
+   Update Profile Information
+============================================================ */
 
 async function updateProfile(event) {
   event.preventDefault();
 
-  let payload;
-
-  try {
-    payload = validateProfileForm();
-  } catch (error) {
-    elements.profileMessage.textContent = error.message;
-
-    elements.profileMessage.className = "form-message error-message";
-
+  if (!elements.profileForm || !elements.saveProfileButton) {
     return;
   }
 
-  elements.saveProfileButton.disabled = true;
+  const originalButtonText =
+    elements.saveProfileButton.textContent || "Save Changes";
 
+  elements.saveProfileButton.disabled = true;
   elements.saveProfileButton.textContent = "Saving...";
 
-  elements.profileMessage.textContent = "";
-
-  elements.profileMessage.className = "form-message";
+  clearProfileMessage();
 
   try {
+    const payload = validateProfileForm();
+
     const response = await fetch("/api/profile", {
       method: "PUT",
       credentials: "include",
 
       headers: {
         "Content-Type": "application/json",
-
         Accept: "application/json",
       },
 
       body: JSON.stringify(payload),
     });
 
+    const data = await parseJsonResponse(response);
+
     if (response.status === 401) {
       window.location.href = "/login";
       return;
     }
 
-    const data = await parseJsonResponse(response);
-
-    if (!response.ok || !data.success || !data.profile) {
+    if (!response.ok || !data.success) {
       throw new Error(data.message || "Unable to update profile.");
+    }
+
+    if (!data.profile) {
+      throw new Error("The server did not return the updated profile.");
     }
 
     renderProfile(data.profile);
 
-    elements.profileMessage.textContent =
-      data.message || "Profile updated successfully.";
-
-    elements.profileMessage.className = "form-message success-message";
+    showProfileMessage(
+      data.message || "Profile updated successfully.",
+      "success",
+    );
 
     window.setTimeout(() => {
       closeProfileModal();
-    }, 800);
+    }, 700);
   } catch (error) {
     console.error("Profile update error:", error);
 
-    elements.profileMessage.textContent =
-      error.message || "Unable to update profile.";
-
-    elements.profileMessage.className = "form-message error-message";
+    showProfileMessage(error.message || "Unable to update profile.", "error");
   } finally {
     elements.saveProfileButton.disabled = false;
-
-    elements.saveProfileButton.textContent = "Save Changes";
+    elements.saveProfileButton.textContent = originalButtonText;
   }
 }
+
+/* ============================================================
+   Page Initialization
+============================================================ */
 
 function initializeProfilePage() {
   elements.retryButton?.addEventListener("click", loadProfile);
@@ -906,6 +1403,12 @@ function initializeProfilePage() {
   elements.editProfileButton?.addEventListener("click", openProfileModal);
 
   elements.profileForm?.addEventListener("submit", updateProfile);
+
+  elements.avatarFile?.addEventListener("change", handleAvatarFileSelection);
+
+  elements.uploadAvatarButton?.addEventListener("click", uploadProfileAvatar);
+
+  elements.removeAvatarButton?.addEventListener("click", removeProfileAvatar);
 
   document.querySelectorAll("[data-close-modal]").forEach((element) => {
     element.addEventListener("click", closeProfileModal);
@@ -921,35 +1424,90 @@ function initializeProfilePage() {
     }
   });
 
+  window.addEventListener("beforeunload", releaseAvatarPreviewUrl);
+
   loadProfile();
+}
+
+/* ============================================================
+   Profile Overview
+============================================================ */
+
+function renderOverview(profile) {
+  const ranking = profile?.ranking || null;
+
+  if (elements.globalRank) {
+    elements.globalRank.textContent = ranking?.rank ? `#${ranking.rank}` : "—";
+  }
+
+  if (elements.globalRankText) {
+    if (ranking?.rank) {
+      elements.globalRankText.textContent = `of ${formatNumber(
+        ranking.totalPlayers,
+      )} players • Top ${formatNumber(ranking.topPercentage)}%`;
+    } else {
+      elements.globalRankText.textContent = "Ranking is not available yet";
+    }
+  }
+
+  const completion = profile?.profileCompletion || null;
+
+  if (!completion) {
+    if (elements.completionPercent) {
+      elements.completionPercent.textContent = "0%";
+    }
+
+    if (elements.completionBar) {
+      elements.completionBar.style.width = "0%";
+    }
+
+    if (elements.completionText) {
+      elements.completionText.textContent = "0 / 0 completed";
+    }
+
+    if (elements.completionMissing) {
+      elements.completionMissing.textContent =
+        "Profile completion data is unavailable.";
+    }
+
+    return;
+  }
+
+  const percentage = Math.min(
+    100,
+    Math.max(0, getNumber(completion.completionPercentage)),
+  );
+
+  if (elements.completionPercent) {
+    elements.completionPercent.textContent = `${percentage}%`;
+  }
+
+  if (elements.completionBar) {
+    elements.completionBar.style.width = `${percentage}%`;
+
+    elements.completionBar.setAttribute("aria-valuenow", String(percentage));
+  }
+
+  if (elements.completionText) {
+    elements.completionText.textContent = `${formatNumber(
+      completion.completedItems,
+    )} / ${formatNumber(completion.totalItems)} completed`;
+  }
+
+  if (elements.completionMissing) {
+    const missingItems = Array.isArray(completion.missingItems)
+      ? completion.missingItems
+      : [];
+
+    elements.completionMissing.textContent =
+      missingItems.length > 0
+        ? `Missing: ${missingItems.join(", ")}`
+        : "Profile Complete 🎉";
+  }
 }
 
 if (document.readyState === "loading") {
   document.addEventListener("DOMContentLoaded", initializeProfilePage);
 } else {
   initializeProfilePage();
-}
-function renderOverview(profile) {
-  if (profile.ranking) {
-    elements.globalRank.textContent = "#" + profile.ranking.rank;
-
-    elements.globalRankText.textContent = `of ${profile.ranking.totalPlayers} players • Top ${profile.ranking.topPercentage}%`;
-  }
-
-  if (profile.profileCompletion) {
-    elements.completionPercent.textContent =
-      profile.profileCompletion.completionPercentage + "%";
-
-    elements.completionBar.style.width =
-      profile.profileCompletion.completionPercentage + "%";
-
-    elements.completionText.textContent = `${profile.profileCompletion.completedItems} / ${profile.profileCompletion.totalItems} completed`;
-
-    if (profile.profileCompletion.missingItems.length) {
-      elements.completionMissing.textContent =
-        "Missing: " + profile.profileCompletion.missingItems.join(", ");
-    } else {
-      elements.completionMissing.textContent = "Profile Complete 🎉";
-    }
-  }
 }

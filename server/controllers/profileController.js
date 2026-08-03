@@ -40,6 +40,57 @@ function getSafeObjectId(value) {
   return new mongoose.Types.ObjectId(value);
 }
 
+/* ============================================================
+   Date Helpers
+============================================================ */
+
+function getStartOfUtcDay(date = new Date()) {
+  const safeDate = date instanceof Date ? new Date(date) : new Date(date);
+
+  if (Number.isNaN(safeDate.getTime())) {
+    throw new Error("A valid date is required.");
+  }
+
+  return new Date(
+    Date.UTC(
+      safeDate.getUTCFullYear(),
+      safeDate.getUTCMonth(),
+      safeDate.getUTCDate(),
+      0,
+      0,
+      0,
+      0,
+    ),
+  );
+}
+
+function addUtcDays(date, numberOfDays) {
+  const safeDate = getStartOfUtcDay(date);
+
+  safeDate.setUTCDate(safeDate.getUTCDate() + numberOfDays);
+
+  return safeDate;
+}
+
+function createDateKey(date) {
+  return getStartOfUtcDay(date).toISOString().slice(0, 10);
+}
+
+function getDayLabel(date) {
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
+    timeZone: "UTC",
+  }).format(date);
+}
+
+function getDayNumber(date) {
+  return Math.floor(getStartOfUtcDay(date).getTime() / (24 * 60 * 60 * 1000));
+}
+
+/* ============================================================
+   Empty Statistics
+============================================================ */
+
 function getEmptyStatistics() {
   return {
     totalAttempts: 0,
@@ -58,6 +109,10 @@ function getEmptyStatistics() {
     favoriteCategory: null,
   };
 }
+
+/* ============================================================
+   Profile Statistics
+============================================================ */
 
 async function getProfileStatistics(userId) {
   const objectId = getSafeObjectId(userId);
@@ -245,6 +300,7 @@ async function getProfileStatistics(userId) {
   ]);
 
   const summary = statisticsResult[0] || {};
+
   const favoriteCategory = favoriteCategoryResult[0] || null;
 
   return {
@@ -304,6 +360,278 @@ async function getProfileStatistics(userId) {
   };
 }
 
+/* ============================================================
+   Weekly Activity
+============================================================ */
+
+async function getWeeklyActivity(userId) {
+  const objectId = getSafeObjectId(userId);
+
+  const today = getStartOfUtcDay(new Date());
+
+  const startDate = addUtcDays(today, -6);
+
+  const endDate = addUtcDays(today, 1);
+
+  const emptyDays = Array.from(
+    {
+      length: 7,
+    },
+    (_, index) => {
+      const date = addUtcDays(startDate, index);
+
+      return {
+        dateKey: createDateKey(date),
+        date: date.toISOString(),
+        dayLabel: getDayLabel(date),
+        quizCount: 0,
+        xpEarned: 0,
+        correctAnswers: 0,
+        totalQuestions: 0,
+        averageAccuracy: 0,
+        isActive: false,
+        isToday: createDateKey(date) === createDateKey(today),
+      };
+    },
+  );
+
+  if (!objectId) {
+    return {
+      currentStreak: 0,
+      activeDays: 0,
+      quizzesCompleted: 0,
+      xpEarned: 0,
+      correctAnswers: 0,
+      averageAccuracy: 0,
+      longestWeeklyStreak: 0,
+      startDate: startDate.toISOString(),
+      endDate: today.toISOString(),
+      days: emptyDays,
+    };
+  }
+
+  const activityResults = await Score.aggregate([
+    {
+      $match: {
+        user: objectId,
+
+        completedAt: {
+          $gte: startDate,
+          $lt: endDate,
+        },
+      },
+    },
+
+    {
+      $project: {
+        dateKey: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$completedAt",
+            timezone: "UTC",
+          },
+        },
+
+        xpEarned: {
+          $ifNull: ["$xpEarned", 0],
+        },
+
+        correctAnswers: {
+          $ifNull: ["$correctAnswers", 0],
+        },
+
+        totalQuestions: {
+          $ifNull: ["$totalQuestions", 0],
+        },
+
+        accuracy: {
+          $ifNull: ["$accuracy", 0],
+        },
+      },
+    },
+
+    {
+      $group: {
+        _id: "$dateKey",
+
+        quizCount: {
+          $sum: 1,
+        },
+
+        xpEarned: {
+          $sum: "$xpEarned",
+        },
+
+        correctAnswers: {
+          $sum: "$correctAnswers",
+        },
+
+        totalQuestions: {
+          $sum: "$totalQuestions",
+        },
+
+        averageAccuracy: {
+          $avg: "$accuracy",
+        },
+      },
+    },
+
+    {
+      $sort: {
+        _id: 1,
+      },
+    },
+  ]);
+
+  const activityMap = new Map(
+    activityResults.map((activity) => [activity._id, activity]),
+  );
+
+  const days = emptyDays.map((day) => {
+    const activity = activityMap.get(day.dateKey);
+
+    if (!activity) {
+      return day;
+    }
+
+    return {
+      ...day,
+
+      quizCount: normalizeNumber(activity.quizCount),
+
+      xpEarned: normalizeNumber(activity.xpEarned),
+
+      correctAnswers: normalizeNumber(activity.correctAnswers),
+
+      totalQuestions: normalizeNumber(activity.totalQuestions),
+
+      averageAccuracy: roundNumber(activity.averageAccuracy),
+
+      isActive: normalizeNumber(activity.quizCount) > 0,
+    };
+  });
+
+  const activeDays = days.filter((day) => day.isActive).length;
+
+  const quizzesCompleted = days.reduce(
+    (total, day) => total + day.quizCount,
+    0,
+  );
+
+  const xpEarned = days.reduce((total, day) => total + day.xpEarned, 0);
+
+  const correctAnswers = days.reduce(
+    (total, day) => total + day.correctAnswers,
+    0,
+  );
+
+  const totalAccuracy = days.reduce(
+    (total, day) => total + day.averageAccuracy * day.quizCount,
+    0,
+  );
+
+  const averageAccuracy =
+    quizzesCompleted > 0 ? roundNumber(totalAccuracy / quizzesCompleted) : 0;
+
+  let longestWeeklyStreak = 0;
+  let runningWeeklyStreak = 0;
+
+  for (const day of days) {
+    if (day.isActive) {
+      runningWeeklyStreak += 1;
+
+      longestWeeklyStreak = Math.max(longestWeeklyStreak, runningWeeklyStreak);
+    } else {
+      runningWeeklyStreak = 0;
+    }
+  }
+
+  /*
+   * The current streak is calculated from the latest
+   * quiz activity in the database, not only from the
+   * seven displayed calendar days.
+   */
+  const recentActiveDates = await Score.aggregate([
+    {
+      $match: {
+        user: objectId,
+      },
+    },
+
+    {
+      $project: {
+        dateKey: {
+          $dateToString: {
+            format: "%Y-%m-%d",
+            date: "$completedAt",
+            timezone: "UTC",
+          },
+        },
+      },
+    },
+
+    {
+      $group: {
+        _id: "$dateKey",
+      },
+    },
+
+    {
+      $sort: {
+        _id: -1,
+      },
+    },
+
+    {
+      $limit: 365,
+    },
+  ]);
+
+  let currentStreak = 0;
+
+  if (recentActiveDates.length > 0) {
+    const latestDate = getStartOfUtcDay(recentActiveDates[0]._id);
+
+    const differenceFromToday = getDayNumber(today) - getDayNumber(latestDate);
+
+    /*
+     * A streak remains current when the user played
+     * today or yesterday.
+     */
+    if (differenceFromToday === 0 || differenceFromToday === 1) {
+      let expectedDayNumber = getDayNumber(latestDate);
+
+      for (const activityDate of recentActiveDates) {
+        const activityDayNumber = getDayNumber(activityDate._id);
+
+        if (activityDayNumber !== expectedDayNumber) {
+          break;
+        }
+
+        currentStreak += 1;
+        expectedDayNumber -= 1;
+      }
+    }
+  }
+
+  return {
+    currentStreak,
+    activeDays,
+    quizzesCompleted,
+    xpEarned,
+    correctAnswers,
+    averageAccuracy,
+    longestWeeklyStreak,
+    startDate: startDate.toISOString(),
+    endDate: today.toISOString(),
+    days,
+  };
+}
+
+/* ============================================================
+   Recent Attempts
+============================================================ */
+
 async function getRecentAttempts(userId, limit = 5) {
   const safeLimit = Math.min(Math.max(Number.parseInt(limit, 10) || 5, 1), 10);
 
@@ -360,6 +688,10 @@ async function getRecentAttempts(userId, limit = 5) {
   }));
 }
 
+/* ============================================================
+   Recent Achievements
+============================================================ */
+
 async function getRecentAchievements(userId, limit = 4) {
   const safeLimit = Math.min(Math.max(Number.parseInt(limit, 10) || 4, 1), 10);
 
@@ -404,6 +736,10 @@ async function getRecentAchievements(userId, limit = 4) {
   }));
 }
 
+/* ============================================================
+   Profile Response
+============================================================ */
+
 async function buildProfileResponse(user) {
   const userId = user._id || user.id;
 
@@ -413,6 +749,7 @@ async function buildProfileResponse(user) {
     recentAchievements,
     achievementCount,
     ranking,
+    weeklyActivity,
   ] = await Promise.all([
     getProfileStatistics(userId),
 
@@ -425,6 +762,8 @@ async function buildProfileResponse(user) {
     }),
 
     getUserRankInformation(user),
+
+    getWeeklyActivity(userId),
   ]);
 
   const safeUser = user.toSafeObject();
@@ -458,11 +797,15 @@ async function buildProfileResponse(user) {
 
     ranking: {
       rank: ranking.rank,
+
       totalPlayers: normalizeNumber(ranking.totalPlayers),
+
       topPercentage: normalizeNumber(ranking.topPercentage),
     },
 
     statistics,
+
+    weeklyActivity,
 
     recentAttempts,
 
@@ -475,6 +818,10 @@ async function buildProfileResponse(user) {
     profileCompletion: calculateProfileCompletion(baseProfile),
   };
 }
+
+/* ============================================================
+   Get Profile
+============================================================ */
 
 async function getProfile(req, res, next) {
   try {
@@ -507,6 +854,10 @@ async function getProfile(req, res, next) {
   }
 }
 
+/* ============================================================
+   Update Profile
+============================================================ */
+
 async function updateProfile(req, res, next) {
   try {
     const userId = getUserId(req);
@@ -521,8 +872,6 @@ async function updateProfile(req, res, next) {
     const firstName = normalizeText(req.body.firstName);
 
     const lastName = normalizeText(req.body.lastName);
-
-    const avatar = normalizeText(req.body.avatar);
 
     if (!firstName || !lastName) {
       return res.status(400).json({
@@ -545,35 +894,16 @@ async function updateProfile(req, res, next) {
       });
     }
 
-    if (
-      avatar &&
-      !validator.isURL(avatar, {
-        protocols: ["http", "https"],
-        require_protocol: true,
-      })
-    ) {
-      return res.status(400).json({
-        success: false,
-        message: "Avatar must be a valid HTTP or HTTPS URL.",
-      });
-    }
-
-    if (avatar.length > 1000) {
-      return res.status(400).json({
-        success: false,
-        message: "Avatar URL cannot exceed 1000 characters.",
-      });
-    }
-
     const user = await User.findByIdAndUpdate(
       userId,
       {
-        firstName,
-        lastName,
-        avatar,
+        $set: {
+          firstName,
+          lastName,
+        },
       },
       {
-        new: true,
+        returnDocument: "after",
         runValidators: true,
       },
     );

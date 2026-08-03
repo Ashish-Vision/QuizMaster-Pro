@@ -287,6 +287,39 @@
           </article>
         </section>
 
+
+        <section class="weekly-activity-section">
+  <div class="section-heading">
+    <div>
+      <p class="section-label">Weekly Activity</p>
+      <h2>Your Last 7 Days</h2>
+    </div>
+  </div>
+
+  <div class="weekly-summary">
+    <div class="weekly-summary-card">
+      <span>Current Streak</span>
+      <strong id="weeklyCurrentStreak">0</strong>
+    </div>
+
+    <div class="weekly-summary-card">
+      <span>Longest Streak</span>
+      <strong id="weeklyLongestStreak">0</strong>
+    </div>
+
+    <div class="weekly-summary-card">
+      <span>Weekly XP</span>
+      <strong id="weeklyXp">0</strong>
+    </div>
+
+    <div class="weekly-summary-card">
+      <span>Quizzes</span>
+      <strong id="weeklyQuizzes">0</strong>
+    </div>
+  </div>
+
+  <div id="weeklyCalendar" class="weekly-calendar"></div>
+</section>
         <!-- ==================================================
              STATISTICS
         =================================================== -->
@@ -447,68 +480,57 @@
         </section>
 
         <!-- ==================================================
-             ACHIEVEMENTS AND RECENT ATTEMPTS
-        =================================================== -->
+     WEEKLY ACTIVITY
+=================================================== -->
 
-        <section class="activity-grid">
-          <article class="activity-card">
-            <div class="section-heading">
-              <div>
-                <p class="section-label">
-                  Milestones
-                </p>
+<section class="weekly-section">
 
-                <h2>Recent Achievements</h2>
-              </div>
+  <div class="section-heading">
+    <div>
+      <p class="section-label">
+        Activity
+      </p>
 
-              <a
-                href="/achievements"
-                class="section-link"
-              >
-                View All →
-              </a>
-            </div>
+      <h2>Weekly Activity</h2>
+    </div>
+  </div>
 
-            <div
-              id="recentAchievementsList"
-              class="achievement-list"
-              aria-live="polite"
-            >
-              <div class="content-loading">
-                Loading achievements...
-              </div>
-            </div>
-          </article>
+  <div class="weekly-summary">
 
-          <article class="activity-card">
-            <div class="section-heading">
-              <div>
-                <p class="section-label">
-                  Latest Activity
-                </p>
+    <div class="weekly-stat">
+      <strong id="weeklyStreak">
+        0
+      </strong>
 
-                <h2>Recent Quiz Attempts</h2>
-              </div>
+      <span>Current Streak</span>
+    </div>
 
-              <a
-                href="/history"
-                class="section-link"
-              >
-                View History →
-              </a>
-            </div>
+    <div class="weekly-stat">
+      <strong id="weeklyQuizCount">
+        0
+      </strong>
 
-            <div
-              id="recentAttemptsList"
-              class="attempt-list"
-              aria-live="polite"
-            >
-              <div class="content-loading">
-                Loading quiz attempts...
-              </div>
-            </div>
-          </article>
-        </section>
+      <span>Quizzes This Week</span>
+    </div>
+
+    <div class="weekly-stat">
+      <strong id="weeklyXp">
+        0
+      </strong>
+
+      <span>XP Earned</span>
+    </div>
+
+  </div>
+
+  <div
+    id="weeklyCalendar"
+    class="weekly-calendar"
+  >
+
+  </div>
+
+</section>
 
         <!-- ==================================================
              FAVORITE CATEGORY AND ACCOUNT
@@ -686,23 +708,72 @@
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="avatar">
-              Avatar URL
-            </label>
+          <div class="form-group avatar-upload-group">
+  <label>Profile Picture</label>
 
-            <input
-              id="avatar"
-              name="avatar"
-              type="url"
-              placeholder="https://example.com/avatar.jpg"
-              autocomplete="url"
-            />
+  <div class="avatar-upload-panel">
+    <div
+      id="avatarPreview"
+      class="avatar-preview"
+      aria-label="Selected profile picture preview"
+    >
+      <span id="avatarPreviewInitials">
+        <%= `${user?.firstName?.[0] || ""}${user?.lastName?.[0] || ""}` %>
+      </span>
+    </div>
 
-            <small>
-              Leave empty to use your initials.
-            </small>
-          </div>
+    <div class="avatar-upload-content">
+      <input
+        id="avatarFile"
+        name="avatar"
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        class="avatar-file-input"
+      />
+
+      <label
+        for="avatarFile"
+        class="avatar-select-button"
+      >
+        Choose Picture
+      </label>
+
+      <p id="avatarFileName" class="avatar-file-name">
+        No image selected
+      </p>
+
+      <small>
+        JPEG, PNG or WebP. Maximum file size: 5 MB.
+      </small>
+    </div>
+  </div>
+
+  <div class="avatar-upload-actions">
+    <button
+      id="uploadAvatarButton"
+      type="button"
+      class="primary-button"
+      disabled
+    >
+      Upload Picture
+    </button>
+
+    <button
+      id="removeAvatarButton"
+      type="button"
+      class="danger-button"
+    >
+      Remove Picture
+    </button>
+  </div>
+
+  <p
+    id="avatarUploadMessage"
+    class="form-message"
+    role="alert"
+    aria-live="polite"
+  ></p>
+</div>
 
           <p
             id="profileMessage"
