@@ -22,6 +22,7 @@
 
 body {
   min-height: 100vh;
+
   background: var(--background);
   color: var(--text);
 
@@ -46,6 +47,7 @@ button {
 .admin-layout {
   display: grid;
   grid-template-columns: 270px minmax(0, 1fr);
+
   min-height: 100vh;
 }
 
@@ -54,9 +56,10 @@ button {
   top: 0;
 
   display: flex;
+  height: 100vh;
+
   flex-direction: column;
 
-  height: 100vh;
   padding: 26px 18px;
 
   border-right: 1px solid var(--border);
@@ -68,19 +71,21 @@ button {
 
 .admin-brand {
   display: flex;
+
   align-items: center;
   gap: 12px;
 
   padding: 0 10px 25px;
+
   border-bottom: 1px solid var(--border);
 }
 
 .brand-icon {
   display: grid;
-  place-items: center;
-
   width: 44px;
   height: 44px;
+
+  place-items: center;
 
   border-radius: 14px;
 
@@ -108,10 +113,12 @@ button {
 
 .admin-navigation a {
   display: flex;
+
   align-items: center;
   gap: 12px;
 
   padding: 13px 14px;
+
   border-radius: 12px;
 
   color: var(--muted);
@@ -126,12 +133,15 @@ button {
 .admin-navigation a:hover,
 .admin-navigation a.active {
   color: var(--text);
+
   background: rgba(118, 87, 255, 0.14);
+
   transform: translateX(3px);
 }
 
 .admin-sidebar-user {
   display: flex;
+
   align-items: center;
   gap: 11px;
 
@@ -143,12 +153,12 @@ button {
 
 .admin-user-avatar {
   display: grid;
-  place-items: center;
-
   width: 42px;
   height: 42px;
 
   flex-shrink: 0;
+
+  place-items: center;
 
   border-radius: 50%;
 
@@ -159,12 +169,14 @@ button {
 
 .admin-sidebar-user div:last-child {
   display: grid;
-  gap: 3px;
   min-width: 0;
+
+  gap: 3px;
 }
 
 .admin-sidebar-user strong {
   overflow: hidden;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -175,11 +187,13 @@ button {
 
 .admin-main {
   width: min(1400px, 100%);
+
   padding: 34px;
 }
 
 .admin-header {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
   gap: 25px;
@@ -198,12 +212,25 @@ button {
 
 .admin-header h1 {
   margin: 6px 0 8px;
+
   font-size: clamp(1.8rem, 4vw, 2.7rem);
 }
 
-.admin-header p:last-child {
+.admin-header p:last-of-type {
   color: var(--muted);
+
   line-height: 1.6;
+}
+
+.dashboard-date {
+  display: inline-block;
+
+  margin-top: 12px;
+
+  color: var(--muted);
+
+  font-size: 0.8rem;
+  font-weight: 700;
 }
 
 .page-label {
@@ -229,6 +256,7 @@ button {
   border-radius: 11px;
 
   cursor: pointer;
+
   font-weight: 800;
 }
 
@@ -238,12 +266,20 @@ button {
 
 .danger-button {
   color: #ffabb8;
+
   background: rgba(255, 100, 124, 0.12);
+}
+
+.danger-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
 }
 
 .statistics-grid {
   display: grid;
+
   grid-template-columns: repeat(4, minmax(0, 1fr));
+
   gap: 18px;
 
   margin-top: 26px;
@@ -251,27 +287,39 @@ button {
 
 .stat-card {
   display: flex;
+  min-width: 0;
+
   align-items: center;
   gap: 15px;
 
-  min-width: 0;
   padding: 22px;
 
   border: 1px solid var(--border);
   border-radius: 19px;
 
   background: var(--surface);
+
   box-shadow: var(--shadow);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(118, 87, 255, 0.42);
+
+  transform: translateY(-3px);
 }
 
 .stat-icon {
   display: grid;
-  place-items: center;
-
   width: 50px;
   height: 50px;
 
   flex-shrink: 0;
+
+  place-items: center;
 
   border-radius: 15px;
 
@@ -295,6 +343,7 @@ button {
 
 .stat-card strong {
   display: block;
+
   margin: 3px 0;
 
   font-size: 1.5rem;
@@ -307,7 +356,9 @@ button {
 .performance-grid,
 .tables-grid {
   display: grid;
+
   grid-template-columns: repeat(2, minmax(0, 1fr));
+
   gap: 20px;
 
   margin-top: 24px;
@@ -321,12 +372,14 @@ button {
   border-radius: 21px;
 
   background: var(--surface);
+
   box-shadow: var(--shadow);
 }
 
 .card-heading,
 .section-heading {
   display: flex;
+
   align-items: flex-end;
   justify-content: space-between;
   gap: 15px;
@@ -335,6 +388,12 @@ button {
 .card-heading h2,
 .section-heading h2 {
   margin-top: 5px;
+}
+
+.section-note {
+  color: var(--muted);
+
+  font-size: 0.78rem;
 }
 
 .metric-list {
@@ -346,11 +405,13 @@ button {
 
 .metric-list > div {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
   gap: 15px;
 
   padding: 14px 0;
+
   border-bottom: 1px solid var(--border);
 }
 
@@ -371,6 +432,7 @@ button {
 
 .answer-row > div:first-child {
   display: flex;
+
   justify-content: space-between;
   gap: 15px;
 
@@ -383,9 +445,11 @@ button {
 
 .progress-track {
   height: 10px;
+
   overflow: hidden;
 
   border-radius: 999px;
+
   background: rgba(255, 255, 255, 0.07);
 }
 
@@ -406,6 +470,10 @@ button {
   background: var(--danger);
 }
 
+.progress-fill.unanswered {
+  background: var(--warning);
+}
+
 .admin-section {
   margin-top: 24px;
   padding: 24px;
@@ -414,12 +482,189 @@ button {
   border-radius: 21px;
 
   background: var(--surface);
+
   box-shadow: var(--shadow);
+}
+
+.quick-actions-grid {
+  display: grid;
+
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+
+  gap: 16px;
+
+  margin-top: 20px;
+}
+
+.quick-action-card {
+  display: flex;
+  min-width: 0;
+
+  align-items: center;
+  gap: 14px;
+
+  padding: 18px;
+
+  border: 1px solid var(--border);
+  border-radius: 17px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.quick-action-card:hover {
+  border-color: rgba(118, 87, 255, 0.45);
+
+  background: rgba(118, 87, 255, 0.07);
+
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
+
+  transform: translateY(-4px);
+}
+
+.quick-action-card:focus-visible {
+  outline: 3px solid rgba(118, 87, 255, 0.34);
+
+  outline-offset: 3px;
+}
+
+.quick-action-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  place-items: center;
+
+  border-radius: 13px;
+
+  background: rgba(118, 87, 255, 0.14);
+
+  font-size: 1.15rem;
+}
+
+.quick-action-card div {
+  min-width: 0;
+}
+
+.quick-action-card strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: var(--text);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-action-card small {
+  display: block;
+
+  margin-top: 4px;
+
+  color: var(--muted);
+
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.charts-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+
+  margin-top: 18px;
+}
+
+.chart-card {
+  min-width: 0;
+
+  padding: 21px;
+
+  border: 1px solid var(--border);
+  border-radius: 19px;
+
+  background: var(--surface);
+
+  box-shadow: var(--shadow);
+}
+
+.chart-card-wide {
+  grid-column: 1 / -1;
+}
+
+.chart-heading {
+  display: flex;
+
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.chart-heading h3 {
+  font-size: 1rem;
+}
+
+.chart-heading p {
+  margin-top: 5px;
+
+  color: var(--muted);
+
+  font-size: 0.78rem;
+}
+
+.chart-heading > strong {
+  color: var(--secondary);
+
+  font-size: 1.15rem;
+
+  white-space: nowrap;
+}
+
+.chart-container {
+  position: relative;
+
+  width: 100%;
+  height: 260px;
+
+  margin-top: 18px;
+}
+
+.chart-container-tall {
+  height: 310px;
+}
+
+.chart-container canvas {
+  display: block;
+
+  width: 100%;
+  height: 100%;
+}
+
+.distribution-grid {
+  display: grid;
+
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  gap: 18px;
+
+  margin-top: 18px;
 }
 
 .category-grid {
   display: grid;
+
   grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+
   gap: 16px;
 
   margin-top: 20px;
@@ -436,16 +681,17 @@ button {
 
 .category-stat-header {
   display: flex;
+
   align-items: center;
   gap: 10px;
 }
 
 .category-icon {
   display: grid;
-  place-items: center;
-
   width: 39px;
   height: 39px;
+
+  place-items: center;
 
   border-radius: 12px;
 
@@ -454,7 +700,9 @@ button {
 
 .category-metrics {
   display: grid;
+
   grid-template-columns: repeat(3, 1fr);
+
   gap: 8px;
 
   margin-top: 18px;
@@ -466,9 +714,11 @@ button {
 
 .category-metrics span {
   display: block;
+
   margin-bottom: 5px;
 
   color: var(--muted);
+
   font-size: 0.7rem;
 }
 
@@ -478,22 +728,26 @@ button {
 
 .section-heading a {
   color: #b9b0ff;
+
   font-size: 0.82rem;
   font-weight: 800;
 }
 
 .table-list {
   display: grid;
+
   margin-top: 17px;
 }
 
 .table-row {
   display: flex;
+
   align-items: center;
   justify-content: space-between;
   gap: 18px;
 
   padding: 15px 0;
+
   border-bottom: 1px solid var(--border);
 }
 
@@ -503,18 +757,20 @@ button {
 
 .table-row small {
   display: block;
+
   margin-top: 4px;
 
   color: var(--muted);
+
   font-size: 0.75rem;
 }
 
 .user-cell {
   display: flex;
+  min-width: 0;
+
   align-items: center;
   gap: 11px;
-
-  min-width: 0;
 }
 
 .user-cell > div {
@@ -524,18 +780,19 @@ button {
 .user-cell strong,
 .user-cell small {
   overflow: hidden;
+
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .row-avatar {
   display: grid;
-  place-items: center;
-
   width: 39px;
   height: 39px;
 
   flex-shrink: 0;
+
+  place-items: center;
 
   border-radius: 50%;
 
@@ -544,11 +801,21 @@ button {
   font-weight: 900;
 }
 
+.row-avatar.has-image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+
+  color: transparent;
+}
+
 .row-meta {
   display: grid;
-  justify-items: end;
 
   flex-shrink: 0;
+
+  justify-items: end;
+  gap: 5px;
 }
 
 .role-badge {
@@ -557,28 +824,85 @@ button {
   border-radius: 999px;
 
   color: var(--secondary);
+
   background: rgba(22, 196, 223, 0.1);
 
   font-size: 0.68rem;
   font-weight: 900;
+
   text-transform: uppercase;
 }
 
 .role-badge.admin {
   color: #c4baff;
+
   background: rgba(118, 87, 255, 0.16);
 }
 
-.accuracy-text {
+.user-status {
+  padding: 4px 8px;
+
+  border-radius: 999px;
+
+  font-size: 0.64rem;
+  font-weight: 800;
+
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.status-active {
   color: var(--success);
+
+  background: rgba(46, 211, 167, 0.12);
+}
+
+.status-inactive {
+  color: var(--danger);
+
+  background: rgba(255, 100, 124, 0.12);
+}
+
+.attempt-row {
+  color: inherit;
+
+  text-decoration: none;
+
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.attempt-row:hover {
+  background: rgba(118, 87, 255, 0.05);
+
+  transform: translateX(3px);
+}
+
+.accuracy-text {
+  font-weight: 800;
+}
+
+.accuracy-good {
+  color: var(--success);
+}
+
+.accuracy-average {
+  color: var(--warning);
+}
+
+.accuracy-low {
+  color: var(--danger);
 }
 
 .admin-state,
 .empty-state {
   display: grid;
-  place-items: center;
 
   min-height: 230px;
+
+  place-items: center;
+
   padding: 30px;
 
   border: 1px solid var(--border);
@@ -587,6 +911,7 @@ button {
   background: var(--surface);
 
   color: var(--muted);
+
   text-align: center;
 }
 
@@ -596,11 +921,13 @@ button {
 
 .admin-state h2 {
   margin: 12px 0 5px;
+
   color: var(--text);
 }
 
 .admin-state button {
   margin-top: 17px;
+
   padding: 10px 16px;
 
   border: 0;
@@ -610,11 +937,13 @@ button {
   color: white;
 
   cursor: pointer;
+
   font-weight: 800;
 }
 
 .empty-state {
   min-height: 130px;
+
   grid-column: 1 / -1;
 }
 
@@ -625,7 +954,9 @@ button {
   margin-bottom: 14px;
 
   border: 4px solid rgba(255, 255, 255, 0.09);
+
   border-top-color: var(--primary);
+
   border-radius: 50%;
 
   animation: spin 700ms linear infinite;
@@ -655,26 +986,24 @@ button {
   }
 
   .admin-brand div,
-  .admin-navigation a:not(.active) span + *,
-  .admin-navigation a {
-    font-size: 0;
+  .admin-sidebar-user div:last-child {
+    display: none;
   }
 
   .admin-brand {
     justify-content: center;
+
     padding-inline: 0;
   }
 
   .admin-navigation a {
     justify-content: center;
+
+    font-size: 0;
   }
 
   .admin-navigation a span {
     font-size: 1.15rem;
-  }
-
-  .admin-sidebar-user div:last-child {
-    display: none;
   }
 
   .admin-sidebar-user {
@@ -682,7 +1011,22 @@ button {
   }
 
   .statistics-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .charts-grid,
+  .distribution-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .chart-card-wide {
+    grid-column: auto;
   }
 }
 
@@ -700,6 +1044,7 @@ button {
     padding: 13px;
 
     border-right: 0;
+
     border-bottom: 1px solid var(--border);
   }
 
@@ -710,6 +1055,7 @@ button {
 
   .admin-navigation {
     display: flex;
+
     overflow-x: auto;
 
     margin: 0;
@@ -717,6 +1063,7 @@ button {
 
   .admin-navigation a {
     flex: 0 0 auto;
+
     padding: 11px;
 
     font-size: 0;
@@ -732,6 +1079,7 @@ button {
 
   .admin-header {
     align-items: flex-start;
+
     flex-direction: column;
   }
 
@@ -742,6 +1090,7 @@ button {
   .secondary-button,
   .danger-button {
     flex: 1;
+
     text-align: center;
   }
 
@@ -752,7 +1101,8 @@ button {
 }
 
 @media (max-width: 540px) {
-  .statistics-grid {
+  .statistics-grid,
+  .quick-actions-grid {
     grid-template-columns: 1fr;
   }
 
@@ -767,101 +1117,18 @@ button {
   .category-metrics {
     grid-template-columns: 1fr;
   }
-}
-/* ============================================================
-   Dashboard Charts
-============================================================ */
 
-.section-note {
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.charts-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 18px;
-}
-
-.chart-card {
-  min-width: 0;
-  padding: 21px;
-  border: 1px solid var(--border);
-  border-radius: 19px;
-  background: var(--surface);
-  box-shadow: var(--shadow);
-}
-
-.chart-card-wide {
-  grid-column: 1 / -1;
-}
-
-.chart-heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18px;
-}
-
-.chart-heading h3 {
-  font-size: 1rem;
-}
-
-.chart-heading p {
-  margin-top: 5px;
-  color: var(--muted);
-  font-size: 0.78rem;
-}
-
-.chart-heading > strong {
-  color: var(--secondary);
-  font-size: 1.15rem;
-  white-space: nowrap;
-}
-
-.chart-container {
-  position: relative;
-  width: 100%;
-  height: 260px;
-  margin-top: 18px;
-}
-
-.chart-container-tall {
-  height: 310px;
-}
-
-.chart-container canvas {
-  display: block;
-  width: 100%;
-  height: 100%;
-}
-
-.distribution-grid {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px;
-  margin-top: 18px;
-}
-
-@media (max-width: 900px) {
-  .charts-grid,
-  .distribution-grid {
-    grid-template-columns: 1fr;
+  .quick-action-card {
+    padding: 16px;
   }
 
-  .chart-card-wide {
-    grid-column: auto;
-  }
-}
-
-@media (max-width: 540px) {
   .chart-card {
     padding: 17px;
   }
 
   .chart-heading {
     align-items: flex-start;
+
     flex-direction: column;
   }
 
@@ -871,5 +1138,22 @@ button {
 
   .chart-container-tall {
     height: 270px;
+  }
+
+  .table-row {
+    align-items: flex-start;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .quick-action-card,
+  .attempt-row,
+  .progress-fill,
+  .stat-card {
+    transition: none;
+  }
+
+  .spinner {
+    animation-duration: 1.4s;
   }
 }

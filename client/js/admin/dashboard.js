@@ -1,23 +1,33 @@
 "use strict";
 
+const adminDashboardState = {
+  isLoading: false,
+  hasLoadedOnce: false,
+  refreshTimer: null,
+  refreshIntervalMs: 30000,
+};
+
 const elements = {
   loading: document.getElementById("adminLoading"),
-
   error: document.getElementById("adminError"),
-
   errorMessage: document.getElementById("adminErrorMessage"),
-
   retryButton: document.getElementById("adminRetryButton"),
-
   content: document.getElementById("adminContent"),
-
   logoutButton: document.getElementById("adminLogoutButton"),
 
   totalUsers: document.getElementById("totalUsers"),
+  totalAdmins: document.getElementById("totalAdmins"),
+  totalActiveUsers: document.getElementById("totalActiveUsers"),
 
   regularUserText: document.getElementById("regularUserText"),
 
+  usersLoggedInTodayText: document.getElementById("usersLoggedInTodayText"),
+
   totalAttempts: document.getElementById("totalAttempts"),
+
+  totalQuestionsAvailable: document.getElementById("totalQuestionsAvailable"),
+
+  totalCategories: document.getElementById("totalCategories"),
 
   totalXp: document.getElementById("totalXp"),
 
@@ -35,9 +45,19 @@ const elements = {
 
   wrongAnswers: document.getElementById("wrongAnswers"),
 
+  unansweredAnswers: document.getElementById("unansweredAnswers"),
+
   correctProgress: document.getElementById("correctProgress"),
 
   wrongProgress: document.getElementById("wrongProgress"),
+
+  unansweredProgress: document.getElementById("unansweredProgress"),
+
+  correctProgressTrack: document.getElementById("correctProgressTrack"),
+
+  wrongProgressTrack: document.getElementById("wrongProgressTrack"),
+
+  unansweredProgressTrack: document.getElementById("unansweredProgressTrack"),
 
   categoryGrid: document.getElementById("categoryGrid"),
 
@@ -50,6 +70,8 @@ const elements = {
   weeklyXpTotal: document.getElementById("weeklyXpTotal"),
 
   weeklyUserTotal: document.getElementById("weeklyUserTotal"),
+
+  dashboardDate: document.getElementById("dashboardDate"),
 };
 
 function toggleElement(element, shouldShow) {
@@ -60,12 +82,28 @@ function toggleElement(element, shouldShow) {
   element.classList.toggle("hidden", !shouldShow);
 }
 
+function getNumber(value) {
+  const number = Number(value);
+
+  return Number.isFinite(number) ? number : 0;
+}
+
+function formatNumber(value) {
+  return getNumber(value).toLocaleString("en-IN");
+}
+
 function formatDuration(secondsValue) {
-  const totalSeconds = Math.max(0, Number(secondsValue) || 0);
+  const totalSeconds = Math.max(0, Math.floor(getNumber(secondsValue)));
 
-  const minutes = Math.floor(totalSeconds / 60);
+  const hours = Math.floor(totalSeconds / 3600);
 
-  const seconds = Math.floor(totalSeconds % 60);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+
+  const seconds = totalSeconds % 60;
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
 
   return `${minutes}m ${seconds}s`;
 }
@@ -93,46 +131,92 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+function setText(element, value) {
+  if (!element) {
+    return;
+  }
+
+  element.textContent = value;
+}
+
+function setProgress(element, track, percentageValue) {
+  const percentage = Math.min(100, Math.max(0, getNumber(percentageValue)));
+
+  if (element) {
+    element.style.width = `${percentage}%`;
+  }
+
+  if (track) {
+    track.setAttribute("aria-valuenow", String(Math.round(percentage)));
+  }
+}
+
 function renderOverview(data) {
   const overview = data.overview || {};
   const answers = data.answerStatistics || {};
 
-  elements.totalUsers.textContent = Number(overview.totalUsers) || 0;
+  setText(elements.totalUsers, formatNumber(overview.totalUsers));
 
-  elements.regularUserText.textContent = `${
-    Number(overview.totalRegularUsers) || 0
-  } regular user${Number(overview.totalRegularUsers) === 1 ? "" : "s"}`;
+  setText(elements.totalAdmins, formatNumber(overview.totalAdmins));
 
-  elements.totalAttempts.textContent = Number(overview.totalQuizAttempts) || 0;
+  setText(elements.totalActiveUsers, formatNumber(overview.totalActiveUsers));
 
-  elements.totalXp.textContent = Number(overview.totalXpEarned) || 0;
+  const usersLoggedInToday = getNumber(overview.usersLoggedInToday);
 
-  elements.totalAchievements.textContent =
-    Number(overview.totalAchievementsUnlocked) || 0;
-
-  elements.averageAccuracy.textContent = `${
-    Number(overview.averageAccuracy) || 0
-  }%`;
-
-  elements.highestAccuracy.textContent = `${
-    Number(overview.highestAccuracy) || 0
-  }%`;
-
-  elements.averageQuizTime.textContent = formatDuration(
-    overview.averageQuizTimeSeconds,
+  setText(
+    elements.usersLoggedInTodayText,
+    `${formatNumber(usersLoggedInToday)} logged in today`,
   );
 
-  const totalQuestions = Number(answers.totalQuestions) || 0;
+  const regularUsers = getNumber(overview.totalRegularUsers);
 
-  const correctAnswers = Number(answers.correctAnswers) || 0;
+  setText(
+    elements.regularUserText,
+    `${formatNumber(regularUsers)} regular ${
+      regularUsers === 1 ? "user" : "users"
+    }`,
+  );
 
-  const wrongAnswers = Number(answers.wrongAnswers) || 0;
+  setText(elements.totalAttempts, formatNumber(overview.totalQuizAttempts));
 
-  elements.totalQuestions.textContent = totalQuestions;
+  setText(
+    elements.totalQuestionsAvailable,
+    formatNumber(overview.totalQuestionsAvailable),
+  );
 
-  elements.correctAnswers.textContent = correctAnswers;
+  setText(elements.totalCategories, formatNumber(overview.totalCategories));
 
-  elements.wrongAnswers.textContent = wrongAnswers;
+  setText(elements.totalXp, formatNumber(overview.totalXpEarned));
+
+  setText(
+    elements.totalAchievements,
+    formatNumber(overview.totalAchievementsUnlocked),
+  );
+
+  setText(elements.averageAccuracy, `${getNumber(overview.averageAccuracy)}%`);
+
+  setText(elements.highestAccuracy, `${getNumber(overview.highestAccuracy)}%`);
+
+  setText(
+    elements.averageQuizTime,
+    formatDuration(overview.averageQuizTimeSeconds),
+  );
+
+  const totalQuestions = getNumber(answers.totalQuestions);
+
+  const correctAnswers = getNumber(answers.correctAnswers);
+
+  const wrongAnswers = getNumber(answers.wrongAnswers);
+
+  const unansweredAnswers = getNumber(answers.unansweredQuestions);
+
+  setText(elements.totalQuestions, formatNumber(totalQuestions));
+
+  setText(elements.correctAnswers, formatNumber(correctAnswers));
+
+  setText(elements.wrongAnswers, formatNumber(wrongAnswers));
+
+  setText(elements.unansweredAnswers, formatNumber(unansweredAnswers));
 
   const correctPercentage =
     totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
@@ -140,12 +224,33 @@ function renderOverview(data) {
   const wrongPercentage =
     totalQuestions > 0 ? (wrongAnswers / totalQuestions) * 100 : 0;
 
-  elements.correctProgress.style.width = `${Math.min(correctPercentage, 100)}%`;
+  const unansweredPercentage =
+    totalQuestions > 0 ? (unansweredAnswers / totalQuestions) * 100 : 0;
 
-  elements.wrongProgress.style.width = `${Math.min(wrongPercentage, 100)}%`;
+  setProgress(
+    elements.correctProgress,
+    elements.correctProgressTrack,
+    correctPercentage,
+  );
+
+  setProgress(
+    elements.wrongProgress,
+    elements.wrongProgressTrack,
+    wrongPercentage,
+  );
+
+  setProgress(
+    elements.unansweredProgress,
+    elements.unansweredProgressTrack,
+    unansweredPercentage,
+  );
 }
 
 function renderCategories(categories) {
+  if (!elements.categoryGrid) {
+    return;
+  }
+
   elements.categoryGrid.innerHTML = "";
 
   if (!Array.isArray(categories) || categories.length === 0) {
@@ -167,34 +272,40 @@ function renderCategories(categories) {
 
     card.innerHTML = `
       <div class="category-stat-header">
-        <span class="category-icon">
+        <span
+          class="category-icon"
+          aria-hidden="true"
+        >
           📚
         </span>
 
         <strong>
-          ${escapeHtml(category.category)}
+          ${escapeHtml(category.category || "Unknown")}
         </strong>
       </div>
 
       <div class="category-metrics">
         <div>
           <span>Attempts</span>
+
           <strong>
-            ${Number(category.attempts) || 0}
+            ${formatNumber(category.attempts)}
           </strong>
         </div>
 
         <div>
           <span>Accuracy</span>
+
           <strong>
-            ${Number(category.averageAccuracy) || 0}%
+            ${getNumber(category.averageAccuracy)}%
           </strong>
         </div>
 
         <div>
           <span>XP Earned</span>
+
           <strong>
-            ${Number(category.totalXpEarned) || 0}
+            ${formatNumber(category.totalXpEarned)}
           </strong>
         </div>
       </div>
@@ -206,7 +317,32 @@ function renderCategories(categories) {
   elements.categoryGrid.appendChild(fragment);
 }
 
+function createAvatarContent(user, fullName) {
+  const initial = fullName.charAt(0).toUpperCase() || "U";
+
+  if (!user.avatar) {
+    return `
+      <span class="row-avatar">
+        ${escapeHtml(initial)}
+      </span>
+    `;
+  }
+
+  return `
+    <span
+      class="row-avatar has-image"
+      style="background-image: url('${escapeHtml(user.avatar)}')"
+      role="img"
+      aria-label="${escapeHtml(fullName)} profile picture"
+    ></span>
+  `;
+}
+
 function renderRecentUsers(users) {
+  if (!elements.recentUsersList) {
+    return;
+  }
+
   elements.recentUsersList.innerHTML = "";
 
   if (!Array.isArray(users) || users.length === 0) {
@@ -229,13 +365,15 @@ function renderRecentUsers(users) {
     const fullName =
       `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Unknown User";
 
-    const initial = fullName.charAt(0).toUpperCase();
+    const avatarContent = createAvatarContent(user, fullName);
+
+    const statusText = user.isActive ? "Active" : "Inactive";
+
+    const statusClass = user.isActive ? "status-active" : "status-inactive";
 
     row.innerHTML = `
       <div class="user-cell">
-        <span class="row-avatar">
-          ${escapeHtml(initial)}
-        </span>
+        ${avatarContent}
 
         <div>
           <strong>
@@ -243,14 +381,22 @@ function renderRecentUsers(users) {
           </strong>
 
           <small>
-            ${escapeHtml(user.email)}
+            ${escapeHtml(user.email || "")}
           </small>
         </div>
       </div>
 
       <div class="row-meta">
-        <span class="role-badge ${user.role === "admin" ? "admin" : ""}">
+        <span
+          class="role-badge ${user.role === "admin" ? "admin" : ""}"
+        >
           ${escapeHtml(user.role || "user")}
+        </span>
+
+        <span
+          class="user-status ${statusClass}"
+        >
+          ${statusText}
         </span>
 
         <small>
@@ -266,6 +412,10 @@ function renderRecentUsers(users) {
 }
 
 function renderRecentAttempts(attempts) {
+  if (!elements.recentAttemptsList) {
+    return;
+  }
+
   elements.recentAttemptsList.innerHTML = "";
 
   if (!Array.isArray(attempts) || attempts.length === 0) {
@@ -281,13 +431,26 @@ function renderRecentAttempts(attempts) {
   const fragment = document.createDocumentFragment();
 
   attempts.forEach((attempt) => {
-    const row = document.createElement("article");
+    const row = document.createElement("a");
 
-    row.className = "table-row";
+    row.className = "table-row attempt-row";
+
+    row.href = attempt._id
+      ? `/result/${encodeURIComponent(attempt._id)}`
+      : "/admin/attempts";
 
     const userName = attempt.user
       ? `${attempt.user.firstName || ""} ${attempt.user.lastName || ""}`.trim()
       : "Deleted User";
+
+    const accuracy = getNumber(attempt.accuracy);
+
+    const accuracyClass =
+      accuracy >= 80
+        ? "accuracy-good"
+        : accuracy >= 60
+          ? "accuracy-average"
+          : "accuracy-low";
 
     row.innerHTML = `
       <div>
@@ -298,14 +461,18 @@ function renderRecentAttempts(attempts) {
         <small>
           ${escapeHtml(attempt.category || "Unknown Category")}
           •
-          ${Number(attempt.score) || 0} /
-          ${Number(attempt.totalQuestions) || 0}
+          ${formatNumber(attempt.score)} /
+          ${formatNumber(attempt.totalQuestions)}
+          •
+          +${formatNumber(attempt.xpEarned)} XP
         </small>
       </div>
 
       <div class="row-meta">
-        <strong class="accuracy-text">
-          ${Number(attempt.accuracy) || 0}%
+        <strong
+          class="accuracy-text ${accuracyClass}"
+        >
+          ${accuracy}%
         </strong>
 
         <small>
@@ -335,11 +502,11 @@ function renderCharts(data) {
 
   const labels = daily.map((item) => item.label);
 
-  const attemptValues = daily.map((item) => Number(item.attempts) || 0);
+  const attemptValues = daily.map((item) => getNumber(item.attempts));
 
-  const xpValues = daily.map((item) => Number(item.xpEarned) || 0);
+  const xpValues = daily.map((item) => getNumber(item.xpEarned));
 
-  const userValues = daily.map((item) => Number(item.newUsers) || 0);
+  const userValues = daily.map((item) => getNumber(item.newUsers));
 
   const weeklyAttempts = attemptValues.reduce(
     (total, value) => total + value,
@@ -350,17 +517,11 @@ function renderCharts(data) {
 
   const weeklyUsers = userValues.reduce((total, value) => total + value, 0);
 
-  if (elements.weeklyAttemptTotal) {
-    elements.weeklyAttemptTotal.textContent = weeklyAttempts;
-  }
+  setText(elements.weeklyAttemptTotal, formatNumber(weeklyAttempts));
 
-  if (elements.weeklyXpTotal) {
-    elements.weeklyXpTotal.textContent = `${weeklyXp} XP`;
-  }
+  setText(elements.weeklyXpTotal, `${formatNumber(weeklyXp)} XP`);
 
-  if (elements.weeklyUserTotal) {
-    elements.weeklyUserTotal.textContent = weeklyUsers;
-  }
+  setText(elements.weeklyUserTotal, formatNumber(weeklyUsers));
 
   if (!window.AdminCharts) {
     console.warn("Admin chart utilities were not loaded.");
@@ -381,13 +542,13 @@ function renderCharts(data) {
   window.AdminCharts.drawBarChart(
     "categoryDistributionChart",
     categories.map((category) => category.category),
-    categories.map((category) => Number(category.attempts) || 0),
+    categories.map((category) => getNumber(category.attempts)),
   );
 
   window.AdminCharts.drawBarChart(
     "accuracyDistributionChart",
     accuracyDistribution.map((item) => item.label),
-    accuracyDistribution.map((item) => Number(item.count) || 0),
+    accuracyDistribution.map((item) => getNumber(item.count)),
     {
       color: "#7657ff",
     },
@@ -403,10 +564,6 @@ function renderDashboard(data) {
 
   renderRecentAttempts(data.recentAttempts);
 
-  /*
-   * The chart canvases must be visible before
-   * their dimensions can be calculated.
-   */
   toggleElement(elements.content, true);
 
   window.requestAnimationFrame(() => {
@@ -416,42 +573,86 @@ function renderDashboard(data) {
 
 function showLoading() {
   toggleElement(elements.loading, true);
+
   toggleElement(elements.error, false);
+
   toggleElement(elements.content, false);
 }
 
 function showError(message) {
-  elements.errorMessage.textContent =
-    message || "Unable to load administrator dashboard.";
+  setText(
+    elements.errorMessage,
+    message || "Unable to load administrator dashboard.",
+  );
 
   toggleElement(elements.loading, false);
+
   toggleElement(elements.error, true);
+
   toggleElement(elements.content, false);
 }
 
-async function loadAdminDashboard() {
-  showLoading();
+function showDashboardContent() {
+  toggleElement(elements.loading, false);
+
+  toggleElement(elements.error, false);
+
+  toggleElement(elements.content, true);
+}
+
+async function parseJsonResponse(response) {
+  const contentType = response.headers.get("content-type") || "";
+
+  if (!contentType.includes("application/json")) {
+    throw new Error(
+      "The server returned an invalid administrator dashboard response.",
+    );
+  }
+
+  return response.json();
+}
+
+async function loadAdminDashboard(options = {}) {
+  if (adminDashboardState.isLoading) {
+    return;
+  }
+
+  const silent = Boolean(options.silent);
+
+  adminDashboardState.isLoading = true;
+
+  if (!silent || !adminDashboardState.hasLoadedOnce) {
+    showLoading();
+  }
 
   try {
     const response = await fetch("/api/admin/dashboard", {
+      method: "GET",
       credentials: "include",
+      cache: "no-store",
 
       headers: {
         Accept: "application/json",
       },
     });
 
-    const data = await response.json();
-
     if (response.status === 401) {
+      stopAutoRefresh();
+
       window.location.href = "/login";
+
       return;
     }
 
     if (response.status === 403) {
+      stopAutoRefresh();
+
       window.location.href = "/dashboard";
+
       return;
     }
+
+    const data = await parseJsonResponse(response);
 
     if (!response.ok || !data.success) {
       throw new Error(
@@ -459,41 +660,141 @@ async function loadAdminDashboard() {
       );
     }
 
+    showDashboardContent();
+
     renderDashboard(data);
 
-    toggleElement(elements.loading, false);
-
-    toggleElement(elements.error, false);
-
-    toggleElement(elements.content, true);
+    adminDashboardState.hasLoadedOnce = true;
   } catch (error) {
     console.error("Admin dashboard error:", error);
 
-    showError(error.message);
+    if (!(silent && adminDashboardState.hasLoadedOnce)) {
+      showError(error.message || "Unable to load administrator dashboard.");
+    }
+  } finally {
+    adminDashboardState.isLoading = false;
   }
 }
 
+function renderDashboardDate() {
+  if (!elements.dashboardDate) {
+    return;
+  }
+
+  const now = new Date();
+
+  elements.dashboardDate.textContent = new Intl.DateTimeFormat("en-IN", {
+    weekday: "long",
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(now);
+}
+
+function stopAutoRefresh() {
+  if (!adminDashboardState.refreshTimer) {
+    return;
+  }
+
+  window.clearInterval(adminDashboardState.refreshTimer);
+
+  adminDashboardState.refreshTimer = null;
+}
+
+function startAutoRefresh() {
+  stopAutoRefresh();
+
+  adminDashboardState.refreshTimer = window.setInterval(() => {
+    if (
+      document.visibilityState === "visible" &&
+      adminDashboardState.hasLoadedOnce &&
+      !adminDashboardState.isLoading
+    ) {
+      renderDashboardDate();
+
+      loadAdminDashboard({
+        silent: true,
+      });
+    }
+  }, adminDashboardState.refreshIntervalMs);
+}
+
 async function logoutAdmin() {
+  if (elements.logoutButton) {
+    elements.logoutButton.disabled = true;
+
+    elements.logoutButton.textContent = "Logging out...";
+  }
+
   try {
     const response = await fetch("/api/auth/logout", {
       method: "POST",
       credentials: "include",
+
+      headers: {
+        Accept: "application/json",
+      },
     });
 
     if (!response.ok) {
       throw new Error("Unable to log out.");
     }
 
+    stopAutoRefresh();
+
     window.location.href = "/login";
   } catch (error) {
     console.error("Admin logout error:", error);
 
     alert(error.message || "Unable to log out.");
+
+    if (elements.logoutButton) {
+      elements.logoutButton.disabled = false;
+
+      elements.logoutButton.textContent = "Logout";
+    }
   }
 }
 
-elements.retryButton?.addEventListener("click", loadAdminDashboard);
+function initializeAdminDashboard() {
+  elements.retryButton?.addEventListener("click", () => {
+    loadAdminDashboard({
+      silent: false,
+    });
+  });
 
-elements.logoutButton?.addEventListener("click", logoutAdmin);
+  elements.logoutButton?.addEventListener("click", logoutAdmin);
 
-document.addEventListener("DOMContentLoaded", loadAdminDashboard);
+  document.addEventListener("visibilitychange", () => {
+    if (
+      document.visibilityState === "visible" &&
+      adminDashboardState.hasLoadedOnce
+    ) {
+      renderDashboardDate();
+
+      loadAdminDashboard({
+        silent: true,
+      });
+    }
+  });
+
+  window.addEventListener("beforeunload", stopAutoRefresh);
+
+  renderDashboardDate();
+
+  loadAdminDashboard({
+    silent: false,
+  }).finally(() => {
+    startAutoRefresh();
+  });
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeAdminDashboard, {
+    once: true,
+  });
+} else {
+  initializeAdminDashboard();
+}

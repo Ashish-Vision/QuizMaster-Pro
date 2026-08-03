@@ -19,7 +19,7 @@
     <div class="admin-layout">
       <aside class="admin-sidebar">
         <a href="/admin" class="admin-brand">
-          <span class="brand-icon"> Q </span>
+          <span class="brand-icon">Q</span>
 
           <div>
             <strong>QuizMaster Pro</strong>
@@ -27,41 +27,41 @@
           </div>
         </a>
 
-        <nav class="admin-navigation">
-          <a href="/admin" class="active">
-            <span>📊</span>
+        <nav class="admin-navigation" aria-label="Administrator navigation">
+          <a href="/admin" class="active" aria-current="page">
+            <span aria-hidden="true">📊</span>
             Dashboard
           </a>
 
           <a href="/admin/questions">
-            <span>📝</span>
+            <span aria-hidden="true">📝</span>
             Questions
           </a>
 
           <a href="/admin/categories">
-            <span>📚</span>
+            <span aria-hidden="true">📚</span>
             Categories
           </a>
 
           <a href="/admin/users">
-            <span>👥</span>
+            <span aria-hidden="true">👥</span>
             Users
           </a>
 
           <a href="/admin/attempts">
-            <span>🎯</span>
+            <span aria-hidden="true">🎯</span>
             Quiz Attempts
           </a>
 
           <a href="/dashboard">
-            <span>🏠</span>
+            <span aria-hidden="true">🏠</span>
             User Dashboard
           </a>
         </nav>
 
         <div class="admin-sidebar-user">
           <div class="admin-user-avatar">
-            <%= user?.firstName ? user.firstName .charAt(0) .toUpperCase() : "A"
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
             %>
           </div>
 
@@ -70,7 +70,7 @@
               <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
             </strong>
 
-            <small> Administrator </small>
+            <small>Administrator</small>
           </div>
         </div>
       </aside>
@@ -80,9 +80,13 @@
           <div>
             <p class="page-label">Administration</p>
 
-            <h1>Dashboard Overview</h1>
+            <h1>Welcome back, <%= user?.firstName || "Admin" %> 👋</h1>
 
-            <p>Monitor platform activity, users and quiz performance.</p>
+            <p>
+              Monitor platform activity, users, quiz content and performance.
+            </p>
+
+            <small id="dashboardDate" class="dashboard-date"></small>
           </div>
 
           <div class="header-actions">
@@ -94,14 +98,18 @@
           </div>
         </header>
 
-        <section id="adminLoading" class="admin-state">
-          <div class="spinner"></div>
+        <section id="adminLoading" class="admin-state" aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
 
           <p>Loading administrator dashboard...</p>
         </section>
 
-        <section id="adminError" class="admin-state hidden">
-          <span class="state-icon"> ⚠️ </span>
+        <section
+          id="adminError"
+          class="admin-state hidden"
+          aria-live="assertive"
+        >
+          <span class="state-icon" aria-hidden="true">⚠️</span>
 
           <h2>Unable to load dashboard</h2>
 
@@ -111,48 +119,103 @@
         </section>
 
         <div id="adminContent" class="hidden">
-          <section class="statistics-grid">
+          <section
+            class="statistics-grid"
+            aria-label="Administrator dashboard statistics"
+          >
             <article class="stat-card">
-              <span class="stat-icon"> 👥 </span>
+              <span class="stat-icon" aria-hidden="true"> 👥 </span>
 
               <div>
                 <p>Total Users</p>
-                <strong id="totalUsers"> 0 </strong>
+
+                <strong id="totalUsers">0</strong>
 
                 <small id="regularUserText"> 0 regular users </small>
               </div>
             </article>
 
             <article class="stat-card">
-              <span class="stat-icon"> 🎯 </span>
+              <span class="stat-icon" aria-hidden="true"> ✅ </span>
+
+              <div>
+                <p>Active Users</p>
+
+                <strong id="totalActiveUsers">0</strong>
+
+                <small id="usersLoggedInTodayText"> 0 logged in today </small>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon" aria-hidden="true"> 🎯 </span>
 
               <div>
                 <p>Quiz Attempts</p>
-                <strong id="totalAttempts"> 0 </strong>
 
-                <small> Platform-wide attempts </small>
+                <strong id="totalAttempts">0</strong>
+
+                <small>Platform-wide attempts</small>
               </div>
             </article>
 
             <article class="stat-card">
-              <span class="stat-icon"> ⚡ </span>
+              <span class="stat-icon" aria-hidden="true"> ❓ </span>
+
+              <div>
+                <p>Questions</p>
+
+                <strong id="totalQuestionsAvailable">0</strong>
+
+                <small>Available quiz questions</small>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon" aria-hidden="true"> 📚 </span>
+
+              <div>
+                <p>Categories</p>
+
+                <strong id="totalCategories">0</strong>
+
+                <small>Quiz subject categories</small>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon" aria-hidden="true"> ⚡ </span>
 
               <div>
                 <p>Total XP Earned</p>
-                <strong id="totalXp"> 0 </strong>
 
-                <small> From saved score records </small>
+                <strong id="totalXp">0</strong>
+
+                <small>From saved score records</small>
               </div>
             </article>
 
             <article class="stat-card">
-              <span class="stat-icon"> 🏆 </span>
+              <span class="stat-icon" aria-hidden="true"> 🏆 </span>
 
               <div>
                 <p>Achievements</p>
-                <strong id="totalAchievements"> 0 </strong>
 
-                <small> Unlocked achievements </small>
+                <strong id="totalAchievements">0</strong>
+
+                <small>Unlocked achievements</small>
+              </div>
+            </article>
+
+            <article class="stat-card">
+              <span class="stat-icon" aria-hidden="true"> 🛡️ </span>
+
+              <div>
+                <p>Administrators</p>
+
+                <strong id="totalAdmins">0</strong>
+
+                <small>Users with admin access</small>
               </div>
             </article>
           </section>
@@ -169,25 +232,25 @@
 
               <div class="metric-list">
                 <div>
-                  <span> Average accuracy </span>
+                  <span>Average accuracy</span>
 
                   <strong id="averageAccuracy"> 0% </strong>
                 </div>
 
                 <div>
-                  <span> Highest accuracy </span>
+                  <span>Highest accuracy</span>
 
                   <strong id="highestAccuracy"> 0% </strong>
                 </div>
 
                 <div>
-                  <span> Average quiz time </span>
+                  <span>Average quiz time</span>
 
                   <strong id="averageQuizTime"> 0m 0s </strong>
                 </div>
 
                 <div>
-                  <span> Questions answered </span>
+                  <span>Questions answered</span>
 
                   <strong id="totalQuestions"> 0 </strong>
                 </div>
@@ -207,10 +270,19 @@
                 <div class="answer-row">
                   <div>
                     <span>Correct</span>
+
                     <strong id="correctAnswers"> 0 </strong>
                   </div>
 
-                  <div class="progress-track">
+                  <div
+                    id="correctProgressTrack"
+                    class="progress-track"
+                    role="progressbar"
+                    aria-label="Correct answer percentage"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="0"
+                  >
                     <div
                       id="correctProgress"
                       class="progress-fill correct"
@@ -221,23 +293,108 @@
                 <div class="answer-row">
                   <div>
                     <span>Wrong</span>
+
                     <strong id="wrongAnswers"> 0 </strong>
                   </div>
 
-                  <div class="progress-track">
+                  <div
+                    id="wrongProgressTrack"
+                    class="progress-track"
+                    role="progressbar"
+                    aria-label="Wrong answer percentage"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="0"
+                  >
                     <div id="wrongProgress" class="progress-fill wrong"></div>
+                  </div>
+                </div>
+
+                <div class="answer-row">
+                  <div>
+                    <span>Unanswered</span>
+
+                    <strong id="unansweredAnswers"> 0 </strong>
+                  </div>
+
+                  <div
+                    id="unansweredProgressTrack"
+                    class="progress-track"
+                    role="progressbar"
+                    aria-label="Unanswered question percentage"
+                    aria-valuemin="0"
+                    aria-valuemax="100"
+                    aria-valuenow="0"
+                  >
+                    <div
+                      id="unansweredProgress"
+                      class="progress-fill unanswered"
+                    ></div>
                   </div>
                 </div>
               </div>
             </article>
           </section>
 
-          <!-- ================= CHARTS ================= -->
+          <section class="admin-section quick-actions-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Administration</p>
+
+                <h2>Quick Actions</h2>
+              </div>
+
+              <span class="section-note"> Common management tasks </span>
+            </div>
+
+            <div class="quick-actions-grid">
+              <a href="/admin/questions" class="quick-action-card">
+                <span class="quick-action-icon" aria-hidden="true"> ➕ </span>
+
+                <div>
+                  <strong>Add Question</strong>
+
+                  <small> Create or manage quiz questions </small>
+                </div>
+              </a>
+
+              <a href="/admin/categories" class="quick-action-card">
+                <span class="quick-action-icon" aria-hidden="true"> 📚 </span>
+
+                <div>
+                  <strong>Manage Categories</strong>
+
+                  <small> View and organize quiz subjects </small>
+                </div>
+              </a>
+
+              <a href="/admin/users" class="quick-action-card">
+                <span class="quick-action-icon" aria-hidden="true"> 👥 </span>
+
+                <div>
+                  <strong>Manage Users</strong>
+
+                  <small> Review roles and account status </small>
+                </div>
+              </a>
+
+              <a href="/admin/attempts" class="quick-action-card">
+                <span class="quick-action-icon" aria-hidden="true"> 🎯 </span>
+
+                <div>
+                  <strong>Quiz Attempts</strong>
+
+                  <small> Inspect platform quiz activity </small>
+                </div>
+              </a>
+            </div>
+          </section>
 
           <section class="admin-section">
             <div class="section-heading">
               <div>
                 <p class="page-label">Last 7 Days</p>
+
                 <h2>Platform Activity</h2>
               </div>
 
@@ -249,14 +406,18 @@
                 <div class="chart-heading">
                   <div>
                     <h3>Quiz Attempts</h3>
+
                     <p>Attempts completed every day</p>
                   </div>
 
-                  <strong id="weeklyAttemptTotal">0</strong>
+                  <strong id="weeklyAttemptTotal"> 0 </strong>
                 </div>
 
                 <div class="chart-container">
-                  <canvas id="attemptsTrendChart"></canvas>
+                  <canvas
+                    id="attemptsTrendChart"
+                    aria-label="Seven-day quiz attempts chart"
+                  ></canvas>
                 </div>
               </article>
 
@@ -264,14 +425,18 @@
                 <div class="chart-heading">
                   <div>
                     <h3>XP Earned</h3>
+
                     <p>Daily XP</p>
                   </div>
 
-                  <strong id="weeklyXpTotal">0 XP</strong>
+                  <strong id="weeklyXpTotal"> 0 XP </strong>
                 </div>
 
                 <div class="chart-container">
-                  <canvas id="xpTrendChart"></canvas>
+                  <canvas
+                    id="xpTrendChart"
+                    aria-label="Seven-day XP chart"
+                  ></canvas>
                 </div>
               </article>
 
@@ -279,25 +444,28 @@
                 <div class="chart-heading">
                   <div>
                     <h3>New Users</h3>
+
                     <p>Registrations</p>
                   </div>
 
-                  <strong id="weeklyUserTotal">0</strong>
+                  <strong id="weeklyUserTotal"> 0 </strong>
                 </div>
 
                 <div class="chart-container">
-                  <canvas id="usersTrendChart"></canvas>
+                  <canvas
+                    id="usersTrendChart"
+                    aria-label="Seven-day user registrations chart"
+                  ></canvas>
                 </div>
               </article>
             </div>
           </section>
 
-          <!-- ================= DISTRIBUTION ================= -->
-
           <section class="admin-section">
             <div class="section-heading">
               <div>
                 <p class="page-label">Analytics</p>
+
                 <h2>Performance Distribution</h2>
               </div>
             </div>
@@ -307,12 +475,16 @@
                 <div class="chart-heading">
                   <div>
                     <h3>Attempts by Category</h3>
+
                     <p>Most active categories</p>
                   </div>
                 </div>
 
                 <div class="chart-container chart-container-tall">
-                  <canvas id="categoryDistributionChart"></canvas>
+                  <canvas
+                    id="categoryDistributionChart"
+                    aria-label="Quiz attempts by category chart"
+                  ></canvas>
                 </div>
               </article>
 
@@ -320,12 +492,16 @@
                 <div class="chart-heading">
                   <div>
                     <h3>Accuracy Distribution</h3>
+
                     <p>Overall quiz performance</p>
                   </div>
                 </div>
 
                 <div class="chart-container chart-container-tall">
-                  <canvas id="accuracyDistributionChart"></canvas>
+                  <canvas
+                    id="accuracyDistributionChart"
+                    aria-label="Quiz accuracy distribution chart"
+                  ></canvas>
                 </div>
               </article>
             </div>
@@ -338,9 +514,15 @@
 
                 <h2>Category Performance</h2>
               </div>
+
+              <a href="/admin/categories"> Manage Categories </a>
             </div>
 
-            <div id="categoryGrid" class="category-grid"></div>
+            <div
+              id="categoryGrid"
+              class="category-grid"
+              aria-live="polite"
+            ></div>
           </section>
 
           <section class="tables-grid">
@@ -355,7 +537,11 @@
                 <a href="/admin/users"> View All </a>
               </div>
 
-              <div id="recentUsersList" class="table-list"></div>
+              <div
+                id="recentUsersList"
+                class="table-list"
+                aria-live="polite"
+              ></div>
             </article>
 
             <article class="table-card">
@@ -369,7 +555,11 @@
                 <a href="/admin/attempts"> View All </a>
               </div>
 
-              <div id="recentAttemptsList" class="table-list"></div>
+              <div
+                id="recentAttemptsList"
+                class="table-list"
+                aria-live="polite"
+              ></div>
             </article>
           </section>
         </div>

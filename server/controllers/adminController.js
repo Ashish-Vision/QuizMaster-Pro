@@ -3,6 +3,7 @@
 const User = require("../models/User");
 const Score = require("../models/Score");
 const Achievement = require("../models/Achievement");
+const Question = require("../models/Question");
 
 const DAY_IN_MILLISECONDS = 24 * 60 * 60 * 1000;
 
@@ -80,6 +81,10 @@ async function getAdminDashboard(req, res, next) {
       totalAdmins,
       totalScores,
       totalAchievementsUnlocked,
+      totalQuestionsAvailable,
+      distinctCategories,
+      totalActiveUsers,
+      usersLoggedInToday,
       userStatistics,
       scoreStatistics,
       categoryStatistics,
@@ -98,6 +103,20 @@ async function getAdminDashboard(req, res, next) {
       Score.countDocuments(),
 
       Achievement.countDocuments(),
+
+      Question.countDocuments(),
+
+      Question.distinct("category"),
+
+      User.countDocuments({
+        isActive: true,
+      }),
+
+      User.countDocuments({
+        lastLoginAt: {
+          $gte: getUtcDayStart(new Date()),
+        },
+      }),
 
       User.aggregate([
         {
@@ -219,7 +238,9 @@ async function getAdminDashboard(req, res, next) {
       ]),
 
       User.find()
-        .select("firstName lastName email role totalXp createdAt")
+        .select(
+          "firstName lastName email role avatar totalXp isActive lastLoginAt createdAt",
+        )
         .sort({
           createdAt: -1,
           _id: -1,
@@ -422,6 +443,13 @@ async function getAdminDashboard(req, res, next) {
         totalUsers,
 
         totalAdmins,
+        totalQuestionsAvailable,
+
+        totalCategories: distinctCategories.length,
+
+        totalActiveUsers,
+
+        usersLoggedInToday,
 
         totalRegularUsers: Math.max(totalUsers - totalAdmins, 0),
 
