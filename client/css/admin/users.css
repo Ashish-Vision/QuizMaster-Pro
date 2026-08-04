@@ -828,3 +828,10 @@ button:disabled {
     gap: 3px;
   }
 }
+.user-avatar.has-image,
+.details-avatar.has-image {
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  color: transparent;
+}

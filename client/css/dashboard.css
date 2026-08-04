@@ -1893,3 +1893,146 @@ section {
     transition: none;
   }
 }
+.row-avatar.has-image {
+  background-position: center;
+  background-size: cover;
+  color: transparent;
+}
+
+@media (min-width: 1101px) {
+  .statistics-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+.user-status {
+  padding: 4px 8px;
+  border-radius: 999px;
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.status-active {
+  color: var(--success);
+  background: rgba(46, 211, 167, 0.12);
+}
+
+.status-inactive {
+  color: var(--danger);
+  background: rgba(255, 100, 124, 0.12);
+}
+
+.attempt-row {
+  color: inherit;
+  text-decoration: none;
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.attempt-row:hover {
+  background: rgba(118, 87, 255, 0.05);
+  transform: translateX(3px);
+}
+
+.accuracy-good {
+  color: var(--success);
+}
+
+.accuracy-average {
+  color: var(--warning);
+}
+
+.accuracy-low {
+  color: var(--danger);
+}
+.progress-fill.unanswered {
+  background: var(--warning);
+}
+
+.quick-actions-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.quick-action-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  min-width: 0;
+  padding: 18px;
+
+  border: 1px solid var(--border);
+  border-radius: 17px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.quick-action-card:hover {
+  border-color: rgba(118, 87, 255, 0.45);
+  background: rgba(118, 87, 255, 0.07);
+  box-shadow: 0 18px 38px rgba(0, 0, 0, 0.22);
+  transform: translateY(-4px);
+}
+
+.quick-action-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+  place-items: center;
+
+  border-radius: 13px;
+
+  background: rgba(118, 87, 255, 0.14);
+
+  font-size: 1.15rem;
+}
+
+.quick-action-card div {
+  min-width: 0;
+}
+
+.quick-action-card strong {
+  display: block;
+
+  overflow: hidden;
+
+  color: var(--text);
+
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quick-action-card small {
+  display: block;
+
+  margin-top: 4px;
+
+  color: var(--muted);
+
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+@media (max-width: 1100px) {
+  .quick-actions-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 540px) {
+  .quick-actions-grid {
+    grid-template-columns: 1fr;
+  }
+}

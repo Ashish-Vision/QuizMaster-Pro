@@ -115,6 +115,29 @@ function getInitials(user) {
 
   return `${first}${last}`.toUpperCase() || "U";
 }
+function createUserAvatarMarkup(user, className = "user-avatar") {
+  const fullName =
+    user.fullName ||
+    `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
+    "Unknown User";
+
+  if (user.avatar) {
+    return `
+      <div
+        class="${className} has-image"
+        style="background-image: url('${escapeHtml(user.avatar)}')"
+        role="img"
+        aria-label="${escapeHtml(fullName)} profile picture"
+      ></div>
+    `;
+  }
+
+  return `
+    <div class="${className}">
+      ${escapeHtml(getInitials(user))}
+    </div>
+  `;
+}
 
 function showLoading() {
   toggleElement(elements.loadingState, true);
@@ -174,13 +197,10 @@ function createUserRow(user) {
   const roleButtonText = user.role === "admin" ? "Make User" : "Make Admin";
 
   const statusButtonText = user.isActive ? "Disable" : "Activate";
-
+  const avatarMarkup = createUserAvatarMarkup(user);
   row.innerHTML = `
     <div class="user-identity">
-      <div class="user-avatar">
-        ${escapeHtml(getInitials(user))}
-      </div>
-
+     ${avatarMarkup}
       <div class="user-name">
         <strong>
           ${escapeHtml(user.fullName || "Unknown User")}
@@ -390,7 +410,26 @@ async function openUserDetails(userId) {
     const user = data.user;
     const statistics = data.statistics || {};
 
-    elements.detailsAvatar.textContent = getInitials(user);
+    elements.detailsAvatar.classList.remove("has-image");
+    elements.detailsAvatar.style.backgroundImage = "";
+    elements.detailsAvatar.textContent = "";
+
+    if (user.avatar) {
+      elements.detailsAvatar.classList.add("has-image");
+      elements.detailsAvatar.style.backgroundImage = `url('${user.avatar.replaceAll("'", "%27")}')`;
+
+      elements.detailsAvatar.setAttribute("role", "img");
+
+      elements.detailsAvatar.setAttribute(
+        "aria-label",
+        `${user.fullName || "User"} profile picture`,
+      );
+    } else {
+      elements.detailsAvatar.textContent = getInitials(user);
+
+      elements.detailsAvatar.removeAttribute("role");
+      elements.detailsAvatar.removeAttribute("aria-label");
+    }
 
     elements.detailsName.textContent = user.fullName || "Unknown User";
 
