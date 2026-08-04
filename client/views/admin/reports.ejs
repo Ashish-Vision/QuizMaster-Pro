@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Admin Reports | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/reports.css" />
+
+    <script src="/js/admin/reports.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <!-- Sidebar -->
+      <aside class="sidebar">
+        <div class="logo">
+          <div class="logo-icon">Q</div>
+
+          <div>
+            <h2>QuizMaster Pro</h2>
+            <span>Administration</span>
+          </div>
+        </div>
+
+        <nav>
+          <a href="/admin"> 📊 Dashboard </a>
+
+          <a href="/admin/questions"> 📝 Questions </a>
+
+          <a href="/admin/categories"> 📚 Categories </a>
+
+          <a href="/admin/users"> 👥 Users </a>
+
+          <a href="/admin/attempts"> 🎯 Quiz Attempts </a>
+
+          <a href="/admin/analytics"> 📈 Analytics </a>
+
+          <a href="/admin/achievements"> 🏆 Achievements </a>
+
+          <a href="/admin/notifications"> 🔔 Notifications </a>
+
+          <a href="/admin/reports" class="active"> 📑 Reports </a>
+
+          <a href="/dashboard"> 🏠 User Dashboard </a>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <!-- HERO -->
+
+        <section class="hero">
+          <div>
+            <p class="subtitle">REPORT CENTER</p>
+
+            <h1>Platform Reports</h1>
+
+            <p>
+              Generate CSV reports for users, quiz activity, questions,
+              achievements and categories.
+            </p>
+          </div>
+        </section>
+
+        <!-- SUMMARY -->
+
+        <section class="summary-grid">
+          <div class="card">
+            <h4>Total Users</h4>
+
+            <h2 id="usersCount">0</h2>
+          </div>
+
+          <div class="card">
+            <h4>Questions</h4>
+
+            <h2 id="questionsCount">0</h2>
+          </div>
+
+          <div class="card">
+            <h4>Quiz Attempts</h4>
+
+            <h2 id="attemptsCount">0</h2>
+          </div>
+
+          <div class="card">
+            <h4>Total XP</h4>
+
+            <h2 id="xpCount">0</h2>
+          </div>
+        </section>
+
+        <!-- PERIOD -->
+
+        <section class="toolbar">
+          <div>
+            <label> Report Period </label>
+
+            <select id="daysSelect">
+              <option value="7">Last 7 Days</option>
+
+              <option value="30" selected>Last 30 Days</option>
+
+              <option value="90">Last 90 Days</option>
+
+              <option value="365">Last Year</option>
+            </select>
+          </div>
+
+          <button id="refreshButton">Refresh</button>
+        </section>
+
+        <!-- EXPORTS -->
+
+        <section class="exports-grid">
+          <article class="export-card">
+            <h3>👥 Users Report</h3>
+
+            <p>Registered users, XP, quizzes, login information.</p>
+
+            <button data-report="users">Download CSV</button>
+          </article>
+
+          <article class="export-card">
+            <h3>🎯 Quiz Attempts</h3>
+
+            <p>Every quiz attempt with scores and accuracy.</p>
+
+            <button data-report="attempts">Download CSV</button>
+          </article>
+
+          <article class="export-card">
+            <h3>📝 Questions</h3>
+
+            <p>Export all questions with answers and categories.</p>
+
+            <button data-report="questions">Download CSV</button>
+          </article>
+
+          <article class="export-card">
+            <h3>📚 Categories</h3>
+
+            <p>Category statistics and quiz performance.</p>
+
+            <button data-report="categories">Download CSV</button>
+          </article>
+
+          <article class="export-card">
+            <h3>🏆 Achievements</h3>
+
+            <p>Achievement unlock history.</p>
+
+            <button data-report="achievements">Download CSV</button>
+          </article>
+        </section>
+
+        <section id="loadingState" class="loading">Loading reports...</section>
+      </main>
+    </div>
+  </body>
+</html>

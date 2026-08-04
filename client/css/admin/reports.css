@@ -1,0 +1,412 @@
+:root {
+  --background: #07101d;
+  --sidebar: #0b1727;
+  --surface: rgba(16, 31, 51, 0.95);
+  --surface-light: #172942;
+  --primary: #7657ff;
+  --secondary: #16c4df;
+  --success: #2ed3a7;
+  --warning: #f3b84a;
+  --danger: #ff647c;
+  --text: #f7f9fc;
+  --muted: #96a7ba;
+  --border: rgba(255, 255, 255, 0.09);
+  --shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(22, 196, 223, 0.08),
+      transparent 30%
+    ),
+    var(--background);
+  color: var(--text);
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+select {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.admin-layout {
+  display: grid;
+  grid-template-columns: 270px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  height: 100vh;
+  flex-direction: column;
+  padding: 26px 18px;
+  border-right: 1px solid var(--border);
+  background:
+    radial-gradient(circle at top, rgba(118, 87, 255, 0.16), transparent 30%),
+    var(--sidebar);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0 10px 25px;
+  border-bottom: 1px solid var(--border);
+}
+
+.logo-icon {
+  display: grid;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: white;
+  font-weight: 900;
+}
+
+.logo h2 {
+  font-size: 1rem;
+}
+
+.logo span {
+  color: var(--muted);
+  font-size: 0.76rem;
+}
+
+.sidebar nav {
+  display: grid;
+  gap: 7px;
+  margin-top: 26px;
+}
+
+.sidebar nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border-radius: 12px;
+  color: var(--muted);
+  font-weight: 700;
+  transition:
+    background 160ms ease,
+    color 160ms ease,
+    transform 160ms ease;
+}
+
+.sidebar nav a:hover,
+.sidebar nav a.active {
+  color: var(--text);
+  background: rgba(118, 87, 255, 0.14);
+  transform: translateX(3px);
+}
+
+.content {
+  width: min(1500px, 100%);
+  padding: 34px;
+}
+
+.hero {
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background:
+    linear-gradient(135deg, rgba(118, 87, 255, 0.16), rgba(22, 196, 223, 0.07)),
+    var(--surface);
+  box-shadow: var(--shadow);
+}
+
+.subtitle {
+  color: #aa9aff;
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.hero h1 {
+  margin: 6px 0 8px;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.hero p:last-child {
+  max-width: 760px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 26px;
+}
+
+.card {
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 19px;
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.card:hover {
+  border-color: rgba(118, 87, 255, 0.4);
+  transform: translateY(-3px);
+}
+
+.card h4 {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.card h2 {
+  margin-top: 7px;
+  font-size: 1.65rem;
+}
+
+.toolbar {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 16px;
+  margin-top: 24px;
+  padding: 18px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.toolbar > div {
+  display: grid;
+  gap: 8px;
+}
+
+.toolbar label {
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.toolbar select {
+  min-width: 210px;
+  min-height: 44px;
+  padding: 0 13px;
+  border: 1px solid var(--border);
+  border-radius: 11px;
+  color: var(--text);
+  background: var(--surface-light);
+  outline: none;
+}
+
+.toolbar select:focus {
+  border-color: var(--primary);
+}
+
+.toolbar button,
+.export-card button {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 0;
+  border-radius: 11px;
+  color: white;
+  background: linear-gradient(135deg, var(--primary), #5e43d9);
+  font-weight: 800;
+}
+
+.exports-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.export-card {
+  display: flex;
+  min-height: 220px;
+  flex-direction: column;
+  padding: 22px;
+  border: 1px solid var(--border);
+  border-radius: 19px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.025), transparent),
+    var(--surface);
+  box-shadow: var(--shadow);
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease;
+}
+
+.export-card:hover {
+  border-color: rgba(118, 87, 255, 0.4);
+  transform: translateY(-3px);
+}
+
+.export-card h3 {
+  font-size: 1.05rem;
+}
+
+.export-card p {
+  flex: 1;
+  margin-top: 12px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.export-card button {
+  width: 100%;
+  margin-top: 18px;
+}
+
+.export-card button:disabled,
+.toolbar button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.loading {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  margin-top: 24px;
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: var(--surface);
+  color: var(--muted);
+  text-align: center;
+}
+
+.loading.error {
+  color: var(--danger);
+}
+
+.loading.success {
+  color: var(--success);
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media (max-width: 1100px) {
+  .admin-layout {
+    grid-template-columns: 90px minmax(0, 1fr);
+  }
+
+  .logo > div:last-child {
+    display: none;
+  }
+
+  .logo {
+    justify-content: center;
+  }
+
+  .sidebar {
+    padding-inline: 12px;
+  }
+
+  .sidebar nav a {
+    justify-content: center;
+    font-size: 0;
+  }
+
+  .sidebar nav a::first-letter {
+    font-size: 1.15rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 780px) {
+  .admin-layout {
+    display: block;
+  }
+
+  .sidebar {
+    position: static;
+    width: 100%;
+    height: auto;
+    padding: 13px;
+    border-right: 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .logo {
+    display: none;
+  }
+
+  .sidebar nav {
+    display: flex;
+    overflow-x: auto;
+    margin: 0;
+  }
+
+  .sidebar nav a {
+    flex: 0 0 auto;
+    padding: 11px 13px;
+    font-size: 0.85rem;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .toolbar select,
+  .toolbar button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 560px) {
+  .content {
+    padding: 15px;
+  }
+
+  .hero {
+    padding: 23px 20px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .exports-grid {
+    grid-template-columns: 1fr;
+  }
+}
