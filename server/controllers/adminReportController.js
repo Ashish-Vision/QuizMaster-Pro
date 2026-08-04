@@ -1,5 +1,7 @@
 "use strict";
 
+const { logRequestActivity } = require("../services/activityLogService");
+
 const Achievement = require("../models/Achievement");
 const Notification = require("../models/Notification");
 const Question = require("../models/Question");
@@ -309,6 +311,22 @@ async function exportUsersReport(req, res, next) {
       rows,
     );
 
+    await logRequestActivity({
+      req,
+      action: "EXPORT",
+      entityType: "Report",
+      entityId: "users",
+      description: `Exported users report containing ${
+        users.length
+      } record${users.length === 1 ? "" : "s"}.`,
+      metadata: {
+        reportType: "users",
+        recordCount: users.length,
+        role: role || "all",
+        status: status || "all",
+      },
+    });
+
     return sendCsv(res, `quizmaster-users-${Date.now()}.csv`, csv);
   } catch (error) {
     return next(error);
@@ -343,11 +361,13 @@ async function exportAttemptsReport(req, res, next) {
 
     const rows = attempts.map((attempt) => [
       String(attempt._id),
+
       attempt.user
         ? `${attempt.user.firstName || ""} ${
             attempt.user.lastName || ""
           }`.trim()
         : "Unknown User",
+
       attempt.user?.email || "",
       attempt.category || "",
       Number(attempt.score) || 0,
@@ -359,6 +379,7 @@ async function exportAttemptsReport(req, res, next) {
       Number(attempt.accuracy) || 0,
       Number(attempt.xpEarned) || 0,
       Number(attempt.timeTakenSeconds) || 0,
+
       attempt.completedAt ? new Date(attempt.completedAt).toISOString() : "",
     ]);
 
@@ -381,6 +402,22 @@ async function exportAttemptsReport(req, res, next) {
       ],
       rows,
     );
+
+    await logRequestActivity({
+      req,
+      action: "EXPORT",
+      entityType: "Report",
+      entityId: "attempts",
+      description: `Exported attempts report containing ${
+        attempts.length
+      } record${attempts.length === 1 ? "" : "s"}.`,
+      metadata: {
+        reportType: "attempts",
+        recordCount: attempts.length,
+        days,
+        startDate: startDate.toISOString(),
+      },
+    });
 
     return sendCsv(res, `quizmaster-attempts-${Date.now()}.csv`, csv);
   } catch (error) {
@@ -419,13 +456,19 @@ async function exportQuestionsReport(req, res, next) {
       question.question || "",
       question.category || "",
       question.difficulty || "",
+
       Array.isArray(question.options) ? question.options[0] || "" : "",
+
       Array.isArray(question.options) ? question.options[1] || "" : "",
+
       Array.isArray(question.options) ? question.options[2] || "" : "",
+
       Array.isArray(question.options) ? question.options[3] || "" : "",
+
       Number(question.correctAnswer) || 0,
       question.explanation || "",
       question.isActive === false ? "Inactive" : "Active",
+
       question.createdAt ? new Date(question.createdAt).toISOString() : "",
     ]);
 
@@ -446,6 +489,22 @@ async function exportQuestionsReport(req, res, next) {
       ],
       rows,
     );
+
+    await logRequestActivity({
+      req,
+      action: "EXPORT",
+      entityType: "Report",
+      entityId: "questions",
+      description: `Exported questions report containing ${
+        questions.length
+      } record${questions.length === 1 ? "" : "s"}.`,
+      metadata: {
+        reportType: "questions",
+        recordCount: questions.length,
+        category: category || "all",
+        difficulty: difficulty || "all",
+      },
+    });
 
     return sendCsv(res, `quizmaster-questions-${Date.now()}.csv`, csv);
   } catch (error) {
@@ -591,6 +650,22 @@ async function exportCategoriesReport(req, res, next) {
       rows,
     );
 
+    await logRequestActivity({
+      req,
+      action: "EXPORT",
+      entityType: "Report",
+      entityId: "categories",
+      description: `Exported categories report containing ${
+        rows.length
+      } record${rows.length === 1 ? "" : "s"}.`,
+      metadata: {
+        reportType: "categories",
+        recordCount: rows.length,
+        questionCategoryCount: questionStatistics.length,
+        scoreCategoryCount: scoreStatistics.length,
+      },
+    });
+
     return sendCsv(res, `quizmaster-categories-${Date.now()}.csv`, csv);
   } catch (error) {
     return next(error);
@@ -618,12 +693,15 @@ async function exportAchievementsReport(req, res, next) {
       achievement.title || "",
       achievement.category || "",
       Number(achievement.threshold) || 0,
+
       achievement.user
         ? `${achievement.user.firstName || ""} ${
             achievement.user.lastName || ""
           }`.trim()
         : "Unknown User",
+
       achievement.user?.email || "",
+
       achievement.unlockedAt
         ? new Date(achievement.unlockedAt).toISOString()
         : "",
@@ -642,6 +720,20 @@ async function exportAchievementsReport(req, res, next) {
       ],
       rows,
     );
+
+    await logRequestActivity({
+      req,
+      action: "EXPORT",
+      entityType: "Report",
+      entityId: "achievements",
+      description: `Exported achievements report containing ${
+        achievements.length
+      } record${achievements.length === 1 ? "" : "s"}.`,
+      metadata: {
+        reportType: "achievements",
+        recordCount: achievements.length,
+      },
+    });
 
     return sendCsv(res, `quizmaster-achievements-${Date.now()}.csv`, csv);
   } catch (error) {

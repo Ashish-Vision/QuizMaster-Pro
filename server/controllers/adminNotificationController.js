@@ -2,6 +2,8 @@
 
 const mongoose = require("mongoose");
 
+const { logRequestActivity } = require("../services/activityLogService");
+
 const Notification = require("../models/Notification");
 const User = require("../models/User");
 
@@ -139,6 +141,7 @@ async function getAdminNotifications(req, res, next) {
       unreadNotifications,
       readNotifications,
       users,
+      totalRecipients,
     ] = await Promise.all([
       Notification.find(filter)
         .populate({
@@ -174,8 +177,15 @@ async function getAdminNotifications(req, res, next) {
         .sort({
           firstName: 1,
           lastName: 1,
+          _id: 1,
         })
         .lean(),
+
+      User.countDocuments({
+        isActive: {
+          $ne: false,
+        },
+      }),
     ]);
 
     const totalPages = Math.max(1, Math.ceil(filteredCount / limit));
@@ -187,11 +197,7 @@ async function getAdminNotifications(req, res, next) {
         totalNotifications,
         unreadNotifications,
         readNotifications,
-        totalRecipients: await User.countDocuments({
-          isActive: {
-            $ne: false,
-          },
-        }),
+        totalRecipients,
       },
 
       filters: {
@@ -278,6 +284,20 @@ async function createAdminNotification(req, res, next) {
       });
     }
 
+    if (icon.length > 20) {
+      return res.status(400).json({
+        success: false,
+        message: "Notification icon cannot exceed 20 characters.",
+      });
+    }
+
+    if (link.length > 500) {
+      return res.status(400).json({
+        success: false,
+        message: "Notification link cannot exceed 500 characters.",
+      });
+    }
+
     const recipientFilter = {
       isActive: {
         $ne: false,
@@ -331,11 +351,32 @@ async function createAdminNotification(req, res, next) {
 
     const createdNotifications = await Notification.insertMany(documents);
 
+    await logRequestActivity({
+      req,
+      action: "SEND",
+      entityType: "Notification",
+      entityId: batchId,
+      description: `Sent notification "${title}" to ${
+        createdNotifications.length
+      } recipient${createdNotifications.length === 1 ? "" : "s"}.`,
+      metadata: {
+        batchId,
+        recipientGroup,
+        recipientCount: createdNotifications.length,
+        selectedUserId: recipientGroup === "single" ? userId : null,
+        type,
+        title,
+        icon,
+        link,
+      },
+    });
+
     return res.status(201).json({
       success: true,
-      message: `Notification sent to ${createdNotifications.length} recipient${
-        createdNotifications.length === 1 ? "" : "s"
-      }.`,
+
+      message: `Notification sent to ${
+        createdNotifications.length
+      } recipient${createdNotifications.length === 1 ? "" : "s"}.`,
 
       result: {
         batchId,
@@ -373,6 +414,22 @@ async function deleteAdminNotification(req, res, next) {
       });
     }
 
+    await logRequestActivity({
+      req,
+      action: "DELETE",
+      entityType: "Notification",
+      entityId: notificationId,
+      description: `Deleted notification "${notification.title}".`,
+      metadata: {
+        notificationId,
+        title: notification.title,
+        type: notification.type,
+        recipientUserId: String(notification.user),
+        batchId: notification.metadata?.batchId || null,
+        source: notification.metadata?.source || null,
+      },
+    });
+
     return res.status(200).json({
       success: true,
       message: "Notification deleted successfully.",
@@ -407,6 +464,20 @@ async function deleteNotificationBatch(req, res, next) {
         message: "Notification batch was not found.",
       });
     }
+
+    await logRequestActivity({
+      req,
+      action: "DELETE",
+      entityType: "Notification",
+      entityId: batchId,
+      description: `Deleted notification broadcast containing ${
+        result.deletedCount
+      } notification${result.deletedCount === 1 ? "" : "s"}.`,
+      metadata: {
+        batchId,
+        deletedCount: result.deletedCount,
+      },
+    });
 
     return res.status(200).json({
       success: true,
