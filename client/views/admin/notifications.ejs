@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Manage QuizMaster Pro administrator notifications."
+    />
+
+    <title>Admin Notifications | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/notifications.css" />
+
+    <script src="/js/admin/notifications.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon">Q</span>
+
+          <div>
+            <strong>QuizMaster Pro</strong>
+            <small>Administration</small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation">
+          <a href="/admin">
+            <span>📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions">
+            <span>📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories">
+            <span>📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users">
+            <span>👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts">
+            <span>🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/admin/analytics">
+            <span>📈</span>
+            Analytics
+          </a>
+
+          <a href="/admin/achievements">
+            <span>🏆</span>
+            Achievements
+          </a>
+
+          <a href="/admin/notifications" class="active">
+            <span>🔔</span>
+            Notifications
+          </a>
+
+          <a href="/dashboard">
+            <span>🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small>Administrator</small>
+          </div>
+        </div>
+      </aside>
+
+      <main class="notifications-main">
+        <header class="notifications-header">
+          <div>
+            <p class="page-label">Communication Center</p>
+
+            <h1>Admin Notifications</h1>
+
+            <p>
+              Send announcements to users and review notification delivery, read
+              status and recipient activity.
+            </p>
+          </div>
+
+          <button id="openComposeButton" type="button" class="primary-button">
+            + Send Notification
+          </button>
+        </header>
+
+        <section class="summary-grid">
+          <article class="summary-card">
+            <span class="summary-icon">🔔</span>
+
+            <div>
+              <p>Total Notifications</p>
+              <strong id="totalNotifications">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">📬</span>
+
+            <div>
+              <p>Unread</p>
+              <strong id="unreadNotifications">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">✅</span>
+
+            <div>
+              <p>Read</p>
+              <strong id="readNotifications">0</strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon">👥</span>
+
+            <div>
+              <p>Available Recipients</p>
+              <strong id="totalRecipients">0</strong>
+            </div>
+          </article>
+        </section>
+
+        <section class="notification-controls">
+          <div class="search-group">
+            <label for="notificationSearchInput" class="visually-hidden">
+              Search notifications
+            </label>
+
+            <input
+              id="notificationSearchInput"
+              type="search"
+              placeholder="Search title or message..."
+              autocomplete="off"
+            />
+          </div>
+
+          <select id="notificationTypeFilter">
+            <option value="all">All Types</option>
+            <option value="quiz">Quiz</option>
+            <option value="achievement">Achievement</option>
+            <option value="xp">XP</option>
+            <option value="streak">Streak</option>
+            <option value="account">Account</option>
+            <option value="system">System</option>
+          </select>
+
+          <select id="notificationStatusFilter">
+            <option value="all">All Statuses</option>
+            <option value="unread">Unread</option>
+            <option value="read">Read</option>
+          </select>
+
+          <button
+            id="refreshNotificationsButton"
+            type="button"
+            class="secondary-button"
+          >
+            Refresh
+          </button>
+        </section>
+
+        <section id="notificationsLoadingState" class="state-card">
+          <div class="spinner"></div>
+          <p>Loading notifications...</p>
+        </section>
+
+        <section id="notificationsErrorState" class="state-card hidden">
+          <span class="state-icon">⚠️</span>
+
+          <h2>Unable to load notifications</h2>
+
+          <p id="notificationsErrorMessage">Something went wrong.</p>
+
+          <button
+            id="retryNotificationsButton"
+            type="button"
+            class="primary-button"
+          >
+            Try Again
+          </button>
+        </section>
+
+        <section id="notificationsContent" class="hidden">
+          <div
+            id="adminNotificationsList"
+            class="notifications-list"
+            aria-live="polite"
+          ></div>
+
+          <div id="notificationsEmptyState" class="state-card hidden">
+            <span class="state-icon">🔕</span>
+
+            <h2>No notifications found</h2>
+
+            <p>No notifications match the selected filters.</p>
+          </div>
+
+          <nav
+            id="notificationsPagination"
+            class="pagination hidden"
+            aria-label="Notifications pagination"
+          >
+            <button
+              id="previousNotificationsPage"
+              type="button"
+              class="secondary-button"
+            >
+              Previous
+            </button>
+
+            <span id="notificationsPaginationText"> Page 1 of 1 </span>
+
+            <button
+              id="nextNotificationsPage"
+              type="button"
+              class="secondary-button"
+            >
+              Next
+            </button>
+          </nav>
+        </section>
+      </main>
+    </div>
+
+    <div id="composeNotificationModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-compose-modal></div>
+
+      <section
+        class="modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="composeNotificationTitle"
+      >
+        <header class="modal-header">
+          <div>
+            <p class="page-label">Create Announcement</p>
+            <h2 id="composeNotificationTitle">Send Notification</h2>
+          </div>
+
+          <button
+            type="button"
+            class="modal-close-button"
+            data-close-compose-modal
+            aria-label="Close compose dialog"
+          >
+            ×
+          </button>
+        </header>
+
+        <form id="composeNotificationForm">
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="recipientGroup">Recipients</label>
+
+              <select id="recipientGroup" required>
+                <option value="all">All Active Accounts</option>
+                <option value="users">Regular Users</option>
+                <option value="admins">Administrators</option>
+                <option value="single">Single User</option>
+              </select>
+            </div>
+
+            <div id="singleUserGroup" class="form-group hidden">
+              <label for="recipientUserId">Select User</label>
+
+              <select id="recipientUserId">
+                <option value="">Choose a user</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="notificationType">Type</label>
+
+              <select id="notificationType" required>
+                <option value="system">System</option>
+                <option value="account">Account</option>
+                <option value="quiz">Quiz</option>
+                <option value="achievement">Achievement</option>
+                <option value="xp">XP</option>
+                <option value="streak">Streak</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="notificationIcon">Icon</label>
+
+              <input
+                id="notificationIcon"
+                type="text"
+                maxlength="20"
+                value="🔔"
+              />
+            </div>
+
+            <div class="form-group form-group-full">
+              <label for="notificationTitle">Title</label>
+
+              <input
+                id="notificationTitle"
+                type="text"
+                maxlength="120"
+                required
+              />
+            </div>
+
+            <div class="form-group form-group-full">
+              <label for="notificationMessage">Message</label>
+
+              <textarea
+                id="notificationMessage"
+                maxlength="500"
+                rows="5"
+                required
+              ></textarea>
+
+              <small>
+                <span id="notificationMessageCount">0</span>
+                / 500
+              </small>
+            </div>
+
+            <div class="form-group form-group-full">
+              <label for="notificationLink">Optional Link</label>
+
+              <input
+                id="notificationLink"
+                type="text"
+                maxlength="500"
+                placeholder="/dashboard"
+              />
+            </div>
+          </div>
+
+          <p id="composeNotificationMessage" class="form-message"></p>
+
+          <footer class="modal-actions">
+            <button
+              type="button"
+              class="secondary-button"
+              data-close-compose-modal
+            >
+              Cancel
+            </button>
+
+            <button
+              id="sendNotificationButton"
+              type="submit"
+              class="primary-button"
+            >
+              Send Notification
+            </button>
+          </footer>
+        </form>
+      </section>
+    </div>
+
+    <div id="deleteNotificationModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-delete-modal></div>
+
+      <section
+        class="delete-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="deleteNotificationTitle"
+      >
+        <span class="delete-icon">🗑️</span>
+
+        <h2 id="deleteNotificationTitle">Delete Notification?</h2>
+
+        <p id="deleteNotificationDescription">
+          This notification will be permanently removed.
+        </p>
+
+        <p id="deleteNotificationMessage" class="form-message"></p>
+
+        <div class="delete-modal-actions">
+          <button
+            type="button"
+            class="secondary-button"
+            data-close-delete-modal
+          >
+            Cancel
+          </button>
+
+          <button
+            id="confirmDeleteNotificationButton"
+            type="button"
+            class="danger-button"
+          >
+            Delete Notification
+          </button>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
