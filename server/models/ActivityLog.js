@@ -16,6 +16,7 @@ const ACTIVITY_ACTIONS = [
   "DEMOTE",
   "VIEW",
   "SYSTEM",
+  "RESET",
 ];
 
 const ENTITY_TYPES = [
@@ -28,6 +29,7 @@ const ENTITY_TYPES = [
   "Report",
   "Analytics",
   "System",
+  "Settings",
 ];
 
 const activityLogSchema = new mongoose.Schema(

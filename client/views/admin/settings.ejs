@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="Manage QuizMaster Pro platform settings."
+    />
+
+    <title>Admin Settings | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/settings.css" />
+
+    <script src="/js/admin/settings.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon">Q</span>
+
+          <div>
+            <strong>QuizMaster Pro</strong>
+            <small>Administration</small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation">
+          <a href="/admin">
+            <span>📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions">
+            <span>📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories">
+            <span>📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users">
+            <span>👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts">
+            <span>🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/admin/analytics">
+            <span>📈</span>
+            Analytics
+          </a>
+
+          <a href="/admin/achievements">
+            <span>🏆</span>
+            Achievements
+          </a>
+
+          <a href="/admin/notifications">
+            <span>🔔</span>
+            Notifications
+          </a>
+
+          <a href="/admin/reports">
+            <span>📑</span>
+            Reports
+          </a>
+
+          <a href="/admin/activity-logs">
+            <span>📜</span>
+            Activity Logs
+          </a>
+
+          <a href="/admin/settings" class="active">
+            <span>⚙️</span>
+            Settings
+          </a>
+
+          <a href="/dashboard">
+            <span>🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small>Administrator</small>
+          </div>
+        </div>
+      </aside>
+
+      <main class="settings-main">
+        <header class="settings-header">
+          <div>
+            <p class="page-label">Platform Control Center</p>
+
+            <h1>Administrator Settings</h1>
+
+            <p>
+              Configure QuizMaster Pro platform behavior, authentication, quiz
+              defaults, feature availability and maintenance options.
+            </p>
+          </div>
+
+          <div class="header-actions">
+            <button
+              id="resetSettingsButton"
+              type="button"
+              class="secondary-button"
+            >
+              Reset Defaults
+            </button>
+
+            <button
+              id="saveSettingsButton"
+              type="button"
+              class="primary-button"
+              disabled
+            >
+              Save Changes
+            </button>
+          </div>
+        </header>
+
+        <section id="settingsLoadingState" class="state-card">
+          <div class="spinner"></div>
+
+          <p>Loading platform settings...</p>
+        </section>
+
+        <section id="settingsErrorState" class="state-card hidden">
+          <span class="state-icon">⚠️</span>
+
+          <h2>Unable to load settings</h2>
+
+          <p id="settingsErrorMessage">
+            Something went wrong while loading platform settings.
+          </p>
+
+          <button id="retrySettingsButton" type="button" class="primary-button">
+            Try Again
+          </button>
+        </section>
+
+        <section id="settingsContent" class="settings-content hidden">
+          <div class="settings-status-bar">
+            <div>
+              <span
+                id="settingsStatusIndicator"
+                class="status-dot saved"
+              ></span>
+
+              <strong id="settingsStatusText">All changes saved</strong>
+            </div>
+
+            <small id="settingsLastUpdated">
+              Last updated information unavailable
+            </small>
+          </div>
+
+          <form id="adminSettingsForm" novalidate>
+            <section class="settings-section">
+              <header class="section-header">
+                <div class="section-icon">🏢</div>
+
+                <div>
+                  <h2>General Settings</h2>
+
+                  <p>
+                    Configure the name and description displayed throughout
+                    QuizMaster Pro.
+                  </p>
+                </div>
+              </header>
+
+              <div class="settings-grid">
+                <div class="setting-field">
+                  <label for="platform_name">Platform Name</label>
+
+                  <input
+                    id="platform_name"
+                    name="platform_name"
+                    type="text"
+                    maxlength="100"
+                    autocomplete="off"
+                  />
+
+                  <small>
+                    The public platform name shown in headings and navigation.
+                  </small>
+                </div>
+
+                <div class="setting-field setting-field-full">
+                  <label for="platform_description">
+                    Platform Description
+                  </label>
+
+                  <textarea
+                    id="platform_description"
+                    name="platform_description"
+                    rows="4"
+                    maxlength="500"
+                  ></textarea>
+
+                  <small>
+                    A short description used across public areas of the
+                    application.
+                  </small>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-section">
+              <header class="section-header">
+                <div class="section-icon">🔐</div>
+
+                <div>
+                  <h2>Authentication</h2>
+
+                  <p>
+                    Control account registration and available sign-in methods.
+                  </p>
+                </div>
+              </header>
+
+              <div class="toggle-list">
+                <article class="toggle-setting">
+                  <div>
+                    <h3>Registration Enabled</h3>
+
+                    <p>Allow new visitors to create QuizMaster Pro accounts.</p>
+                  </div>
+
+                  <label class="switch">
+                    <input
+                      id="registration_enabled"
+                      name="registration_enabled"
+                      type="checkbox"
+                    />
+
+                    <span class="switch-slider"></span>
+                  </label>
+                </article>
+
+                <article class="toggle-setting">
+                  <div>
+                    <h3>Google Authentication</h3>
+
+                    <p>Allow users to sign in using their Google accounts.</p>
+                  </div>
+
+                  <label class="switch">
+                    <input
+                      id="google_authentication_enabled"
+                      name="google_authentication_enabled"
+                      type="checkbox"
+                    />
+
+                    <span class="switch-slider"></span>
+                  </label>
+                </article>
+              </div>
+            </section>
+
+            <section class="settings-section">
+              <header class="section-header">
+                <div class="section-icon">🧠</div>
+
+                <div>
+                  <h2>Quiz Configuration</h2>
+
+                  <p>Configure default quiz length, time and XP calculation.</p>
+                </div>
+              </header>
+
+              <div class="settings-grid three-columns">
+                <div class="setting-field">
+                  <label for="default_quiz_time_minutes">
+                    Default Quiz Time
+                  </label>
+
+                  <div class="number-input-wrapper">
+                    <input
+                      id="default_quiz_time_minutes"
+                      name="default_quiz_time_minutes"
+                      type="number"
+                      min="1"
+                      max="180"
+                      step="1"
+                    />
+
+                    <span>minutes</span>
+                  </div>
+
+                  <small> Default time available for completing a quiz. </small>
+                </div>
+
+                <div class="setting-field">
+                  <label for="questions_per_quiz"> Questions Per Quiz </label>
+
+                  <div class="number-input-wrapper">
+                    <input
+                      id="questions_per_quiz"
+                      name="questions_per_quiz"
+                      type="number"
+                      min="1"
+                      max="100"
+                      step="1"
+                    />
+
+                    <span>questions</span>
+                  </div>
+
+                  <small>
+                    Default number of questions included in each quiz.
+                  </small>
+                </div>
+
+                <div class="setting-field">
+                  <label for="default_xp_multiplier"> XP Multiplier </label>
+
+                  <div class="number-input-wrapper">
+                    <input
+                      id="default_xp_multiplier"
+                      name="default_xp_multiplier"
+                      type="number"
+                      min="0"
+                      max="10"
+                      step="0.1"
+                    />
+
+                    <span>×</span>
+                  </div>
+
+                  <small>
+                    Multiplier applied when calculating quiz XP rewards.
+                  </small>
+                </div>
+              </div>
+            </section>
+
+            <section class="settings-section">
+              <header class="section-header">
+                <div class="section-icon">✨</div>
+
+                <div>
+                  <h2>Feature Availability</h2>
+
+                  <p>Enable or disable major QuizMaster Pro features.</p>
+                </div>
+              </header>
+
+              <div class="toggle-list">
+                <article class="toggle-setting">
+                  <div>
+                    <h3>Daily Challenge</h3>
+
+                    <p>
+                      Allow players to participate in the daily quiz challenge.
+                    </p>
+                  </div>
+
+                  <label class="switch">
+                    <input
+                      id="daily_challenge_enabled"
+                      name="daily_challenge_enabled"
+                      type="checkbox"
+                    />
+
+                    <span class="switch-slider"></span>
+                  </label>
+                </article>
+
+                <article class="toggle-setting">
+                  <div>
+                    <h3>Leaderboard</h3>
+
+                    <p>Display user rankings and leaderboard pages.</p>
+                  </div>
+
+                  <label class="switch">
+                    <input
+                      id="leaderboard_enabled"
+                      name="leaderboard_enabled"
+                      type="checkbox"
+                    />
+
+                    <span class="switch-slider"></span>
+                  </label>
+                </article>
+              </div>
+            </section>
+
+            <section class="settings-section">
+              <header class="section-header">
+                <div class="section-icon">✉️</div>
+
+                <div>
+                  <h2>Email Settings</h2>
+
+                  <p>Control whether QuizMaster Pro sends automated emails.</p>
+                </div>
+              </header>
+
+              <div class="toggle-list">
+                <article class="toggle-setting">
+                  <div>
+                    <h3>Email Notifications</h3>
+
+                    <p>
+                      Allow the platform to send email notifications and
+                      updates.
+                    </p>
+                  </div>
+
+                  <label class="switch">
+                    <input
+                      id="email_notifications_enabled"
+                      name="email_notifications_enabled"
+                      type="checkbox"
+                    />
+
+                    <span class="switch-slider"></span>
+                  </label>
+                </article>
+              </div>
+            </section>
+
+            <section class="settings-section maintenance-section">
+              <header class="section-header">
+                <div class="section-icon danger-icon">🛠️</div>
+
+                <div>
+                  <h2>Maintenance Mode</h2>
+
+                  <p>
+                    Temporarily restrict normal user access while performing
+                    updates.
+                  </p>
+                </div>
+              </header>
+
+              <div class="toggle-list">
+                <article class="toggle-setting maintenance-toggle">
+                  <div>
+                    <h3>Enable Maintenance Mode</h3>
+
+                    <p>
+                      Normal users may be prevented from accessing protected
+                      platform features.
+                    </p>
+                  </div>
+
+                  <label class="switch danger-switch">
+                    <input
+                      id="maintenance_mode"
+                      name="maintenance_mode"
+                      type="checkbox"
+                    />
+
+                    <span class="switch-slider"></span>
+                  </label>
+                </article>
+              </div>
+
+              <div class="settings-grid maintenance-message-grid">
+                <div class="setting-field setting-field-full">
+                  <label for="maintenance_message"> Maintenance Message </label>
+
+                  <textarea
+                    id="maintenance_message"
+                    name="maintenance_message"
+                    rows="4"
+                    maxlength="500"
+                  ></textarea>
+
+                  <small>
+                    This message can be displayed while maintenance mode is
+                    enabled.
+                  </small>
+                </div>
+              </div>
+
+              <div id="maintenanceWarning" class="maintenance-warning hidden">
+                <span>⚠️</span>
+
+                <div>
+                  <strong>Maintenance mode will be enabled</strong>
+
+                  <p>
+                    Confirm that administrators will still have access before
+                    saving this setting.
+                  </p>
+                </div>
+              </div>
+            </section>
+
+            <footer class="settings-footer">
+              <div>
+                <strong id="footerChangeMessage"> No unsaved changes </strong>
+
+                <small>
+                  Changes are stored securely in the QuizMaster Pro database.
+                </small>
+              </div>
+
+              <div class="footer-actions">
+                <button
+                  id="footerResetButton"
+                  type="button"
+                  class="secondary-button"
+                >
+                  Reset Defaults
+                </button>
+
+                <button
+                  id="footerSaveButton"
+                  type="submit"
+                  class="primary-button"
+                  disabled
+                >
+                  Save Changes
+                </button>
+              </div>
+            </footer>
+          </form>
+        </section>
+      </main>
+    </div>
+
+    <div id="resetSettingsModal" class="modal hidden" aria-hidden="true">
+      <div class="modal-backdrop" data-close-reset-modal></div>
+
+      <section
+        class="reset-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="resetSettingsTitle"
+      >
+        <span class="reset-icon">↺</span>
+
+        <h2 id="resetSettingsTitle">Reset Platform Settings?</h2>
+
+        <p>
+          This will restore every platform setting to its original default
+          value. Your users, questions, attempts and achievements will not be
+          deleted.
+        </p>
+
+        <p id="resetSettingsMessage" class="form-message"></p>
+
+        <div class="modal-actions">
+          <button type="button" class="secondary-button" data-close-reset-modal>
+            Cancel
+          </button>
+
+          <button
+            id="confirmResetSettingsButton"
+            type="button"
+            class="danger-button"
+          >
+            Reset Settings
+          </button>
+        </div>
+      </section>
+    </div>
+
+    <div
+      id="settingsToast"
+      class="toast hidden"
+      role="status"
+      aria-live="polite"
+    >
+      <span id="settingsToastIcon">✓</span>
+
+      <div>
+        <strong id="settingsToastTitle"> Settings updated </strong>
+
+        <p id="settingsToastMessage">
+          Platform settings were saved successfully.
+        </p>
+      </div>
+    </div>
+  </body>
+</html>

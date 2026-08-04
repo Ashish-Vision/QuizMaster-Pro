@@ -36,6 +36,7 @@ const adminAchievementRoutes = require("./routes/adminAchievementRoutes");
 const adminNotificationRoutes = require("./routes/adminNotificationRoutes");
 const adminReportRoutes = require("./routes/adminReportRoutes");
 const adminActivityLogRoutes = require("./routes/adminActivityLogRoutes");
+const adminSettingsRoutes = require("./routes/adminSettingsRoutes");
 
 /* ============================================================
    Middleware Imports
@@ -325,6 +326,12 @@ app.get("/admin/activity-logs", protect, adminOnly, (req, res) => {
     user: req.user,
   });
 });
+
+app.get("/admin/settings", protect, adminOnly, (req, res) => {
+  return res.render("admin/settings", {
+    user: req.user,
+  });
+});
 /* ============================================================
    API Routes
 ============================================================ */
@@ -376,6 +383,8 @@ app.use("/api/admin/notifications", adminNotificationRoutes);
 app.use("/api/admin/reports", adminReportRoutes);
 
 app.use("/api/admin/activity-logs", adminActivityLogRoutes);
+
+app.use("/api/admin/settings", adminSettingsRoutes);
 
 app.use("/api/admin", adminRoutes);
 
