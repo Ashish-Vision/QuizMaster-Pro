@@ -180,10 +180,10 @@ function renderCategoryOptions(categories) {
   const selectedValue = elements.categoryFilter.value;
 
   elements.categoryFilter.innerHTML = `
-    <option value="all">
-      All categories
-    </option>
-  `;
+      <option value="all">
+        All categories
+      </option>
+    `;
 
   elements.categorySuggestions.innerHTML = "";
 
@@ -235,54 +235,54 @@ function createQuestionRow(question) {
       : "Unknown";
 
   row.innerHTML = `
-    <div class="question-cell">
-      <strong title="${escapeHtml(question.question)}">
-        ${escapeHtml(question.question)}
-      </strong>
+      <div class="question-cell">
+        <strong title="${escapeHtml(question.question)}">
+          ${escapeHtml(question.question)}
+        </strong>
 
-      <small>
-        Updated ${formatDate(question.updatedAt || question.createdAt)}
-      </small>
-    </div>
+        <small>
+          Updated ${formatDate(question.updatedAt || question.createdAt)}
+        </small>
+      </div>
 
-    <div>
-      <span class="category-badge">
-        ${escapeHtml(question.category)}
-      </span>
-    </div>
+      <div>
+        <span class="category-badge">
+          ${escapeHtml(question.category)}
+        </span>
+      </div>
 
-    <div>
-      <span class="difficulty-badge ${getDifficultyClass(question.difficulty)}">
-        ${escapeHtml(question.difficulty)}
-      </span>
-    </div>
+      <div>
+        <span class="difficulty-badge ${getDifficultyClass(question.difficulty)}">
+          ${escapeHtml(question.difficulty)}
+        </span>
+      </div>
 
-    <div class="correct-answer-cell">
-      <span>
-        ${escapeHtml(correctAnswer)}
-      </span>
-    </div>
+      <div class="correct-answer-cell">
+        <span>
+          ${escapeHtml(correctAnswer)}
+        </span>
+      </div>
 
-    <div class="question-actions">
-      <button
-        type="button"
-        class="action-button edit-button"
-        data-action="edit"
-        data-question-id="${question._id}"
-      >
-        Edit
-      </button>
+      <div class="question-actions">
+        <button
+          type="button"
+          class="action-button edit-button"
+          data-action="edit"
+          data-question-id="${question._id}"
+        >
+          Edit
+        </button>
 
-      <button
-        type="button"
-        class="action-button delete-button"
-        data-action="delete"
-        data-question-id="${question._id}"
-      >
-        Delete
-      </button>
-    </div>
-  `;
+        <button
+          type="button"
+          class="action-button delete-button"
+          data-action="delete"
+          data-question-id="${question._id}"
+        >
+          Delete
+        </button>
+      </div>
+    `;
 
   return row;
 }

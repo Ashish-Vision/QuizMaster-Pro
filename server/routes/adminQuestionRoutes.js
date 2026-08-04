@@ -3,13 +3,10 @@
 const express = require("express");
 
 const {
-  getQuestions,
-  getQuestionById,
-  createQuestion,
-  updateQuestion,
-  deleteQuestion,
-  getQuestionMetadata,
-} = require("../controllers/adminQuestionController");
+  getCategories,
+  renameCategory,
+  deleteCategory,
+} = require("../controllers/adminCategoryController");
 
 const { protect } = require("../middleware/authMiddleware");
 const { adminOnly } = require("../middleware/adminMiddleware");
@@ -19,14 +16,8 @@ const router = express.Router();
 router.use(protect);
 router.use(adminOnly);
 
-router.get("/meta/options", getQuestionMetadata);
+router.get("/", getCategories);
 
-router.route("/").get(getQuestions).post(createQuestion);
-
-router
-  .route("/:questionId")
-  .get(getQuestionById)
-  .put(updateQuestion)
-  .delete(deleteQuestion);
+router.route("/:categoryName").patch(renameCategory).delete(deleteCategory);
 
 module.exports = router;

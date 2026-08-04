@@ -31,6 +31,7 @@ const adminQuestionRoutes = require("./routes/adminQuestionRoutes");
 const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminAttemptRoutes = require("./routes/adminAttemptRoutes");
+const adminAnalyticsRoutes = require("./routes/adminAnalyticsRoutes");
 
 /* ============================================================
    Middleware Imports
@@ -335,6 +336,8 @@ app.use("/api/admin/categories", adminCategoryRoutes);
 app.use("/api/admin/questions", adminQuestionRoutes);
 
 app.use("/api/admin", adminRoutes);
+
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
 /* ============================================================
    Health Check
