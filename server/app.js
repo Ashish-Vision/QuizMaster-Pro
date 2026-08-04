@@ -262,7 +262,6 @@ app.get("/notifications", protect, (req, res) => {
 /* ============================================================
    Protected Administrator Page Routes
 ============================================================ */
-
 app.get("/admin", protect, adminOnly, (req, res) => {
   return res.render("admin/dashboard", {
     user: req.user,
@@ -289,6 +288,12 @@ app.get("/admin/users", protect, adminOnly, (req, res) => {
 
 app.get("/admin/attempts", protect, adminOnly, (req, res) => {
   return res.render("admin/attempts", {
+    user: req.user,
+  });
+});
+
+app.get("/admin/analytics", protect, adminOnly, (req, res) => {
+  return res.render("admin/analytics", {
     user: req.user,
   });
 });
@@ -335,9 +340,11 @@ app.use("/api/admin/categories", adminCategoryRoutes);
 
 app.use("/api/admin/questions", adminQuestionRoutes);
 
+app.use("/api/admin/analytics", adminAnalyticsRoutes);
+
 app.use("/api/admin", adminRoutes);
 
-app.use("/api/admin/analytics", adminAnalyticsRoutes);
+
 
 /* ============================================================
    Health Check

@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <meta
+      name="description"
+      content="QuizMaster Pro administrator analytics dashboard"
+    />
+
+    <title>Admin Analytics | QuizMaster Pro</title>
+
+    <link rel="stylesheet" href="/css/admin/analytics.css" />
+
+    <script src="/js/admin/charts.js" defer></script>
+    <script src="/js/admin/analytics.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon">Q</span>
+
+          <div>
+            <strong>QuizMaster Pro</strong>
+            <small>Administration</small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation" aria-label="Administrator navigation">
+          <a href="/admin">
+            <span aria-hidden="true">📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions">
+            <span aria-hidden="true">📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories">
+            <span aria-hidden="true">📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users">
+            <span aria-hidden="true">👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts">
+            <span aria-hidden="true">🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/admin/analytics" class="active" aria-current="page">
+            <span aria-hidden="true">📈</span>
+            Analytics
+          </a>
+
+          <a href="/dashboard">
+            <span aria-hidden="true">🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small>Administrator</small>
+          </div>
+        </div>
+      </aside>
+
+      <main class="analytics-main">
+        <header class="analytics-header">
+          <div>
+            <p class="page-label">Platform Insights</p>
+
+            <h1>Admin Analytics</h1>
+
+            <p>
+              Review platform growth, quiz activity, user performance,
+              categories and question statistics.
+            </p>
+
+            <small id="analyticsGeneratedAt" class="generated-at">
+              Analytics data is loading.
+            </small>
+          </div>
+
+          <div class="analytics-header-actions">
+            <label for="analyticsPeriodFilter" class="visually-hidden">
+              Analytics period
+            </label>
+
+            <select id="analyticsPeriodFilter">
+              <option value="7">Last 7 Days</option>
+              <option value="14">Last 14 Days</option>
+              <option value="30" selected>Last 30 Days</option>
+              <option value="90">Last 90 Days</option>
+            </select>
+
+            <button
+              id="refreshAnalyticsButton"
+              type="button"
+              class="secondary-button"
+            >
+              Refresh
+            </button>
+
+            <a href="/admin" class="primary-button"> Dashboard </a>
+          </div>
+        </header>
+
+        <section
+          id="analyticsLoadingState"
+          class="analytics-state"
+          aria-live="polite"
+        >
+          <div class="spinner" aria-hidden="true"></div>
+
+          <p>Loading administrator analytics...</p>
+        </section>
+
+        <section
+          id="analyticsErrorState"
+          class="analytics-state hidden"
+          aria-live="assertive"
+        >
+          <span class="state-icon" aria-hidden="true">⚠️</span>
+
+          <h2>Unable to load analytics</h2>
+
+          <p id="analyticsErrorMessage">
+            Something went wrong while loading analytics.
+          </p>
+
+          <button
+            id="retryAnalyticsButton"
+            type="button"
+            class="primary-button"
+          >
+            Try Again
+          </button>
+        </section>
+
+        <div id="analyticsContent" class="hidden">
+          <section class="summary-grid" aria-label="Analytics summary">
+            <article class="summary-card">
+              <span class="summary-icon users" aria-hidden="true"> 👥 </span>
+
+              <div>
+                <p>Total Users</p>
+                <strong id="totalUsers">0</strong>
+                <small id="activeUsersText">0 active users</small>
+              </div>
+            </article>
+
+            <article class="summary-card">
+              <span class="summary-icon questions" aria-hidden="true">
+                📝
+              </span>
+
+              <div>
+                <p>Total Questions</p>
+                <strong id="totalQuestions">0</strong>
+                <small id="activeQuestionsText">0 active questions</small>
+              </div>
+            </article>
+
+            <article class="summary-card">
+              <span class="summary-icon attempts" aria-hidden="true"> 🎯 </span>
+
+              <div>
+                <p>Quiz Attempts</p>
+                <strong id="totalAttempts">0</strong>
+                <small>All completed attempts</small>
+              </div>
+            </article>
+
+            <article class="summary-card">
+              <span class="summary-icon xp" aria-hidden="true"> ⚡ </span>
+
+              <div>
+                <p>Total XP Earned</p>
+                <strong id="totalXpEarned">0</strong>
+                <small>XP earned through quizzes</small>
+              </div>
+            </article>
+
+            <article class="summary-card">
+              <span class="summary-icon accuracy" aria-hidden="true"> 🎯 </span>
+
+              <div>
+                <p>Average Accuracy</p>
+                <strong id="averageAccuracy">0%</strong>
+                <small>Platform quiz accuracy</small>
+              </div>
+            </article>
+
+            <article class="summary-card">
+              <span class="summary-icon time" aria-hidden="true"> ⏱️ </span>
+
+              <div>
+                <p>Average Time</p>
+                <strong id="averageQuizTime">0m 0s</strong>
+                <small>Average quiz completion time</small>
+              </div>
+            </article>
+
+            <article class="summary-card">
+              <span class="summary-icon categories" aria-hidden="true">
+                📚
+              </span>
+
+              <div>
+                <p>Categories</p>
+                <strong id="totalCategories">0</strong>
+                <small>Available quiz subjects</small>
+              </div>
+            </article>
+
+            <article class="summary-card">
+              <span class="summary-icon perfect" aria-hidden="true"> 💯 </span>
+
+              <div>
+                <p>Perfect Scores</p>
+                <strong id="perfectScores">0</strong>
+                <small>Attempts with 100% accuracy</small>
+              </div>
+            </article>
+          </section>
+
+          <section class="analytics-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Activity Trends</p>
+                <h2>Platform Activity</h2>
+              </div>
+
+              <span id="analyticsPeriodText" class="section-note">
+                Last 30 days
+              </span>
+            </div>
+
+            <div class="charts-grid">
+              <article class="chart-card chart-card-wide">
+                <div class="chart-heading">
+                  <div>
+                    <h3>Quiz Attempts</h3>
+                    <p>Daily quiz activity during the selected period.</p>
+                  </div>
+
+                  <strong id="periodAttemptTotal">0 attempts</strong>
+                </div>
+
+                <div class="chart-container">
+                  <canvas
+                    id="attemptsTrendChart"
+                    aria-label="Daily quiz attempts chart"
+                  ></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>XP Earned</h3>
+                    <p>Daily XP earned by players.</p>
+                  </div>
+
+                  <strong id="periodXpTotal">0 XP</strong>
+                </div>
+
+                <div class="chart-container">
+                  <canvas
+                    id="xpTrendChart"
+                    aria-label="Daily XP earned chart"
+                  ></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>New Users</h3>
+                    <p>Daily platform registrations.</p>
+                  </div>
+
+                  <strong id="periodUserTotal">0 users</strong>
+                </div>
+
+                <div class="chart-container">
+                  <canvas
+                    id="usersTrendChart"
+                    aria-label="Daily user registration chart"
+                  ></canvas>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="analytics-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Performance Distribution</p>
+                <h2>Quiz Insights</h2>
+              </div>
+            </div>
+
+            <div class="distribution-grid">
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>Category Attempts</h3>
+                    <p>Attempts completed in every category.</p>
+                  </div>
+                </div>
+
+                <div class="chart-container chart-container-tall">
+                  <canvas
+                    id="categoryDistributionChart"
+                    aria-label="Category attempt distribution chart"
+                  ></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>Question Difficulty</h3>
+                    <p>Easy, medium and hard question distribution.</p>
+                  </div>
+                </div>
+
+                <div class="chart-container chart-container-tall">
+                  <canvas
+                    id="difficultyDistributionChart"
+                    aria-label="Question difficulty distribution chart"
+                  ></canvas>
+                </div>
+              </article>
+
+              <article class="chart-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>Accuracy Distribution</h3>
+                    <p>Distribution of attempt accuracy ranges.</p>
+                  </div>
+                </div>
+
+                <div class="chart-container chart-container-tall">
+                  <canvas
+                    id="accuracyDistributionChart"
+                    aria-label="Accuracy distribution chart"
+                  ></canvas>
+                </div>
+              </article>
+
+              <article class="answer-card">
+                <div class="chart-heading">
+                  <div>
+                    <h3>Answer Breakdown</h3>
+                    <p>Correct, wrong and unanswered questions.</p>
+                  </div>
+                </div>
+
+                <div class="answer-breakdown">
+                  <div class="answer-item">
+                    <div>
+                      <span>Correct</span>
+                      <strong id="correctAnswers">0</strong>
+                    </div>
+
+                    <div class="progress-track">
+                      <div
+                        id="correctAnswersProgress"
+                        class="progress-fill correct"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="answer-item">
+                    <div>
+                      <span>Wrong</span>
+                      <strong id="wrongAnswers">0</strong>
+                    </div>
+
+                    <div class="progress-track">
+                      <div
+                        id="wrongAnswersProgress"
+                        class="progress-fill wrong"
+                      ></div>
+                    </div>
+                  </div>
+
+                  <div class="answer-item">
+                    <div>
+                      <span>Unanswered</span>
+                      <strong id="unansweredAnswers">0</strong>
+                    </div>
+
+                    <div class="progress-track">
+                      <div
+                        id="unansweredAnswersProgress"
+                        class="progress-fill unanswered"
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            </div>
+          </section>
+
+          <section class="analytics-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Subject Performance</p>
+                <h2>Top Categories</h2>
+              </div>
+
+              <a href="/admin/categories">Manage Categories</a>
+            </div>
+
+            <div
+              id="categoryAnalyticsGrid"
+              class="category-analytics-grid"
+              aria-live="polite"
+            ></div>
+          </section>
+
+          <section class="analytics-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Leaderboard</p>
+                <h2>Top Players</h2>
+              </div>
+
+              <a href="/admin/users">Manage Users</a>
+            </div>
+
+            <div class="analytics-table-card">
+              <div class="top-users-table-header">
+                <span>Rank</span>
+                <span>User</span>
+                <span>XP</span>
+                <span>Quizzes</span>
+                <span>Correct</span>
+                <span>Status</span>
+              </div>
+
+              <div
+                id="topUsersList"
+                class="analytics-table-list"
+                aria-live="polite"
+              ></div>
+            </div>
+          </section>
+
+          <section class="analytics-section">
+            <div class="section-heading">
+              <div>
+                <p class="page-label">Recent Activity</p>
+                <h2>Latest Quiz Attempts</h2>
+              </div>
+
+              <a href="/admin/attempts">View All Attempts</a>
+            </div>
+
+            <div
+              id="recentAttemptsGrid"
+              class="recent-attempts-grid"
+              aria-live="polite"
+            ></div>
+          </section>
+
+          <footer class="analytics-footer">
+            <span id="analyticsUpdatedText">
+              Analytics have not been updated yet.
+            </span>
+
+            <button
+              id="printAnalyticsButton"
+              type="button"
+              class="secondary-button"
+            >
+              Print Report
+            </button>
+          </footer>
+        </div>
+      </main>
+    </div>
+  </body>
+</html>
