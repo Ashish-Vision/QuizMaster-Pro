@@ -3,6 +3,8 @@
 const Question = require("../models/Question");
 const Score = require("../models/Score");
 
+const MAX_CATEGORY_LENGTH = 100;
+
 function normalizeCategory(value) {
   return typeof value === "string" ? value.trim() : "";
 }
@@ -11,116 +13,151 @@ function escapeRegex(value) {
   return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+function createExactCaseInsensitiveRegex(value) {
+  return new RegExp(`^${escapeRegex(value)}$`, "i");
+}
+
 /**
  * GET /api/admin/categories
  *
- * Returns category statistics generated from questions.
+ * Returns category statistics generated from questions and score history.
  */
 async function getCategories(req, res, next) {
   try {
-    const categories = await Question.aggregate([
-      {
-        $group: {
-          _id: "$category",
-
-          totalQuestions: {
-            $sum: 1,
-          },
-
-          easyQuestions: {
-            $sum: {
-              $cond: [
-                {
-                  $eq: ["$difficulty", "Easy"],
-                },
-                1,
-                0,
-              ],
-            },
-          },
-
-          mediumQuestions: {
-            $sum: {
-              $cond: [
-                {
-                  $eq: ["$difficulty", "Medium"],
-                },
-                1,
-                0,
-              ],
-            },
-          },
-
-          hardQuestions: {
-            $sum: {
-              $cond: [
-                {
-                  $eq: ["$difficulty", "Hard"],
-                },
-                1,
-                0,
-              ],
-            },
-          },
-
-          createdAt: {
-            $min: "$createdAt",
-          },
-
-          updatedAt: {
-            $max: "$updatedAt",
-          },
-        },
-      },
-
-      {
-        $sort: {
-          _id: 1,
-        },
-      },
-    ]);
-
-    const scoreStatistics = await Score.aggregate([
-      {
-        $group: {
-          _id: "$category",
-
-          quizAttempts: {
-            $sum: 1,
-          },
-
-          totalXpEarned: {
-            $sum: {
-              $ifNull: ["$xpEarned", 0],
-            },
-          },
-
-          averageAccuracy: {
-            $avg: {
-              $ifNull: ["$accuracy", 0],
+    const [questionCategories, scoreStatistics] = await Promise.all([
+      Question.aggregate([
+        {
+          $match: {
+            category: {
+              $type: "string",
+              $ne: "",
             },
           },
         },
-      },
+        {
+          $group: {
+            _id: "$category",
+
+            totalQuestions: {
+              $sum: 1,
+            },
+
+            easyQuestions: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: ["$difficulty", "Easy"],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+
+            mediumQuestions: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: ["$difficulty", "Medium"],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+
+            hardQuestions: {
+              $sum: {
+                $cond: [
+                  {
+                    $eq: ["$difficulty", "Hard"],
+                  },
+                  1,
+                  0,
+                ],
+              },
+            },
+
+            createdAt: {
+              $min: "$createdAt",
+            },
+
+            updatedAt: {
+              $max: "$updatedAt",
+            },
+          },
+        },
+        {
+          $sort: {
+            _id: 1,
+          },
+        },
+      ]),
+
+      Score.aggregate([
+        {
+          $match: {
+            category: {
+              $type: "string",
+              $ne: "",
+            },
+          },
+        },
+        {
+          $group: {
+            _id: "$category",
+
+            quizAttempts: {
+              $sum: 1,
+            },
+
+            totalXpEarned: {
+              $sum: {
+                $ifNull: ["$xpEarned", 0],
+              },
+            },
+
+            averageAccuracy: {
+              $avg: {
+                $ifNull: ["$accuracy", 0],
+              },
+            },
+          },
+        },
+      ]),
     ]);
 
     const scoreStatisticsMap = new Map(
-      scoreStatistics.map((item) => [item._id, item]),
+      scoreStatistics.map((item) => [String(item._id).toLowerCase(), item]),
     );
 
-    const normalizedCategories = categories.map((category) => {
-      const scoreData = scoreStatisticsMap.get(category._id) || {};
+    const normalizedCategories = questionCategories.map((category) => {
+      const categoryName = normalizeCategory(category._id);
+
+      const scoreData =
+        scoreStatisticsMap.get(categoryName.toLowerCase()) || {};
 
       return {
-        name: category._id,
-        totalQuestions: category.totalQuestions || 0,
-        easyQuestions: category.easyQuestions || 0,
-        mediumQuestions: category.mediumQuestions || 0,
-        hardQuestions: category.hardQuestions || 0,
-        quizAttempts: scoreData.quizAttempts || 0,
-        totalXpEarned: scoreData.totalXpEarned || 0,
-        averageAccuracy: Number((scoreData.averageAccuracy || 0).toFixed(2)),
+        name: categoryName,
+
+        totalQuestions: Number(category.totalQuestions) || 0,
+
+        easyQuestions: Number(category.easyQuestions) || 0,
+
+        mediumQuestions: Number(category.mediumQuestions) || 0,
+
+        hardQuestions: Number(category.hardQuestions) || 0,
+
+        quizAttempts: Number(scoreData.quizAttempts) || 0,
+
+        totalXpEarned: Number(scoreData.totalXpEarned) || 0,
+
+        averageAccuracy: Number(
+          (Number(scoreData.averageAccuracy) || 0).toFixed(2),
+        ),
+
         createdAt: category.createdAt || null,
+
         updatedAt: category.updatedAt || null,
       };
     });
@@ -140,9 +177,27 @@ async function getCategories(req, res, next) {
       },
     );
 
+    const mostPopularCategory =
+      [...normalizedCategories].sort((first, second) => {
+        if (second.quizAttempts !== first.quizAttempts) {
+          return second.quizAttempts - first.quizAttempts;
+        }
+
+        return second.totalQuestions - first.totalQuestions;
+      })[0] || null;
+
     return res.status(200).json({
       success: true,
-      summary,
+
+      summary: {
+        ...summary,
+
+        mostPopularCategory:
+          mostPopularCategory && mostPopularCategory.quizAttempts > 0
+            ? mostPopularCategory.name
+            : null,
+      },
+
       categories: normalizedCategories,
     });
   } catch (error) {
@@ -161,7 +216,7 @@ async function renameCategory(req, res, next) {
       decodeURIComponent(req.params.categoryName || ""),
     );
 
-    const newCategory = normalizeCategory(req.body.name);
+    const newCategory = normalizeCategory(req.body?.name);
 
     if (!oldCategory) {
       return res.status(400).json({
@@ -177,14 +232,32 @@ async function renameCategory(req, res, next) {
       });
     }
 
-    if (newCategory.length > 100) {
+    if (newCategory.length > MAX_CATEGORY_LENGTH) {
       return res.status(400).json({
         success: false,
-        message: "Category name cannot exceed 100 characters.",
+        message: `Category name cannot exceed ${MAX_CATEGORY_LENGTH} characters.`,
       });
     }
 
-    if (oldCategory.toLowerCase() === newCategory.toLowerCase()) {
+    const oldCategoryRegex = createExactCaseInsensitiveRegex(oldCategory);
+    const newCategoryRegex = createExactCaseInsensitiveRegex(newCategory);
+
+    const existingQuestion = await Question.findOne({
+      category: oldCategoryRegex,
+    })
+      .select("category")
+      .lean();
+
+    if (!existingQuestion) {
+      return res.status(404).json({
+        success: false,
+        message: "Category was not found.",
+      });
+    }
+
+    const storedCategoryName = existingQuestion.category;
+
+    if (storedCategoryName.toLowerCase() === newCategory.toLowerCase()) {
       return res.status(400).json({
         success: false,
         message:
@@ -192,25 +265,8 @@ async function renameCategory(req, res, next) {
       });
     }
 
-    const categoryExists = await Question.exists({
-      category: {
-        $regex: `^${escapeRegex(oldCategory)}$`,
-        $options: "i",
-      },
-    });
-
-    if (!categoryExists) {
-      return res.status(404).json({
-        success: false,
-        message: "Category was not found.",
-      });
-    }
-
     const duplicateCategory = await Question.exists({
-      category: {
-        $regex: `^${escapeRegex(newCategory)}$`,
-        $options: "i",
-      },
+      category: newCategoryRegex,
     });
 
     if (duplicateCategory) {
@@ -220,37 +276,40 @@ async function renameCategory(req, res, next) {
       });
     }
 
-    const questionUpdate = await Question.updateMany(
-      {
-        category: oldCategory,
-      },
-      {
-        $set: {
-          category: newCategory,
+    const [questionUpdate, scoreUpdate] = await Promise.all([
+      Question.updateMany(
+        {
+          category: createExactCaseInsensitiveRegex(storedCategoryName),
         },
-      },
-    );
+        {
+          $set: {
+            category: newCategory,
+          },
+        },
+      ),
 
-    const scoreUpdate = await Score.updateMany(
-      {
-        category: oldCategory,
-      },
-      {
-        $set: {
-          category: newCategory,
+      Score.updateMany(
+        {
+          category: createExactCaseInsensitiveRegex(storedCategoryName),
         },
-      },
-    );
+        {
+          $set: {
+            category: newCategory,
+          },
+        },
+      ),
+    ]);
 
     return res.status(200).json({
       success: true,
+
       message: "Category renamed successfully.",
 
       category: {
-        oldName: oldCategory,
+        oldName: storedCategoryName,
         newName: newCategory,
-        updatedQuestions: questionUpdate.modifiedCount,
-        updatedScores: scoreUpdate.modifiedCount,
+        updatedQuestions: Number(questionUpdate.modifiedCount) || 0,
+        updatedScores: Number(scoreUpdate.modifiedCount) || 0,
       },
     });
   } catch (error) {
@@ -262,35 +321,49 @@ async function renameCategory(req, res, next) {
  * DELETE /api/admin/categories/:categoryName
  *
  * A category can only be deleted when it has no saved attempts.
- * Deleting the category deletes all its questions.
+ * Deleting the category removes all questions in that category.
  */
 async function deleteCategory(req, res, next) {
   try {
-    const category = normalizeCategory(
+    const requestedCategory = normalizeCategory(
       decodeURIComponent(req.params.categoryName || ""),
     );
 
-    if (!category) {
+    if (!requestedCategory) {
       return res.status(400).json({
         success: false,
         message: "Category name is required.",
       });
     }
 
-    const questionCount = await Question.countDocuments({
-      category,
-    });
+    const categoryRegex = createExactCaseInsensitiveRegex(requestedCategory);
 
-    if (questionCount === 0) {
+    const existingQuestion = await Question.findOne({
+      category: categoryRegex,
+    })
+      .select("category")
+      .lean();
+
+    if (!existingQuestion) {
       return res.status(404).json({
         success: false,
         message: "Category was not found.",
       });
     }
 
-    const savedAttemptCount = await Score.countDocuments({
-      category,
-    });
+    const storedCategoryName = existingQuestion.category;
+    const storedCategoryRegex =
+      createExactCaseInsensitiveRegex(storedCategoryName);
+
+    const [questionCount, savedAttemptCount] = await Promise.all([
+      Question.countDocuments({
+        category: storedCategoryRegex,
+      }),
+
+      Score.countDocuments({
+        category: storedCategoryRegex,
+      }),
+    ]);
 
     if (savedAttemptCount > 0) {
       return res.status(409).json({
@@ -300,16 +373,17 @@ async function deleteCategory(req, res, next) {
     }
 
     const deletionResult = await Question.deleteMany({
-      category,
+      category: storedCategoryRegex,
     });
 
     return res.status(200).json({
       success: true,
+
       message: "Category deleted successfully.",
 
       deletedCategory: {
-        name: category,
-        deletedQuestions: deletionResult.deletedCount,
+        name: storedCategoryName,
+        deletedQuestions: Number(deletionResult.deletedCount) || questionCount,
       },
     });
   } catch (error) {
