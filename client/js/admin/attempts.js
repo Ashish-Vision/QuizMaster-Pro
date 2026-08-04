@@ -115,6 +115,27 @@ function getInitials(user) {
   return `${first}${last}`.toUpperCase() || "U";
 }
 
+function createAvatarMarkup(user, className) {
+  const name = user?.fullName || "User";
+
+  if (user?.avatar) {
+    return `
+      <div
+        class="${className} has-image"
+        style="background-image: url('${escapeHtml(user.avatar)}')"
+        role="img"
+        aria-label="${escapeHtml(name)} profile picture"
+      ></div>
+    `;
+  }
+
+  return `
+    <div class="${className}">
+      ${escapeHtml(getInitials(user))}
+    </div>
+  `;
+}
+
 function showLoading() {
   toggleElement(elements.loadingState, true);
   toggleElement(elements.errorState, false);
@@ -203,12 +224,11 @@ function createAttemptRow(attempt) {
 
   const userName = attempt.user?.fullName || "Deleted User";
   const userEmail = attempt.user?.email || "No email";
+  const avatarMarkup = createAvatarMarkup(attempt.user, "attempt-avatar");
 
   row.innerHTML = `
     <div class="attempt-user">
-      <div class="attempt-avatar">
-        ${escapeHtml(getInitials(attempt.user))}
-      </div>
+      ${avatarMarkup}
 
       <div>
         <strong>${escapeHtml(userName)}</strong>
@@ -486,7 +506,27 @@ async function openAttemptDetails(attemptId) {
     const attempt = data.attempt;
     const answers = Array.isArray(attempt.answers) ? attempt.answers : [];
 
-    elements.detailsAvatar.textContent = getInitials(attempt.user);
+    elements.detailsAvatar.classList.remove("has-image");
+    elements.detailsAvatar.style.backgroundImage = "";
+    elements.detailsAvatar.textContent = "";
+
+    if (attempt.user?.avatar) {
+      elements.detailsAvatar.classList.add("has-image");
+
+      elements.detailsAvatar.style.backgroundImage = `url('${attempt.user.avatar.replaceAll("'", "%27")}')`;
+
+      elements.detailsAvatar.setAttribute("role", "img");
+
+      elements.detailsAvatar.setAttribute(
+        "aria-label",
+        `${attempt.user.fullName || "User"} profile picture`,
+      );
+    } else {
+      elements.detailsAvatar.textContent = getInitials(attempt.user);
+
+      elements.detailsAvatar.removeAttribute("role");
+      elements.detailsAvatar.removeAttribute("aria-label");
+    }
 
     elements.detailsUserName.textContent =
       attempt.user?.fullName || "Deleted User";

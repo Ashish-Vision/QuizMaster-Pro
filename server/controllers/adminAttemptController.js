@@ -51,7 +51,7 @@ function normalizeAttempt(attempt) {
 
     user: attempt.user
       ? {
-          id: attempt.user._id,
+          id: String(attempt.user._id),
           firstName: attempt.user.firstName || "",
           lastName: attempt.user.lastName || "",
           fullName:
@@ -59,6 +59,7 @@ function normalizeAttempt(attempt) {
               attempt.user.lastName || ""
             }`.trim() || "Unknown User",
           email: attempt.user.email || "",
+          avatar: attempt.user.avatar || "",
         }
       : null,
 
@@ -241,7 +242,7 @@ async function getAttempts(req, res, next) {
       Score.find(scoreFilter)
         .populate({
           path: "user",
-          select: "firstName lastName email",
+          select: "firstName lastName email avatar",
         })
         .select(
           "user category score totalQuestions attemptedQuestions correctAnswers wrongAnswers unansweredQuestions accuracy xpEarned timeTakenSeconds completedAt createdAt",
