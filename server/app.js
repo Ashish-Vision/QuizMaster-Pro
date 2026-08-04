@@ -32,6 +32,7 @@ const adminCategoryRoutes = require("./routes/adminCategoryRoutes");
 const adminUserRoutes = require("./routes/adminUserRoutes");
 const adminAttemptRoutes = require("./routes/adminAttemptRoutes");
 const adminAnalyticsRoutes = require("./routes/adminAnalyticsRoutes");
+const adminAchievementRoutes = require("./routes/adminAchievementRoutes");
 
 /* ============================================================
    Middleware Imports
@@ -298,6 +299,11 @@ app.get("/admin/analytics", protect, adminOnly, (req, res) => {
   });
 });
 
+app.get("/admin/achievements", protect, adminOnly, (req, res) => {
+  return res.render("admin/achievements", {
+    user: req.user,
+  });
+});
 /* ============================================================
    API Routes
 ============================================================ */
@@ -342,9 +348,9 @@ app.use("/api/admin/questions", adminQuestionRoutes);
 
 app.use("/api/admin/analytics", adminAnalyticsRoutes);
 
+app.use("/api/admin/achievements", adminAchievementRoutes);
+
 app.use("/api/admin", adminRoutes);
-
-
 
 /* ============================================================
    Health Check

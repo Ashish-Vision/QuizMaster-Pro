@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Achievements | QuizMaster Pro</title>
+
+    <meta name="description" content="Manage platform achievements." />
+
+    <link rel="stylesheet" href="/css/admin/achievements.css" />
+
+    <script src="/js/admin/achievements.js" defer></script>
+  </head>
+
+  <body>
+    <div class="admin-layout">
+      <!-- ================= SIDEBAR ================= -->
+
+      <aside class="admin-sidebar">
+        <a href="/admin" class="admin-brand">
+          <span class="brand-icon"> Q </span>
+
+          <div>
+            <strong> QuizMaster Pro </strong>
+
+            <small> Administration </small>
+          </div>
+        </a>
+
+        <nav class="admin-navigation">
+          <a href="/admin">
+            <span>📊</span>
+            Dashboard
+          </a>
+
+          <a href="/admin/questions">
+            <span>📝</span>
+            Questions
+          </a>
+
+          <a href="/admin/categories">
+            <span>📚</span>
+            Categories
+          </a>
+
+          <a href="/admin/users">
+            <span>👥</span>
+            Users
+          </a>
+
+          <a href="/admin/attempts">
+            <span>🎯</span>
+            Quiz Attempts
+          </a>
+
+          <a href="/admin/analytics">
+            <span>📈</span>
+            Analytics
+          </a>
+
+          <a href="/admin/achievements" class="active">
+            <span>🏆</span>
+
+            Achievements
+          </a>
+
+          <a href="/dashboard">
+            <span>🏠</span>
+            User Dashboard
+          </a>
+        </nav>
+
+        <div class="admin-sidebar-user">
+          <div class="admin-user-avatar">
+            <%= user?.firstName ? user.firstName.charAt(0).toUpperCase() : "A"
+            %>
+          </div>
+
+          <div>
+            <strong>
+              <%= user?.firstName || "Admin" %> <%= user?.lastName || "" %>
+            </strong>
+
+            <small> Administrator </small>
+          </div>
+        </div>
+      </aside>
+
+      <!-- ================= MAIN ================= -->
+
+      <main class="achievements-main">
+        <header class="page-header">
+          <div>
+            <p class="page-label">Achievement Management</p>
+
+            <h1>Platform Achievements</h1>
+
+            <p>Monitor unlocked achievements across the platform.</p>
+          </div>
+        </header>
+
+        <!-- ================= SUMMARY ================= -->
+
+        <section class="summary-grid">
+          <article class="summary-card">
+            <span class="summary-icon"> 🏆 </span>
+
+            <div>
+              <p>Total Achievements</p>
+
+              <strong id="totalDefinitions"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon"> ✨ </span>
+
+            <div>
+              <p>Total Unlocks</p>
+
+              <strong id="totalUnlocks"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon"> 👤 </span>
+
+            <div>
+              <p>Users With Achievements</p>
+
+              <strong id="usersWithAchievements"> 0 </strong>
+            </div>
+          </article>
+
+          <article class="summary-card">
+            <span class="summary-icon"> 📊 </span>
+
+            <div>
+              <p>Unlock Rate</p>
+
+              <strong id="overallUnlockPercentage"> 0% </strong>
+            </div>
+          </article>
+        </section>
+
+        <!-- ================= FILTERS ================= -->
+
+        <section class="controls">
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search achievements..."
+          />
+
+          <select id="categoryFilter">
+            <option value="all">All Categories</option>
+
+            <option value="quiz">Quiz</option>
+
+            <option value="xp">XP</option>
+
+            <option value="accuracy">Accuracy</option>
+
+            <option value="streak">Streak</option>
+
+            <option value="category">Category</option>
+          </select>
+
+          <select id="sortFilter">
+            <option value="most-unlocked">Most Unlocked</option>
+
+            <option value="least-unlocked">Least Unlocked</option>
+
+            <option value="name">Name</option>
+          </select>
+
+          <button id="refreshButton" class="secondary-button">Refresh</button>
+        </section>
+
+        <!-- ================= STATES ================= -->
+
+        <section id="loadingState" class="state-card">
+          <div class="spinner"></div>
+
+          <p>Loading achievements...</p>
+        </section>
+
+        <section id="errorState" class="state-card hidden">
+          <h2>Unable to load achievements</h2>
+
+          <p id="errorMessage">Something went wrong.</p>
+
+          <button id="retryButton" class="primary-button">Try Again</button>
+        </section>
+
+        <!-- ================= GRID ================= -->
+
+        <section id="achievementGrid" class="achievement-grid hidden"></section>
+      </main>
+    </div>
+
+    <!-- ================= MODAL ================= -->
+
+    <div id="achievementModal" class="modal hidden">
+      <div class="modal-backdrop"></div>
+
+      <section class="modal-panel">
+        <div class="modal-header">
+          <h2 id="modalTitle">Achievement</h2>
+
+          <button id="closeModal">×</button>
+        </div>
+
+        <div id="modalBody"></div>
+      </section>
+    </div>
+  </body>
+</html>
