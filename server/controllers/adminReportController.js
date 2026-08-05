@@ -1,6 +1,7 @@
 "use strict";
 
 const { logRequestActivity } = require("../services/activityLogService");
+const { createCsv } = require("../utils/csv");
 
 const Achievement = require("../models/Achievement");
 const Notification = require("../models/Notification");
@@ -29,33 +30,6 @@ function getReportStartDate(days) {
   date.setUTCDate(date.getUTCDate() - (days - 1));
 
   return date;
-}
-
-function formatCsvValue(value) {
-  if (value === null || value === undefined) {
-    return "";
-  }
-
-  const text = String(value);
-
-  if (
-    text.includes(",") ||
-    text.includes('"') ||
-    text.includes("\n") ||
-    text.includes("\r")
-  ) {
-    return `"${text.replaceAll('"', '""')}"`;
-  }
-
-  return text;
-}
-
-function createCsv(headers, rows) {
-  const headerLine = headers.map(formatCsvValue).join(",");
-
-  const rowLines = rows.map((row) => row.map(formatCsvValue).join(","));
-
-  return [headerLine, ...rowLines].join("\n");
 }
 
 function sendCsv(res, filename, csvContent) {

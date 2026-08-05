@@ -1,716 +1,726 @@
 "use strict";
 
-const adminDashboardState = {
-  isLoading: false,
-};
+/* ============================================================
+   DOM Elements
+============================================================ */
 
 const elements = {
-  loading: document.getElementById("adminLoading"),
-  error: document.getElementById("adminError"),
-  errorMessage: document.getElementById("adminErrorMessage"),
-  retryButton: document.getElementById("adminRetryButton"),
-  content: document.getElementById("adminContent"),
-  logoutButton: document.getElementById("adminLogoutButton"),
+  categoriesContainer: document.getElementById("categoriesContainer"),
 
-  totalUsers: document.getElementById("totalUsers"),
-  totalAdmins: document.getElementById("totalAdmins"),
-  totalActiveUsers: document.getElementById("totalActiveUsers"),
+  searchInput: document.getElementById("searchInput"),
 
-  regularUserText: document.getElementById("regularUserText"),
+  logoutButton: document.getElementById("logoutButton"),
 
-  usersLoggedInTodayText: document.getElementById("usersLoggedInTodayText"),
+  leaderboardList: document.getElementById("leaderboardList"),
 
-  totalAttempts: document.getElementById("totalAttempts"),
+  leaderboardPlayerCount: document.getElementById("leaderboardPlayerCount"),
 
-  totalQuestionsAvailable: document.getElementById("totalQuestionsAvailable"),
+  currentUserRank: document.getElementById("currentUserRank"),
+  dashboardAchievementProgress: document.getElementById(
+    "dashboardAchievementProgress",
+  ),
 
-  totalCategories: document.getElementById("totalCategories"),
-  totalXp: document.getElementById("totalXp"),
+  dashboardAchievementPercentage: document.getElementById(
+    "dashboardAchievementPercentage",
+  ),
 
-  totalAchievements: document.getElementById("totalAchievements"),
+  dashboardAchievementTrack: document.getElementById(
+    "dashboardAchievementTrack",
+  ),
 
-  averageAccuracy: document.getElementById("averageAccuracy"),
-  highestAccuracy: document.getElementById("highestAccuracy"),
-  averageQuizTime: document.getElementById("averageQuizTime"),
-  totalQuestions: document.getElementById("totalQuestions"),
+  dashboardAchievementFill: document.getElementById("dashboardAchievementFill"),
 
-  correctAnswers: document.getElementById("correctAnswers"),
-  wrongAnswers: document.getElementById("wrongAnswers"),
+  dashboardAchievementsList: document.getElementById(
+    "dashboardAchievementsList",
+  ),
+  notificationButton: document.getElementById("notificationButton"),
 
-  unansweredAnswers: document.getElementById("unansweredAnswers"),
+  notificationBadge: document.getElementById("notificationBadge"),
 
-  correctProgress: document.getElementById("correctProgress"),
-  wrongProgress: document.getElementById("wrongProgress"),
+  notificationDropdown: document.getElementById("notificationDropdown"),
 
-  unansweredProgress: document.getElementById("unansweredProgress"),
+  notificationDropdownCount: document.getElementById(
+    "notificationDropdownCount",
+  ),
 
-  correctProgressTrack: document.getElementById("correctProgressTrack"),
+  notificationDropdownList: document.getElementById("notificationDropdownList"),
 
-  wrongProgressTrack: document.getElementById("wrongProgressTrack"),
-
-  unansweredProgressTrack: document.getElementById("unansweredProgressTrack"),
-
-  categoryGrid: document.getElementById("categoryGrid"),
-
-  recentUsersList: document.getElementById("recentUsersList"),
-
-  recentAttemptsList: document.getElementById("recentAttemptsList"),
-
-  weeklyAttemptTotal: document.getElementById("weeklyAttemptTotal"),
-
-  weeklyXpTotal: document.getElementById("weeklyXpTotal"),
-
-  weeklyUserTotal: document.getElementById("weeklyUserTotal"),
+  markDropdownReadButton: document.getElementById("markDropdownReadButton"),
 };
 
-function toggleElement(element, shouldShow) {
-  if (!element) {
+/* ============================================================
+   Category Information
+============================================================ */
+
+const categoryDetails = {
+  Java: {
+    icon: "☕",
+    description: "OOP, collections, exceptions, inheritance and threads.",
+  },
+
+  Python: {
+    icon: "🐍",
+    description: "Functions, lists, dictionaries, OOP and exceptions.",
+  },
+
+  C: {
+    icon: "💻",
+    description: "Pointers, arrays, functions, memory and fundamentals.",
+  },
+
+  DBMS: {
+    icon: "🗄️",
+    description: "SQL, keys, normalization, joins and transactions.",
+  },
+
+  "Operating Systems": {
+    icon: "🖥️",
+    description: "Processes, scheduling, memory, paging and deadlocks.",
+  },
+
+  "Computer Networks": {
+    icon: "🌐",
+    description: "TCP/IP, DNS, HTTP, routing and network protocols.",
+  },
+};
+
+let categories = [];
+
+function handleUnauthorizedResponse(response) {
+  if (response.status !== 401) {
+    return false;
+  }
+
+  localStorage.removeItem("quizmaster_user");
+  localStorage.removeItem("quizProgress");
+  localStorage.removeItem("quizAnswers");
+
+  window.location.replace("/login");
+
+  return true;
+}
+
+/* ============================================================
+   Category Functions
+============================================================ */
+
+function getCategoryDetails(category) {
+  return (
+    categoryDetails[category] || {
+      icon: "🧠",
+      description:
+        "Challenge your knowledge with questions from this category.",
+    }
+  );
+}
+
+function openQuiz(category) {
+  const encodedCategory = encodeURIComponent(category);
+
+  window.location.href = `/quiz?category=${encodedCategory}`;
+}
+
+function createCategoryCard(category) {
+  const details = getCategoryDetails(category);
+
+  const card = document.createElement("article");
+
+  card.className = "category-card";
+  card.tabIndex = 0;
+  card.setAttribute("role", "link");
+  card.setAttribute("aria-label", `Start ${category} quiz`);
+
+  const topSection = document.createElement("div");
+
+  const icon = document.createElement("div");
+
+  icon.className = "category-icon";
+  icon.textContent = details.icon;
+  icon.setAttribute("aria-hidden", "true");
+
+  const title = document.createElement("h3");
+
+  title.textContent = category;
+
+  const description = document.createElement("p");
+
+  description.textContent = details.description;
+
+  topSection.append(icon, title, description);
+
+  const footer = document.createElement("div");
+
+  footer.className = "category-footer";
+
+  const difficulty = document.createElement("span");
+
+  difficulty.className = "category-difficulty";
+  difficulty.textContent = "Easy • Medium • Hard";
+
+  const start = document.createElement("span");
+
+  start.className = "category-start";
+  start.textContent = "Start Quiz →";
+
+  footer.append(difficulty, start);
+
+  card.append(topSection, footer);
+
+  card.addEventListener("click", () => {
+    openQuiz(category);
+  });
+
+  card.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+
+      openQuiz(category);
+    }
+  });
+
+  return card;
+}
+
+function renderCategories(categoryList) {
+  if (!elements.categoriesContainer) {
     return;
   }
 
-  element.classList.toggle("hidden", !shouldShow);
-}
+  elements.categoriesContainer.innerHTML = "";
 
-function getNumber(value) {
-  const number = Number(value);
+  if (categoryList.length === 0) {
+    const emptyMessage = document.createElement("div");
 
-  return Number.isFinite(number) ? number : 0;
-}
+    emptyMessage.className = "category-empty";
+    emptyMessage.textContent = "No quiz categories match your search.";
 
-function formatNumber(value) {
-  return getNumber(value).toLocaleString("en-IN");
-}
+    elements.categoriesContainer.appendChild(emptyMessage);
 
-function formatDuration(secondsValue) {
-  const totalSeconds = Math.max(0, Math.floor(getNumber(secondsValue)));
-
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m`;
+    return;
   }
 
-  return `${minutes}m ${seconds}s`;
+  categoryList.forEach((category) => {
+    const categoryCard = createCategoryCard(category);
+
+    elements.categoriesContainer.appendChild(categoryCard);
+  });
 }
 
-function formatDate(dateValue) {
+async function loadCategories() {
+  if (!elements.categoriesContainer) {
+    return;
+  }
+
+  elements.categoriesContainer.innerHTML = `
+    <div class="category-loading">
+      Loading quiz categories...
+    </div>
+  `;
+
+  try {
+    const response = await fetch("/api/quiz/categories", {
+      method: "GET",
+
+      credentials: "include",
+
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (handleUnauthorizedResponse(response)) {
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to load quiz categories.");
+    }
+
+    if (!Array.isArray(data.categories)) {
+      throw new Error("The categories response is invalid.");
+    }
+
+    categories = data.categories;
+
+    renderCategories(categories);
+  } catch (error) {
+    console.error("Category loading error:", error);
+
+    elements.categoriesContainer.innerHTML = "";
+
+    const errorMessage = document.createElement("div");
+
+    errorMessage.className = "category-error";
+
+    errorMessage.textContent = error.message || "An unexpected error occurred.";
+
+    elements.categoriesContainer.appendChild(errorMessage);
+  }
+}
+
+function filterCategories() {
+  if (!elements.searchInput) {
+    return;
+  }
+
+  const searchTerm = elements.searchInput.value.trim().toLowerCase();
+
+  const filteredCategories = categories.filter((category) =>
+    category.toLowerCase().includes(searchTerm),
+  );
+
+  renderCategories(filteredCategories);
+}
+
+/* ============================================================
+   Leaderboard Functions
+============================================================ */
+
+function getRankIcon(rank) {
+  if (rank === 1) {
+    return "🥇";
+  }
+
+  if (rank === 2) {
+    return "🥈";
+  }
+
+  if (rank === 3) {
+    return "🥉";
+  }
+
+  return `#${rank}`;
+}
+
+function getInitials(firstName, lastName) {
+  const firstInitial = firstName?.trim().charAt(0) || "";
+
+  const lastInitial = lastName?.trim().charAt(0) || "";
+
+  return `${firstInitial}${lastInitial}`.toUpperCase() || "U";
+}
+
+function createPlayerAvatar(player) {
+  const avatar = document.createElement("div");
+
+  avatar.className = "leaderboard-avatar";
+
+  if (player.avatar) {
+    const image = document.createElement("img");
+
+    image.className = "leaderboard-avatar-image";
+    image.src = player.avatar;
+    image.alt = `${player.fullName || "Player"} avatar`;
+
+    image.addEventListener("error", () => {
+      avatar.innerHTML = "";
+
+      const initials = document.createElement("span");
+
+      initials.className = "leaderboard-avatar-initials";
+
+      initials.textContent = getInitials(player.firstName, player.lastName);
+
+      avatar.appendChild(initials);
+    });
+
+    avatar.appendChild(image);
+  } else {
+    const initials = document.createElement("span");
+
+    initials.className = "leaderboard-avatar-initials";
+
+    initials.textContent = getInitials(player.firstName, player.lastName);
+
+    avatar.appendChild(initials);
+  }
+
+  return avatar;
+}
+
+function createLeaderboardPlayer(player) {
+  const row = document.createElement("article");
+
+  row.className = "leaderboard-row";
+
+  if (player.isCurrentUser) {
+    row.classList.add("current-player");
+  }
+
+  const rank = document.createElement("div");
+
+  rank.className = `leaderboard-rank rank-${player.rank}`;
+
+  rank.textContent = getRankIcon(player.rank);
+
+  const playerSection = document.createElement("div");
+
+  playerSection.className = "leaderboard-player";
+
+  const avatar = createPlayerAvatar(player);
+
+  const playerDetails = document.createElement("div");
+
+  playerDetails.className = "leaderboard-player-details";
+
+  const playerName = document.createElement("strong");
+
+  playerName.textContent =
+    player.fullName ||
+    `${player.firstName || ""} ${player.lastName || ""}`.trim() ||
+    "Unknown Player";
+
+  if (player.isCurrentUser) {
+    const youBadge = document.createElement("span");
+
+    youBadge.className = "you-badge";
+    youBadge.textContent = "You";
+
+    playerName.appendChild(youBadge);
+  }
+
+  const correctAnswers = document.createElement("span");
+
+  correctAnswers.textContent = `${Number(player.correctAnswers) || 0} correct answers`;
+
+  playerDetails.append(playerName, correctAnswers);
+
+  playerSection.append(avatar, playerDetails);
+
+  const quizzes = document.createElement("div");
+
+  quizzes.className = "leaderboard-quizzes";
+  quizzes.textContent = Number(player.quizzesCompleted) || 0;
+
+  const xp = document.createElement("div");
+
+  xp.className = "leaderboard-xp";
+  xp.textContent = `${Number(player.totalXp) || 0} XP`;
+
+  row.append(rank, playerSection, quizzes, xp);
+
+  return row;
+}
+
+function renderLeaderboard(data) {
+  if (!elements.leaderboardList) {
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = "";
+
+  const players = Array.isArray(data.leaderboard) ? data.leaderboard : [];
+
+  const totalPlayers = Number(data.totalPlayers) || players.length;
+
+  if (elements.leaderboardPlayerCount) {
+    elements.leaderboardPlayerCount.textContent = `${totalPlayers} ${
+      totalPlayers === 1 ? "player" : "players"
+    }`;
+  }
+
+  if (players.length === 0) {
+    elements.leaderboardList.innerHTML = `
+      <div class="leaderboard-empty">
+        <span aria-hidden="true">🏆</span>
+        <h3>No rankings available yet</h3>
+        <p>Complete a quiz to enter the leaderboard.</p>
+      </div>
+    `;
+
+    return;
+  }
+
+  players.forEach((player) => {
+    const playerRow = createLeaderboardPlayer(player);
+
+    elements.leaderboardList.appendChild(playerRow);
+  });
+
+  renderCurrentUserRank(data.currentUser);
+}
+
+function renderCurrentUserRank(currentUser) {
+  if (!elements.currentUserRank) {
+    return;
+  }
+
+  /*
+   * Show the separate rank card only when the current
+   * user is not included in the displayed top players.
+   */
+  if (currentUser && Number(currentUser.rank) > 10) {
+    elements.currentUserRank.hidden = false;
+    elements.currentUserRank.innerHTML = "";
+
+    const label = document.createElement("span");
+
+    label.textContent = "Your current rank";
+
+    const rank = document.createElement("strong");
+
+    rank.textContent = `#${currentUser.rank}`;
+
+    const xp = document.createElement("span");
+
+    xp.textContent = `${Number(currentUser.totalXp) || 0} XP`;
+
+    elements.currentUserRank.append(label, rank, xp);
+  } else {
+    elements.currentUserRank.hidden = true;
+    elements.currentUserRank.innerHTML = "";
+  }
+}
+
+function renderLeaderboardError(message) {
+  if (!elements.leaderboardList) {
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = `
+    <div class="leaderboard-empty">
+      <span aria-hidden="true">⚠️</span>
+      <h3>Unable to load leaderboard</h3>
+      <p>${message}</p>
+    </div>
+  `;
+}
+
+async function loadLeaderboard() {
+  if (!elements.leaderboardList) {
+    return;
+  }
+
+  elements.leaderboardList.innerHTML = `
+    <div class="leaderboard-loading">
+      Loading leaderboard...
+    </div>
+  `;
+
+  try {
+    const response = await fetch("/api/leaderboard", {
+      method: "GET",
+
+      credentials: "include",
+
+      headers: {
+        Accept: "application/json",
+      },
+    });
+
+    if (handleUnauthorizedResponse(response)) {
+      return;
+    }
+
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Unable to load leaderboard.");
+    }
+
+    renderLeaderboard(data);
+  } catch (error) {
+    console.error("Leaderboard error:", error);
+
+    renderLeaderboardError(
+      error.message || "Please refresh the dashboard and try again.",
+    );
+  }
+}
+
+/* ============================================================
+   Achievement Functions
+============================================================ */
+
+function formatAchievementDate(dateValue) {
+  if (!dateValue) {
+    return "Unlocked";
+  }
+
   const date = new Date(dateValue);
 
   if (Number.isNaN(date.getTime())) {
-    return "Unknown";
+    return "Unlocked";
   }
 
   return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
+    day: "numeric",
     month: "short",
     year: "numeric",
   }).format(date);
 }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+function createDashboardAchievementItem(achievement) {
+  const item = document.createElement("article");
+
+  item.className = "dashboard-achievement-item";
+
+  const icon = document.createElement("span");
+
+  icon.className = "dashboard-achievement-item-icon";
+
+  icon.textContent = achievement.icon || "🏆";
+
+  icon.setAttribute("aria-hidden", "true");
+
+  const information = document.createElement("div");
+
+  const title = document.createElement("h3");
+
+  title.textContent = achievement.title || "Achievement";
+
+  const unlockDate = document.createElement("p");
+
+  unlockDate.textContent = `Unlocked ${formatAchievementDate(
+    achievement.unlockedAt,
+  )}`;
+
+  information.append(title, unlockDate);
+
+  item.append(icon, information);
+
+  return item;
 }
 
-function setText(element, value) {
-  if (!element) {
+function renderDashboardAchievements(data) {
+  if (!elements.dashboardAchievementsList) {
     return;
   }
 
-  element.textContent = value;
-}
-
-function setProgress(element, track, percentageValue) {
-  const percentage = Math.min(100, Math.max(0, getNumber(percentageValue)));
-
-  if (element) {
-    element.style.width = `${percentage}%`;
-  }
-
-  if (track) {
-    track.setAttribute("aria-valuenow", String(Math.round(percentage)));
-  }
-}
-
-function renderOverview(data) {
-  const overview = data.overview || {};
-  const answers = data.answerStatistics || {};
-
-  setText(elements.totalUsers, formatNumber(overview.totalUsers));
-
-  setText(elements.totalAdmins, formatNumber(overview.totalAdmins));
-
-  setText(elements.totalActiveUsers, formatNumber(overview.totalActiveUsers));
-
-  const usersLoggedInToday = getNumber(overview.usersLoggedInToday);
-
-  setText(
-    elements.usersLoggedInTodayText,
-    `${formatNumber(usersLoggedInToday)} logged in today`,
-  );
-
-  const regularUsers = getNumber(overview.totalRegularUsers);
-
-  setText(
-    elements.regularUserText,
-    `${formatNumber(regularUsers)} regular ${
-      regularUsers === 1 ? "user" : "users"
-    }`,
-  );
-
-  setText(elements.totalAttempts, formatNumber(overview.totalQuizAttempts));
-
-  setText(
-    elements.totalQuestionsAvailable,
-    formatNumber(overview.totalQuestionsAvailable),
-  );
-
-  setText(elements.totalCategories, formatNumber(overview.totalCategories));
-
-  setText(elements.totalXp, formatNumber(overview.totalXpEarned));
-
-  setText(
-    elements.totalAchievements,
-    formatNumber(overview.totalAchievementsUnlocked),
-  );
-
-  setText(elements.averageAccuracy, `${getNumber(overview.averageAccuracy)}%`);
-
-  setText(elements.highestAccuracy, `${getNumber(overview.highestAccuracy)}%`);
-
-  setText(
-    elements.averageQuizTime,
-    formatDuration(overview.averageQuizTimeSeconds),
-  );
-
-  const totalQuestions = getNumber(answers.totalQuestions);
-
-  const correctAnswers = getNumber(answers.correctAnswers);
-
-  const wrongAnswers = getNumber(answers.wrongAnswers);
-
-  const unansweredAnswers = getNumber(answers.unansweredQuestions);
-
-  setText(elements.totalQuestions, formatNumber(totalQuestions));
-
-  setText(elements.correctAnswers, formatNumber(correctAnswers));
-
-  setText(elements.wrongAnswers, formatNumber(wrongAnswers));
-
-  setText(elements.unansweredAnswers, formatNumber(unansweredAnswers));
-
-  const correctPercentage =
-    totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
-
-  const wrongPercentage =
-    totalQuestions > 0 ? (wrongAnswers / totalQuestions) * 100 : 0;
-
-  const unansweredPercentage =
-    totalQuestions > 0 ? (unansweredAnswers / totalQuestions) * 100 : 0;
-
-  setProgress(
-    elements.correctProgress,
-    elements.correctProgressTrack,
-    correctPercentage,
-  );
-
-  setProgress(
-    elements.wrongProgress,
-    elements.wrongProgressTrack,
-    wrongPercentage,
-  );
-
-  setProgress(
-    elements.unansweredProgress,
-    elements.unansweredProgressTrack,
-    unansweredPercentage,
-  );
-}
-
-function renderCategories(categories) {
-  if (!elements.categoryGrid) {
-    return;
-  }
-
-  elements.categoryGrid.innerHTML = "";
-
-  if (!Array.isArray(categories) || categories.length === 0) {
-    elements.categoryGrid.innerHTML = `
-      <div class="empty-state">
-        Category statistics will appear after users complete quizzes.
-      </div>
-    `;
-
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-
-  categories.forEach((category) => {
-    const card = document.createElement("article");
-
-    card.className = "category-stat-card";
-
-    card.innerHTML = `
-      <div class="category-stat-header">
-        <span class="category-icon" aria-hidden="true">
-          📚
-        </span>
-
-        <strong>
-          ${escapeHtml(category.category || "Unknown")}
-        </strong>
-      </div>
-
-      <div class="category-metrics">
-        <div>
-          <span>Attempts</span>
-
-          <strong>
-            ${formatNumber(category.attempts)}
-          </strong>
-        </div>
-
-        <div>
-          <span>Accuracy</span>
-
-          <strong>
-            ${getNumber(category.averageAccuracy)}%
-          </strong>
-        </div>
-
-        <div>
-          <span>XP Earned</span>
-
-          <strong>
-            ${formatNumber(category.totalXpEarned)}
-          </strong>
-        </div>
-      </div>
-    `;
-
-    fragment.appendChild(card);
-  });
-
-  elements.categoryGrid.appendChild(fragment);
-}
-
-function createAvatarContent(user, fullName) {
-  const initial = fullName.charAt(0).toUpperCase() || "U";
-
-  if (!user.avatar) {
-    return `
-      <span class="row-avatar">
-        ${escapeHtml(initial)}
-      </span>
-    `;
-  }
-
-  return `
-    <span
-      class="row-avatar has-image"
-      style="background-image: url('${escapeHtml(user.avatar)}')"
-      role="img"
-      aria-label="${escapeHtml(fullName)} profile picture"
-    ></span>
-  `;
-}
-
-function renderRecentUsers(users) {
-  if (!elements.recentUsersList) {
-    return;
-  }
-
-  elements.recentUsersList.innerHTML = "";
-
-  if (!Array.isArray(users) || users.length === 0) {
-    elements.recentUsersList.innerHTML = `
-      <div class="empty-state">
-        No users found.
-      </div>
-    `;
-
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-
-  users.forEach((user) => {
-    const row = document.createElement("article");
-
-    row.className = "table-row";
-
-    const fullName =
-      `${user.firstName || ""} ${user.lastName || ""}`.trim() || "Unknown User";
-
-    const avatarContent = createAvatarContent(user, fullName);
-
-    const statusText = user.isActive ? "Active" : "Inactive";
-
-    const statusClass = user.isActive ? "status-active" : "status-inactive";
-
-    row.innerHTML = `
-      <div class="user-cell">
-        ${avatarContent}
-
-        <div>
-          <strong>
-            ${escapeHtml(fullName)}
-          </strong>
-
-          <small>
-            ${escapeHtml(user.email || "")}
-          </small>
-        </div>
-      </div>
-
-      <div class="row-meta">
-        <span
-          class="role-badge ${user.role === "admin" ? "admin" : ""}"
-        >
-          ${escapeHtml(user.role || "user")}
-        </span>
-
-        <span class="user-status ${statusClass}">
-          ${statusText}
-        </span>
-
-        <small>
-          ${formatDate(user.createdAt)}
-        </small>
-      </div>
-    `;
-
-    fragment.appendChild(row);
-  });
-
-  elements.recentUsersList.appendChild(fragment);
-}
-
-function renderRecentAttempts(attempts) {
-  if (!elements.recentAttemptsList) {
-    return;
-  }
-
-  elements.recentAttemptsList.innerHTML = "";
-
-  if (!Array.isArray(attempts) || attempts.length === 0) {
-    elements.recentAttemptsList.innerHTML = `
-      <div class="empty-state">
-        No quiz attempts found.
-      </div>
-    `;
-
-    return;
-  }
-
-  const fragment = document.createDocumentFragment();
-
-  attempts.forEach((attempt) => {
-    const row = document.createElement("a");
-
-    row.className = "table-row attempt-row";
-
-    row.href = attempt._id
-      ? `/result/${encodeURIComponent(attempt._id)}`
-      : "/admin/attempts";
-
-    const userName = attempt.user
-      ? `${attempt.user.firstName || ""} ${attempt.user.lastName || ""}`.trim()
-      : "Deleted User";
-
-    const accuracy = getNumber(attempt.accuracy);
-
-    const accuracyClass =
-      accuracy >= 80
-        ? "accuracy-good"
-        : accuracy >= 60
-          ? "accuracy-average"
-          : "accuracy-low";
-
-    row.innerHTML = `
-      <div>
-        <strong>
-          ${escapeHtml(userName || "Unknown User")}
-        </strong>
-
-        <small>
-          ${escapeHtml(attempt.category || "Unknown Category")}
-          •
-          ${formatNumber(attempt.score)} /
-          ${formatNumber(attempt.totalQuestions)}
-          •
-          +${formatNumber(attempt.xpEarned)} XP
-        </small>
-      </div>
-
-      <div class="row-meta">
-        <strong class="accuracy-text ${accuracyClass}">
-          ${accuracy}%
-        </strong>
-
-        <small>
-          ${formatDate(attempt.completedAt || attempt.createdAt)}
-        </small>
-      </div>
-    `;
-
-    fragment.appendChild(row);
-  });
-
-  elements.recentAttemptsList.appendChild(fragment);
-}
-
-function renderCharts(data) {
-  const trends = data.trends || {};
-
-  const daily = Array.isArray(trends.daily) ? trends.daily : [];
-
-  const accuracyDistribution = Array.isArray(trends.accuracyDistribution)
-    ? trends.accuracyDistribution
+  const achievements = Array.isArray(data.achievements)
+    ? data.achievements
     : [];
 
-  const categories = Array.isArray(data.categoryStatistics)
-    ? data.categoryStatistics
-    : [];
+  const unlockedAchievements = achievements
+    .filter((achievement) => achievement.isUnlocked)
+    .sort(
+      (firstAchievement, secondAchievement) =>
+        new Date(secondAchievement.unlockedAt || 0) -
+        new Date(firstAchievement.unlockedAt || 0),
+    );
 
-  const labels = daily.map((item) => item.label);
+  const totalAchievements = Number(data.totalAchievements) || 0;
 
-  const attemptValues = daily.map((item) => getNumber(item.attempts));
+  const unlockedCount = Number(data.unlockedCount) || 0;
 
-  const xpValues = daily.map((item) => getNumber(item.xpEarned));
+  const percentage =
+    totalAchievements > 0
+      ? Math.round((unlockedCount / totalAchievements) * 100)
+      : 0;
 
-  const userValues = daily.map((item) => getNumber(item.newUsers));
-
-  const weeklyAttempts = attemptValues.reduce(
-    (total, value) => total + value,
-    0,
-  );
-
-  const weeklyXp = xpValues.reduce((total, value) => total + value, 0);
-
-  const weeklyUsers = userValues.reduce((total, value) => total + value, 0);
-
-  setText(elements.weeklyAttemptTotal, formatNumber(weeklyAttempts));
-
-  setText(elements.weeklyXpTotal, `${formatNumber(weeklyXp)} XP`);
-
-  setText(elements.weeklyUserTotal, formatNumber(weeklyUsers));
-
-  if (!window.AdminCharts) {
-    console.warn("Admin chart utilities were not loaded.");
-
-    return;
+  if (elements.dashboardAchievementProgress) {
+    elements.dashboardAchievementProgress.textContent = `${unlockedCount} of ${totalAchievements} achievements unlocked`;
   }
 
-  window.AdminCharts.drawLineChart("attemptsTrendChart", labels, attemptValues);
+  if (elements.dashboardAchievementPercentage) {
+    elements.dashboardAchievementPercentage.textContent = `${percentage}%`;
+  }
 
-  window.AdminCharts.drawLineChart("xpTrendChart", labels, xpValues, {
-    color: "#f3b84a",
-  });
+  if (elements.dashboardAchievementFill) {
+    elements.dashboardAchievementFill.style.width = `${percentage}%`;
+  }
 
-  window.AdminCharts.drawLineChart("usersTrendChart", labels, userValues, {
-    color: "#2ed3a7",
-  });
-
-  window.AdminCharts.drawBarChart(
-    "categoryDistributionChart",
-    categories.map((category) => category.category),
-    categories.map((category) => getNumber(category.attempts)),
-  );
-
-  window.AdminCharts.drawBarChart(
-    "accuracyDistributionChart",
-    accuracyDistribution.map((item) => item.label),
-    accuracyDistribution.map((item) => getNumber(item.count)),
-    {
-      color: "#7657ff",
-    },
-  );
-}
-
-function renderDashboard(data) {
-  renderOverview(data);
-
-  renderCategories(data.categoryStatistics);
-
-  renderRecentUsers(data.recentUsers);
-
-  renderRecentAttempts(data.recentAttempts);
-
-  /*
-   * Canvas dimensions are calculated correctly only after
-   * the dashboard content becomes visible.
-   */
-  toggleElement(elements.content, true);
-
-  window.requestAnimationFrame(() => {
-    renderCharts(data);
-  });
-}
-function showLoading() {
-  toggleElement(elements.loading, true);
-  toggleElement(elements.error, false);
-  toggleElement(elements.content, false);
-}
-
-function showError(message) {
-  setText(
-    elements.errorMessage,
-    message || "Unable to load administrator dashboard.",
-  );
-
-  toggleElement(elements.loading, false);
-  toggleElement(elements.error, true);
-  toggleElement(elements.content, false);
-}
-
-function showDashboardContent() {
-  toggleElement(elements.loading, false);
-  toggleElement(elements.error, false);
-  toggleElement(elements.content, true);
-}
-
-async function parseJsonResponse(response) {
-  const contentType = response.headers.get("content-type") || "";
-
-  if (!contentType.includes("application/json")) {
-    throw new Error(
-      "The server returned an invalid administrator dashboard response.",
+  if (elements.dashboardAchievementTrack) {
+    elements.dashboardAchievementTrack.setAttribute(
+      "aria-valuenow",
+      String(percentage),
     );
   }
 
-  return response.json();
-}
+  elements.dashboardAchievementsList.innerHTML = "";
 
-async function loadAdminDashboard(options = {}) {
-  if (adminDashboardState.isLoading) {
+  if (unlockedAchievements.length === 0) {
+    elements.dashboardAchievementsList.innerHTML = `
+      <div class="dashboard-achievement-empty">
+        Complete a quiz to unlock your first achievement.
+      </div>
+    `;
+
     return;
   }
 
-  const silent = Boolean(options.silent);
+  const recentAchievements = unlockedAchievements.slice(0, 4);
 
-  adminDashboardState.isLoading = true;
+  const fragment = document.createDocumentFragment();
 
-  /*
-   * Show the full loading screen only during the initial load
-   * or when the user manually retries.
-   */
-  if (!silent || !adminDashboardState.hasLoadedOnce) {
-    showLoading();
+  recentAchievements.forEach((achievement) => {
+    fragment.appendChild(createDashboardAchievementItem(achievement));
+  });
+
+  elements.dashboardAchievementsList.appendChild(fragment);
+}
+
+function renderDashboardAchievementError(message) {
+  if (!elements.dashboardAchievementsList) {
+    return;
+  }
+
+  elements.dashboardAchievementsList.innerHTML = `
+    <div class="dashboard-achievement-error">
+      ${message}
+    </div>
+  `;
+
+  if (elements.dashboardAchievementProgress) {
+    elements.dashboardAchievementProgress.textContent =
+      "Achievement information unavailable";
+  }
+}
+
+async function loadDashboardAchievements() {
+  if (!elements.dashboardAchievementsList) {
+    return;
   }
 
   try {
-    const response = await fetch("/api/admin/dashboard", {
+    const response = await fetch("/api/achievements", {
       method: "GET",
+
       credentials: "include",
-      cache: "no-store",
 
       headers: {
         Accept: "application/json",
       },
     });
 
-    if (response.status === 401) {
-      window.location.href = "/login";
+    if (handleUnauthorizedResponse(response)) {
       return;
     }
 
-    if (response.status === 403) {
-      window.location.href = "/dashboard";
-      return;
-    }
-
-    const data = await parseJsonResponse(response);
+    const data = await response.json();
 
     if (!response.ok || !data.success) {
-      throw new Error(
-        data.message || "Unable to load administrator dashboard.",
-      );
+      throw new Error(data.message || "Unable to load achievements.");
     }
 
-    /*
-     * Make the content visible before drawing canvas charts.
-     */
-    showDashboardContent();
-
-    renderDashboard(data);
-
-    adminDashboardState.hasLoadedOnce = true;
+    renderDashboardAchievements(data);
   } catch (error) {
-    console.error("Admin dashboard error:", error);
+    console.error("Dashboard achievement error:", error);
 
-    /*
-     * During a silent refresh, keep already loaded content visible.
-     */
-    if (silent && adminDashboardState.hasLoadedOnce) {
-      return;
-    }
-
-    showError(error.message || "Unable to load administrator dashboard.");
-  } finally {
-    adminDashboardState.isLoading = false;
+    renderDashboardAchievementError(
+      error.message || "Unable to load achievements.",
+    );
   }
 }
 
-function renderDashboardDate() {
-  if (!elements.dashboardDate) {
+/* ============================================================
+   Logout
+============================================================ */
+
+async function logout() {
+  if (!elements.logoutButton) {
     return;
   }
 
-  const now = new Date();
-
-  elements.dashboardDate.textContent = new Intl.DateTimeFormat("en-IN", {
-    weekday: "long",
-    day: "2-digit",
-    month: "long",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(now);
-}
-
-function startAutoRefresh() {
-  stopAutoRefresh();
-
-  adminDashboardState.refreshTimer = window.setInterval(() => {
-    if (
-      document.visibilityState === "visible" &&
-      adminDashboardState.hasLoadedOnce &&
-      !adminDashboardState.isLoading
-    ) {
-      loadAdminDashboard({
-        silent: true,
-      });
-    }
-  }, adminDashboardState.refreshIntervalMs);
-}
-
-function stopAutoRefresh() {
-  if (!adminDashboardState.refreshTimer) {
-    return;
-  }
-
-  window.clearInterval(adminDashboardState.refreshTimer);
-
-  adminDashboardState.refreshTimer = null;
-}
-
-async function logoutAdmin() {
-  if (elements.logoutButton) {
-    elements.logoutButton.disabled = true;
-    elements.logoutButton.textContent = "Logging out...";
-  }
+  elements.logoutButton.disabled = true;
+  elements.logoutButton.textContent = "Logging out...";
 
   try {
     const response = await fetch("/api/auth/logout", {
       method: "POST",
+
       credentials: "include",
 
       headers: {
@@ -718,62 +728,48 @@ async function logoutAdmin() {
       },
     });
 
-    if (!response.ok) {
-      throw new Error("Unable to log out.");
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+      throw new Error(data.message || "Logout failed.");
     }
 
-    stopAutoRefresh();
+    localStorage.removeItem("quizmaster_user");
+    localStorage.removeItem("quizProgress");
+    localStorage.removeItem("quizAnswers");
 
     window.location.href = "/login";
   } catch (error) {
-    console.error("Admin logout error:", error);
+    console.error("Logout error:", error);
 
-    alert(error.message || "Unable to log out.");
+    alert(error.message || "Unable to log out. Please try again.");
 
-    if (elements.logoutButton) {
-      elements.logoutButton.disabled = false;
-      elements.logoutButton.textContent = "Logout";
-    }
+    elements.logoutButton.disabled = false;
+    elements.logoutButton.textContent = "Logout";
   }
 }
 
-function initializeAdminDashboard() {
-  elements.retryButton?.addEventListener("click", () => {
-    loadAdminDashboard({
-      silent: false,
-    });
-  });
+/* ============================================================
+   Event Listeners
+============================================================ */
 
-  elements.logoutButton?.addEventListener("click", logoutAdmin);
+function initializeDashboard() {
+  if (elements.searchInput) {
+    elements.searchInput.addEventListener("input", filterCategories);
+  }
 
-  document.addEventListener("visibilitychange", () => {
-    if (
-      document.visibilityState === "visible" &&
-      adminDashboardState.hasLoadedOnce
-    ) {
-      renderDashboardDate();
+  if (elements.logoutButton) {
+    elements.logoutButton.addEventListener("click", logout);
+  }
 
-      loadAdminDashboard({
-        silent: true,
-      });
-    }
-  });
-
-  window.addEventListener("beforeunload", stopAutoRefresh);
-
-  renderDashboardDate();
-
-  loadAdminDashboard({
-    silent: false,
-  }).then(() => {
-    startAutoRefresh();
-  });
+  /*
+   * Load categories and leaderboard together.
+   */
+  Promise.allSettled([
+    loadCategories(),
+    loadLeaderboard(),
+    loadDashboardAchievements(),
+  ]);
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", initializeAdminDashboard, {
-    once: true,
-  });
-} else {
-  initializeAdminDashboard();
-}
+document.addEventListener("DOMContentLoaded", initializeDashboard);

@@ -4,7 +4,10 @@ const validator = require("validator");
 
 const User = require("../models/User");
 
-const { getAuthCookieOptions, sendAuthResponse } = require("../utils/helpers");
+const {
+  getAuthCookieClearOptions,
+  sendAuthResponse,
+} = require("../utils/helpers");
 
 const { createAndSendVerification } = require("./emailVerificationController");
 
@@ -239,7 +242,7 @@ async function login(req, res, next) {
 }
 
 async function logout(req, res) {
-  res.clearCookie("quizmaster_token", getAuthCookieOptions());
+  res.clearCookie("quizmaster_token", getAuthCookieClearOptions());
 
   return res.status(200).json({
     success: true,

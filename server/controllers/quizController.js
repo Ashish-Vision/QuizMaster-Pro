@@ -117,7 +117,11 @@ function getDailyChallengeErrorResponse(reason) {
 
 async function getCategories(req, res, next) {
   try {
-    const categories = await Question.distinct("category");
+    const categories = await Question.distinct("category", {
+      isActive: {
+        $ne: false,
+      },
+    });
 
     categories.sort((firstCategory, secondCategory) =>
       firstCategory.localeCompare(secondCategory),
@@ -160,6 +164,10 @@ async function startQuiz(req, res, next) {
       {
         $match: {
           category,
+
+          isActive: {
+            $ne: false,
+          },
         },
       },
 
@@ -354,6 +362,10 @@ async function submitQuiz(req, res, next) {
       },
 
       category: normalizedCategory,
+
+      isActive: {
+        $ne: false,
+      },
     }).select(
       [
         "_id",

@@ -64,6 +64,12 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
 
+    tokenVersion: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     role: {
       type: String,
       enum: ["user", "admin"],

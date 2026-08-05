@@ -170,6 +170,10 @@ async function getAvailableChallengeGroups(
         difficulty: {
           $in: ["Easy", "Medium", "Hard"],
         },
+
+        isActive: {
+          $ne: false,
+        },
       },
     },
 
@@ -229,6 +233,10 @@ async function selectChallengeQuestions({ category, questionCount }) {
     {
       $match: {
         category,
+
+        isActive: {
+          $ne: false,
+        },
       },
     },
 
@@ -624,4 +632,3 @@ module.exports = {
   completeDailyChallenge,
   deactivateExpiredChallenges,
 };
-  

@@ -1,8 +1,11 @@
 "use strict";
 
-const jwt = require("jsonwebtoken");
-
 const User = require("../models/User");
+const {
+  tokenVersionMatches,
+  verifyAuthToken,
+} = require("../utils/authToken");
+const { getAuthCookieClearOptions } = require("../utils/helpers");
 
 /**
  * Determines whether the current request expects an HTML page.
@@ -15,11 +18,7 @@ function requestExpectsHtml(req) {
  * Removes an invalid authentication cookie.
  */
 function clearAuthenticationCookie(res) {
-  res.clearCookie("quizmaster_token", {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-  });
+  res.clearCookie("quizmaster_token", getAuthCookieClearOptions());
 }
 
 /**
@@ -50,13 +49,7 @@ async function protect(req, res, next) {
       });
     }
 
-    if (!process.env.JWT_SECRET) {
-      throw new Error(
-        "JWT_SECRET is missing from the environment configuration.",
-      );
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = verifyAuthToken(token);
 
     if (!decoded?.userId) {
       clearAuthenticationCookie(res);
@@ -83,6 +76,19 @@ async function protect(req, res, next) {
       return res.status(401).json({
         success: false,
         message: "The user associated with this session was not found.",
+      });
+    }
+
+    if (!tokenVersionMatches(decoded.tokenVersion, user.tokenVersion)) {
+      clearAuthenticationCookie(res);
+
+      if (requestExpectsHtml(req)) {
+        return res.redirect("/login");
+      }
+
+      return res.status(401).json({
+        success: false,
+        message: "Your session has been invalidated. Please log in again.",
       });
     }
 

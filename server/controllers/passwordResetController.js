@@ -7,6 +7,7 @@ const validator = require("validator");
 const User = require("../models/User");
 
 const { sendPasswordResetEmail } = require("../services/emailService");
+const { incrementUserTokenVersion } = require("../utils/authToken");
 
 const RESET_TOKEN_EXPIRY_MINUTES = 15;
 
@@ -264,6 +265,7 @@ async function resetPassword(req, res, next) {
     }
 
     user.password = newPassword;
+    incrementUserTokenVersion(user);
 
     user.passwordResetToken = null;
     user.passwordResetExpires = null;

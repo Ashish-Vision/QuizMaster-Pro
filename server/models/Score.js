@@ -42,6 +42,12 @@ const scoreSchema = new mongoose.Schema(
       index: true,
     },
 
+    quizSession: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "QuizSession",
+      default: null,
+    },
+
     category: {
       type: String,
       required: true,
@@ -130,6 +136,20 @@ scoreSchema.index({
   category: 1,
   score: -1,
 });
+
+scoreSchema.index(
+  {
+    quizSession: 1,
+  },
+  {
+    unique: true,
+    partialFilterExpression: {
+      quizSession: {
+        $type: "objectId",
+      },
+    },
+  },
+);
 
 const Score = mongoose.model("Score", scoreSchema);
 

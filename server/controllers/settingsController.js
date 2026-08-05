@@ -3,6 +3,8 @@
 const validator = require("validator");
 
 const User = require("../models/User");
+const { incrementUserTokenVersion } = require("../utils/authToken");
+const { sendAuthResponse } = require("../utils/helpers");
 
 function normalizeText(value) {
   return typeof value === "string" ? value.trim() : "";
@@ -246,13 +248,16 @@ async function changePassword(req, res, next) {
     }
 
     user.password = newPassword;
+    incrementUserTokenVersion(user);
 
     await user.save();
 
-    return res.status(200).json({
-      success: true,
-      message: "Password changed successfully.",
-    });
+    return sendAuthResponse(
+      res,
+      200,
+      "Password changed successfully.",
+      user,
+    );
   } catch (error) {
     if (error.name === "ValidationError") {
       const validationMessages = Object.values(error.errors).map(

@@ -1,23 +1,12 @@
 "use strict";
 
-const jwt = require("jsonwebtoken");
+const { createAuthToken } = require("./authToken");
 
-function generateToken(userId) {
-  const jwtSecret = process.env.JWT_SECRET;
-
-  if (!jwtSecret) {
-    throw new Error("JWT_SECRET is missing from the environment variables.");
-  }
-
-  return jwt.sign(
-    {
-      userId,
-    },
-    jwtSecret,
-    {
-      expiresIn: process.env.JWT_EXPIRES_IN || "7d",
-    },
-  );
+function generateToken(userId, tokenVersion = 0) {
+  return createAuthToken({
+    userId,
+    tokenVersion,
+  });
 }
 
 function getAuthCookieOptions() {
@@ -32,8 +21,16 @@ function getAuthCookieOptions() {
   };
 }
 
+function getAuthCookieClearOptions() {
+  const clearOptions = getAuthCookieOptions();
+
+  delete clearOptions.maxAge;
+
+  return clearOptions;
+}
+
 function sendAuthResponse(res, statusCode, message, user) {
-  const token = generateToken(user._id);
+  const token = generateToken(user._id, user.tokenVersion);
 
   res.cookie("quizmaster_token", token, getAuthCookieOptions());
 
@@ -46,6 +43,7 @@ function sendAuthResponse(res, statusCode, message, user) {
 
 module.exports = {
   generateToken,
+  getAuthCookieClearOptions,
   getAuthCookieOptions,
   sendAuthResponse,
 };
