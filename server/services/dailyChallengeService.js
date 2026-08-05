@@ -462,6 +462,7 @@ async function completeDailyChallenge({
   totalQuestions = 0,
   accuracy = 0,
   xpAwarded = 0,
+  session = null,
 }) {
   if (!mongoose.Types.ObjectId.isValid(challengeId)) {
     throw new Error("A valid daily challenge ID is required.");
@@ -475,10 +476,12 @@ async function completeDailyChallenge({
     throw new Error("The quiz result ID is invalid.");
   }
 
-  const challenge = await DailyChallenge.findOne({
+  const challengeQuery = DailyChallenge.findOne({
     _id: challengeId,
     isActive: true,
   });
+  if (session) challengeQuery.session(session);
+  const challenge = await challengeQuery;
 
   if (!challenge) {
     return {
@@ -550,11 +553,14 @@ async function completeDailyChallenge({
     {
       new: true,
       runValidators: true,
+      session,
     },
   );
 
   if (!updatedChallenge) {
-    const latestChallenge = await DailyChallenge.findById(challengeId);
+    const latestQuery = DailyChallenge.findById(challengeId);
+    if (session) latestQuery.session(session);
+    const latestChallenge = await latestQuery;
 
     const latestCompletion = latestChallenge?.getUserCompletion(userId);
 

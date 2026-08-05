@@ -14,6 +14,7 @@ const state = {
   isDailyChallenge: false,
   dailyChallengeId: null,
   dailyChallenge: null,
+  quizSessionId: null,
 };
 
 const elements = {
@@ -207,6 +208,7 @@ async function loadStandardQuiz() {
   return {
     category: data.category || state.category,
     questions: normalizeQuestions(data.questions),
+    quizSessionId: data.quizSessionId,
   };
 }
 
@@ -246,6 +248,7 @@ async function loadDailyChallengeQuiz() {
     category: challenge.category || state.category || "Daily Challenge",
 
     questions: normalizeQuestions(challenge.questions),
+    quizSessionId: data.quizSessionId,
   };
 }
 
@@ -270,6 +273,7 @@ async function loadQuiz() {
 
     state.category = quizData.category;
     state.questions = quizData.questions;
+    state.quizSessionId = quizData.quizSessionId;
     state.currentIndex = 0;
     state.remainingSeconds = QUIZ_DURATION_SECONDS;
     state.submitting = false;
@@ -678,6 +682,7 @@ function createSubmissionPayload() {
     quizDurationSeconds: QUIZ_DURATION_SECONDS,
 
     dailyChallengeId: state.isDailyChallenge ? state.dailyChallengeId : null,
+    quizSessionId: state.quizSessionId,
   };
 }
 

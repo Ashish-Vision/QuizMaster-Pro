@@ -1,5 +1,7 @@
 "use strict";
 
+const QuizSession = require("../models/QuizSession");
+
 const mongoose = require("mongoose");
 
 const {
@@ -165,8 +167,26 @@ async function startDailyChallenge(req, res, next) {
       });
     }
 
+    const existingSession = await QuizSession.findOne({
+      user: userId,
+      dailyChallenge: challengeDocument._id,
+    });
+    const quizSession =
+      existingSession ||
+      (await QuizSession.create({
+        user: userId,
+        category: challenge.category,
+        questions: challengeDocument.questions.map(
+          (question) => question._id || question,
+        ),
+        mode: "daily",
+        dailyChallenge: challengeDocument._id,
+        expiresAt: challengeDocument.expiresAt,
+      }));
+
     return res.status(200).json({
       success: true,
+      quizSessionId: quizSession.sessionId,
 
       message: "Daily challenge started successfully.",
 

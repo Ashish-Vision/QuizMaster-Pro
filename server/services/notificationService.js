@@ -57,6 +57,7 @@ async function createQuizNotifications({
   currentStreak,
   previousStreak,
   achievements = [],
+  session = null,
 }) {
   const notifications = [];
 
@@ -141,7 +142,7 @@ async function createQuizNotifications({
     metadata: notification.metadata,
   }));
 
-  return Notification.insertMany(documents);
+  return Notification.insertMany(documents, session ? { session } : {});
 }
 
 async function createAccountNotification({

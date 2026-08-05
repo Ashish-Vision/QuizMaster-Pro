@@ -97,18 +97,20 @@ const ACHIEVEMENT_DEFINITIONS = [
   },
 ];
 
-async function getUserAchievementStatistics(userId) {
+async function getUserAchievementStatistics(userId, session = null) {
   const objectId = new mongoose.Types.ObjectId(String(userId));
 
-  const user = await User.findById(objectId)
-    .select("totalXp quizzesCompleted correctAnswers currentStreak")
-    .lean();
+  const userQuery = User.findById(objectId).select(
+    "totalXp quizzesCompleted correctAnswers currentStreak",
+  );
+  if (session) userQuery.session(session);
+  const user = await userQuery.lean();
 
   if (!user) {
     throw new Error("User not found while checking achievements.");
   }
 
-  const scoreStatistics = await Score.aggregate([
+  const scoreStatisticsQuery = Score.aggregate([
     {
       $match: {
         user: objectId,
@@ -144,8 +146,10 @@ async function getUserAchievementStatistics(userId) {
       },
     },
   ]);
+  if (session) scoreStatisticsQuery.session(session);
+  const scoreStatistics = await scoreStatisticsQuery;
 
-  const categoryStatistics = await Score.aggregate([
+  const categoryStatisticsQuery = Score.aggregate([
     {
       $match: {
         user: objectId,
@@ -168,6 +172,8 @@ async function getUserAchievementStatistics(userId) {
       $limit: 1,
     },
   ]);
+  if (session) categoryStatisticsQuery.session(session);
+  const categoryStatistics = await categoryStatisticsQuery;
 
   const scoreSummary = scoreStatistics[0] || {};
   const bestCategory = categoryStatistics[0] || null;
@@ -214,18 +220,18 @@ function hasMetAchievementRequirement(definition, statistics) {
   }
 }
 
-async function checkAndUnlockAchievements(userId) {
+async function checkAndUnlockAchievements(userId, { session = null } = {}) {
   if (!mongoose.Types.ObjectId.isValid(userId)) {
     throw new Error("Invalid user ID for achievement check.");
   }
 
-  const statistics = await getUserAchievementStatistics(userId);
+  const statistics = await getUserAchievementStatistics(userId, session);
 
-  const existingAchievements = await Achievement.find({
+  const existingQuery = Achievement.find({
     user: userId,
-  })
-    .select("code")
-    .lean();
+  }).select("code");
+  if (session) existingQuery.session(session);
+  const existingAchievements = await existingQuery.lean();
 
   const existingCodes = new Set(
     existingAchievements.map((achievement) => achievement.code),
@@ -241,10 +247,10 @@ async function checkAndUnlockAchievements(userId) {
 
   for (const definition of eligibleAchievements) {
     try {
-      const achievement = await Achievement.create({
-        user: userId,
-        ...definition,
-      });
+      const [achievement] = await Achievement.create(
+        [{ user: userId, ...definition }],
+        session ? { session } : {},
+      );
 
       newlyUnlocked.push(achievement);
     } catch (error) {

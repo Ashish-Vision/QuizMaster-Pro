@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const Question = require("../models/Question");
 const Score = require("../models/Score");
 const User = require("../models/User");
+const QuizSession = require("../models/QuizSession");
 
 const { createQuizNotifications } = require("../services/notificationService");
 
@@ -194,8 +195,19 @@ async function startQuiz(req, res, next) {
       });
     }
 
+    const startedAt = new Date();
+    const quizSession = await QuizSession.create({
+      user: getUserId(req),
+      category,
+      questions: questions.map((question) => question._id),
+      mode: "standard",
+      startedAt,
+      expiresAt: new Date(startedAt.getTime() + 30 * 60 * 1000),
+    });
+
     return res.status(200).json({
       success: true,
+      quizSessionId: quizSession.sessionId,
       category,
       totalQuestions: questions.length,
       questions,
@@ -210,7 +222,7 @@ async function startQuiz(req, res, next) {
 ============================================================ */
 
 async function submitQuiz(req, res, next) {
-  let scoreDocument = null;
+  let databaseSession = null;
 
   try {
     const userId = getUserId(req);
@@ -228,7 +240,15 @@ async function submitQuiz(req, res, next) {
       remainingSeconds = 0,
       quizDurationSeconds = 600,
       dailyChallengeId = null,
+      quizSessionId,
     } = req.body;
+
+    if (typeof quizSessionId !== "string" || !quizSessionId.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "A valid quiz session ID is required.",
+      });
+    }
 
     if (typeof category !== "string" || category.trim().length === 0) {
       return res.status(400).json({
@@ -251,6 +271,50 @@ async function submitQuiz(req, res, next) {
     const normalizedCategory = category.trim();
 
     const isDailyChallenge = Boolean(dailyChallengeId);
+
+    const quizSession = await QuizSession.findOne({
+      sessionId: quizSessionId.trim(),
+      user: userId,
+    });
+
+    if (!quizSession) {
+      return res
+        .status(404)
+        .json({ success: false, message: "Quiz session not found." });
+    }
+    if (quizSession.status === "completed") {
+      return res
+        .status(409)
+        .json({ success: false, message: "This quiz was already submitted." });
+    }
+    if (
+      quizSession.status !== "active" ||
+      quizSession.expiresAt <= new Date()
+    ) {
+      return res
+        .status(410)
+        .json({ success: false, message: "This quiz session has expired." });
+    }
+    if (
+      quizSession.category !== normalizedCategory ||
+      quizSession.mode !== (isDailyChallenge ? "daily" : "standard")
+    ) {
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "The submission does not match this quiz session.",
+        });
+    }
+    if (
+      isDailyChallenge &&
+      String(quizSession.dailyChallenge) !== String(dailyChallengeId)
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "The daily challenge does not match this quiz session.",
+      });
+    }
 
     let dailyChallenge = null;
 
@@ -340,6 +404,18 @@ async function submitQuiz(req, res, next) {
       submittedQuestionIds.push(questionId);
 
       submittedAnswers.set(questionId, selectedAnswer);
+    }
+
+    if (
+      !haveSameQuestionIds(
+        submittedQuestionIds,
+        quizSession.questions.map(String),
+      )
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: "The submitted questions do not match this quiz session.",
+      });
     }
 
     if (isDailyChallenge) {
@@ -475,42 +551,71 @@ async function submitQuiz(req, res, next) {
 
     const timeTakenSeconds = safeDuration - safeRemainingSeconds;
 
-    const user = await User.findById(userId).select(
-      [
-        "totalXp",
-        "quizzesCompleted",
-        "correctAnswers",
-        "currentStreak",
-        "lastQuizDate",
-      ].join(" "),
+    databaseSession = await mongoose.startSession();
+    databaseSession.startTransaction();
+
+    const claimedSession = await QuizSession.findOneAndUpdate(
+      {
+        _id: quizSession._id,
+        user: userId,
+        status: "active",
+        expiresAt: { $gt: new Date() },
+      },
+      { $set: { status: "processing" } },
+      { new: true, session: databaseSession },
     );
 
+    if (!claimedSession) {
+      const conflict = new Error("This quiz session is no longer available.");
+      conflict.statusCode = 409;
+      throw conflict;
+    }
+
+    const user = await User.findById(userId)
+      .select(
+        [
+          "totalXp",
+          "quizzesCompleted",
+          "correctAnswers",
+          "currentStreak",
+          "lastQuizDate",
+        ].join(" "),
+      )
+      .session(databaseSession);
+
     if (!user) {
-      return res.status(404).json({
-        success: false,
-        message: "The authenticated user could not be found.",
-      });
+      const missingUserError = new Error(
+        "The authenticated user could not be found.",
+      );
+      missingUserError.statusCode = 404;
+      throw missingUserError;
     }
 
     const previousStreak = user.currentStreak || 0;
 
     const newStreak = calculateNewStreak(user);
 
-    scoreDocument = await Score.create({
-      user: userId,
-      category: normalizedCategory,
-      answers: evaluatedAnswers,
-      score: correctAnswers,
-      attemptedQuestions,
-      correctAnswers,
-      wrongAnswers,
-      unansweredQuestions,
-      totalQuestions,
-      accuracy,
-      xpEarned: totalXpEarned,
-      timeTakenSeconds,
-      completedAt: new Date(),
-    });
+    const [scoreDocument] = await Score.create(
+      [
+        {
+          user: userId,
+          quizSession: claimedSession._id,
+          category: normalizedCategory,
+          answers: evaluatedAnswers,
+          score: correctAnswers,
+          attemptedQuestions,
+          correctAnswers,
+          wrongAnswers,
+          unansweredQuestions,
+          totalQuestions,
+          accuracy,
+          xpEarned: totalXpEarned,
+          timeTakenSeconds,
+          completedAt: new Date(),
+        },
+      ],
+      { session: databaseSession },
+    );
 
     let dailyChallengeCompletion = null;
 
@@ -529,26 +634,19 @@ async function submitQuiz(req, res, next) {
         accuracy,
 
         xpAwarded: dailyChallengeBonusXp,
+        session: databaseSession,
       });
 
       if (
         !dailyChallengeCompletion.success ||
         dailyChallengeCompletion.alreadyCompleted
       ) {
-        await Score.deleteOne({
-          _id: scoreDocument._id,
-        });
-
-        scoreDocument = null;
-
         const errorResponse = getDailyChallengeErrorResponse(
           dailyChallengeCompletion.reason,
         );
-
-        return res.status(errorResponse.statusCode).json({
-          success: false,
-          message: errorResponse.message,
-        });
+        const completionError = new Error(errorResponse.message);
+        completionError.statusCode = errorResponse.statusCode;
+        throw completionError;
       }
     }
 
@@ -564,7 +662,7 @@ async function submitQuiz(req, res, next) {
 
     user.lastQuizDate = new Date();
 
-    await user.save();
+    await user.save({ session: databaseSession });
 
     const levelChange = didLevelIncrease(previousTotalXp, user.totalXp);
 
@@ -573,7 +671,9 @@ async function submitQuiz(req, res, next) {
     let newlyUnlockedAchievements = [];
 
     try {
-      const achievementResult = await checkAndUnlockAchievements(userId);
+      const achievementResult = await checkAndUnlockAchievements(userId, {
+        session: databaseSession,
+      });
 
       newlyUnlockedAchievements = achievementResult.newlyUnlocked.map(
         (achievement) => ({
@@ -588,7 +688,7 @@ async function submitQuiz(req, res, next) {
         }),
       );
     } catch (achievementError) {
-      console.error("Achievement check failed:", achievementError);
+      throw achievementError;
     }
 
     try {
@@ -612,14 +712,22 @@ async function submitQuiz(req, res, next) {
         previousStreak,
 
         achievements: newlyUnlockedAchievements,
+        session: databaseSession,
       });
 
       console.log(
         `Created ${createdNotifications.length} notifications for user ${userId}.`,
       );
     } catch (notificationError) {
-      console.error("Quiz notification creation failed:", notificationError);
+      throw notificationError;
     }
+
+    claimedSession.status = "completed";
+    claimedSession.completedAt = new Date();
+    claimedSession.result = scoreDocument._id;
+    await claimedSession.save({ session: databaseSession });
+
+    await databaseSession.commitTransaction();
 
     return res.status(201).json({
       success: true,
@@ -717,21 +825,24 @@ async function submitQuiz(req, res, next) {
       newlyUnlockedAchievements,
     });
   } catch (error) {
-    /*
-     * Remove a provisional score if an unexpected
-     * error occurs before the submission finishes.
-     */
-    if (scoreDocument?._id) {
-      try {
-        await Score.deleteOne({
-          _id: scoreDocument._id,
-        });
-      } catch (cleanupError) {
-        console.error("Quiz score cleanup failed:", cleanupError);
-      }
+    if (databaseSession?.inTransaction()) {
+      await databaseSession.abortTransaction();
+    }
+
+    if (
+      !error.statusCode &&
+      (error.code === 112 || error.hasErrorLabel?.("TransientTransactionError"))
+    ) {
+      error.statusCode = 409;
+      error.message =
+        "This quiz submission conflicted with another request. Please check your quiz history.";
     }
 
     return next(error);
+  } finally {
+    if (databaseSession) {
+      await databaseSession.endSession();
+    }
   }
 }
 
