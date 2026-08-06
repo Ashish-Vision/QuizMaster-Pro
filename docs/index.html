@@ -1,152 +1,819 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
     <meta
       name="description"
-      content="QuizMaster Pro full-stack quiz application showcase."
+      content="QuizMaster Pro — a secure full-stack quiz platform portfolio showcase."
     />
-
-    <title>QuizMaster Pro</title>
-
+    <meta name="theme-color" content="#07111f" />
+    <title>QuizMaster Pro — Learn. Compete. Improve.</title>
     <link rel="stylesheet" href="./assets/css/showcase.css" />
+    <script src="./assets/js/showcase.js" defer></script>
   </head>
 
   <body>
-    <header class="hero">
-      <nav class="navbar">
-        <a href="#" class="brand">QuizMaster Pro</a>
+    <a class="skip-link" href="#main-content">Skip to main content</a>
 
-        <div class="nav-links">
+    <header class="site-header" data-header>
+      <nav class="site-nav container" aria-label="Primary navigation">
+        <a class="brand" href="#top" aria-label="QuizMaster Pro home">
+          <span class="brand-mark" aria-hidden="true">Q</span>
+          <span>QuizMaster <strong>Pro</strong></span>
+        </a>
+
+        <button
+          class="menu-button"
+          type="button"
+          aria-expanded="false"
+          aria-controls="navigation-links"
+          aria-label="Open navigation menu"
+          data-menu-button
+        >
+          <span></span><span></span><span></span>
+        </button>
+
+        <div class="nav-links" id="navigation-links" data-menu>
           <a href="#features">Features</a>
+          <a href="#experience">Experience</a>
           <a href="#screenshots">Screenshots</a>
-          <a href="#technology">Technology</a>
-          <a
-            href="https://github.com/Ashish-Vision/QuizMaster-Pro"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            GitHub
-          </a>
+          <a href="#architecture">Architecture</a>
+          <a href="#security">Security</a>
+          <a href="#documentation">Documentation</a>
         </div>
+
+        <a
+          class="nav-github"
+          href="https://github.com/Ashish-Vision/QuizMaster-Pro"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          View GitHub
+          <span aria-hidden="true">↗</span>
+        </a>
       </nav>
-
-      <div class="hero-content">
-        <p class="label">Full-stack portfolio project</p>
-
-        <h1>Learn, compete and improve with QuizMaster Pro</h1>
-
-        <p class="hero-description">
-          A secure full-stack quiz platform with user dashboards, daily
-          challenges, achievements, analytics, notifications and a complete
-          administrator panel.
-        </p>
-
-        <div class="hero-actions">
-          <a href="#screenshots" class="button primary">View Project</a>
-
-          <a
-            href="https://github.com/Ashish-Vision/QuizMaster-Pro"
-            class="button secondary"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            View Source Code
-          </a>
-        </div>
-      </div>
     </header>
 
-    <main>
-      <section id="features" class="section">
-        <p class="label">Features</p>
+    <main id="main-content">
+      <section class="hero" id="top" aria-labelledby="hero-title">
+        <div class="hero-orb hero-orb-one" aria-hidden="true"></div>
+        <div class="hero-orb hero-orb-two" aria-hidden="true"></div>
 
-        <h2>Everything needed for a modern quiz platform</h2>
+        <div class="container hero-grid">
+          <div class="hero-copy" data-reveal>
+            <p class="eyebrow">
+              <span class="status-dot" aria-hidden="true"></span>
+              Full-stack portfolio project
+            </p>
+            <h1 id="hero-title">
+              QuizMaster Pro
+              <span>Learn. Compete. Improve.</span>
+            </h1>
+            <p class="hero-description">
+              A secure quiz platform with server-authoritative sessions, daily
+              challenges, progress systems, personal analytics, and a complete
+              administrator experience.
+            </p>
+            <div class="hero-actions">
+              <a
+                class="button button-primary"
+                href="https://github.com/Ashish-Vision/QuizMaster-Pro"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Explore repository <span aria-hidden="true">↗</span>
+              </a>
+              <a class="button button-secondary" href="#screenshots">
+                View screenshots
+              </a>
+            </div>
+            <dl class="hero-facts" aria-label="Project highlights">
+              <div>
+                <dt>Runtime</dt>
+                <dd>Node.js 22+</dd>
+              </div>
+              <div>
+                <dt>Architecture</dt>
+                <dd>Modular monolith</dd>
+              </div>
+              <div>
+                <dt>Database</dt>
+                <dd>MongoDB replica set</dd>
+              </div>
+            </dl>
+          </div>
 
-        <div class="card-grid">
-          <article class="card">
-            <span>🧠</span>
-            <h3>Interactive quizzes</h3>
-            <p>Standard quizzes and daily challenges with secure sessions.</p>
-          </article>
-
-          <article class="card">
-            <span>🏆</span>
-            <h3>Achievements</h3>
-            <p>XP, streaks, badges and category-based progress tracking.</p>
-          </article>
-
-          <article class="card">
-            <span>📊</span>
-            <h3>Analytics</h3>
-            <p>User performance insights and administrator analytics.</p>
-          </article>
-
-          <article class="card">
-            <span>🔐</span>
-            <h3>Secure authentication</h3>
-            <p>JWT authentication, password recovery and session revocation.</p>
-          </article>
-
-          <article class="card">
-            <span>🔔</span>
-            <h3>Notifications</h3>
-            <p>Quiz, XP, streak, achievement and account notifications.</p>
-          </article>
-
-          <article class="card">
-            <span>🛡️</span>
-            <h3>Administrator panel</h3>
-            <p>Manage users, questions, categories, attempts and reports.</p>
-          </article>
+          <div
+            class="preview-shell"
+            aria-label="Application preview"
+            data-reveal
+          >
+            <div class="preview-toolbar" aria-hidden="true">
+              <div class="window-dots"><i></i><i></i><i></i></div>
+              <div class="preview-address">quizmaster.local/dashboard</div>
+              <span class="preview-lock">◆</span>
+            </div>
+            <div class="preview-app">
+              <aside class="preview-sidebar" aria-hidden="true">
+                <div class="preview-logo">Q</div>
+                <span class="is-active"></span><span></span><span></span
+                ><span></span><span></span>
+              </aside>
+              <div class="preview-content">
+                <div class="preview-topline">
+                  <div>
+                    <small>WELCOME BACK</small>
+                    <strong>Ready for your next challenge?</strong>
+                  </div>
+                  <div class="preview-avatar">AM</div>
+                </div>
+                <div class="preview-stats" aria-hidden="true">
+                  <div><span>XP</span><strong>Progress</strong><i></i></div>
+                  <div><span>Streak</span><strong>Active</strong><i></i></div>
+                  <div>
+                    <span>Rank</span><strong>Leaderboard</strong><i></i>
+                  </div>
+                </div>
+                <div class="preview-panels">
+                  <div class="preview-main-card">
+                    <span class="preview-label">DAILY CHALLENGE</span>
+                    <h2>Test your knowledge</h2>
+                    <p>Complete today’s quiz and continue your progress.</p>
+                    <div class="preview-progress"><span></span></div>
+                    <button type="button" tabindex="-1">Start challenge</button>
+                  </div>
+                  <div class="preview-chart" aria-hidden="true">
+                    <span>PERFORMANCE</span>
+                    <div class="chart-bars">
+                      <i style="--bar: 44%"></i><i style="--bar: 65%"></i
+                      ><i style="--bar: 52%"></i><i style="--bar: 78%"></i
+                      ><i style="--bar: 68%"></i><i style="--bar: 88%"></i>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
-      <section id="screenshots" class="section">
-        <p class="label">Interface preview</p>
+      <section class="section" id="features" aria-labelledby="features-title">
+        <div class="container">
+          <div class="section-heading" data-reveal>
+            <p class="eyebrow">Verified capabilities</p>
+            <h2 id="features-title">
+              Everything needed for a focused quiz experience
+            </h2>
+            <p>
+              Every capability below is implemented in the current Express, EJS,
+              vanilla JavaScript, and MongoDB application.
+            </p>
+          </div>
 
-        <h2>Application screenshots</h2>
-
-        <div class="screenshot-grid">
-          <article class="screenshot-placeholder">
-            <span>📷</span>
-            <p>User Dashboard</p>
-          </article>
-
-          <article class="screenshot-placeholder">
-            <span>📷</span>
-            <p>Quiz Interface</p>
-          </article>
-
-          <article class="screenshot-placeholder">
-            <span>📷</span>
-            <p>Administrator Dashboard</p>
-          </article>
+          <div class="feature-grid">
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">01</span>
+              <h3>Authentication</h3>
+              <p>
+                Registration, email verification, login, logout, and password
+                recovery.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">02</span>
+              <h3>Secure quiz sessions</h3>
+              <p>
+                Opaque, expiring, server-issued sessions with transactional
+                completion.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">03</span>
+              <h3>Daily challenges</h3>
+              <p>
+                A current daily question set with completion state and
+                configured rewards.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">04</span>
+              <h3>XP, streaks & achievements</h3>
+              <p>
+                Progress counters, levels, streak tracking, and unlockable
+                achievements.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">05</span>
+              <h3>Leaderboard</h3>
+              <p>
+                Ranked eligible learners with current-user position and progress
+                context.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">06</span>
+              <h3>Analytics</h3>
+              <p>
+                Personal performance summaries, categories, trends, and
+                comparisons.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">07</span>
+              <h3>Notifications</h3>
+              <p>
+                Owned quiz, achievement, XP, streak, account, and system
+                messages.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">08</span>
+              <h3>Profile & settings</h3>
+              <p>
+                Profile details, avatar management, account updates, and
+                password changes.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">09</span>
+              <h3>Administrator management</h3>
+              <p>
+                Protected tools for questions, categories, users, attempts, and
+                settings.
+              </p>
+            </article>
+            <article class="feature-card" data-reveal>
+              <span class="feature-icon" aria-hidden="true">10</span>
+              <h3>Reports</h3>
+              <p>
+                Administrator summaries and UTF-8 CSV exports with formula-safe
+                cells.
+              </p>
+            </article>
+          </div>
         </div>
       </section>
 
-      <section id="technology" class="section">
-        <p class="label">Technology</p>
+      <section
+        class="section experience-section"
+        id="experience"
+        aria-labelledby="experience-title"
+      >
+        <div class="container">
+          <div class="section-heading" data-reveal>
+            <p class="eyebrow">Two focused experiences</p>
+            <h2 id="experience-title">Built for learners and administrators</h2>
+          </div>
 
-        <h2>Built with a modern full-stack architecture</h2>
+          <div class="experience-grid">
+            <article class="experience-card learner-card" data-reveal>
+              <div class="experience-label">
+                <span aria-hidden="true">L</span> Learner
+              </div>
+              <h3>Progress with every completed quiz</h3>
+              <p>
+                Move from a category or daily challenge to an owned result, then
+                understand progress through history, analytics, rank, and
+                rewards.
+              </p>
+              <ul class="check-list">
+                <li>Category selection and secure quiz flow</li>
+                <li>Answer review and historical results</li>
+                <li>XP, levels, streaks, and achievements</li>
+                <li>Leaderboard, analytics, and notifications</li>
+                <li>Profile and account settings</li>
+              </ul>
+            </article>
 
-        <div class="technology-list">
-          <span>Node.js</span>
-          <span>Express</span>
-          <span>MongoDB</span>
-          <span>Mongoose</span>
-          <span>EJS</span>
-          <span>JavaScript</span>
-          <span>Jest</span>
-          <span>Playwright</span>
+            <article class="experience-card admin-card" data-reveal>
+              <div class="experience-label">
+                <span aria-hidden="true">A</span> Administrator
+              </div>
+              <h3>Manage content and understand the platform</h3>
+              <p>
+                Role-protected pages connect content management, user oversight,
+                attempt review, operational settings, activity, and reporting.
+              </p>
+              <ul class="check-list">
+                <li>Dashboard and platform analytics</li>
+                <li>Question and category management</li>
+                <li>User role and account-status controls</li>
+                <li>Attempts, achievements, and notifications</li>
+                <li>Reports, settings, and activity logs</li>
+              </ul>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section screenshots-section"
+        id="screenshots"
+        aria-labelledby="screenshots-title"
+      >
+        <div class="container">
+          <div class="section-heading section-heading-row" data-reveal>
+            <div>
+              <p class="eyebrow">Interface gallery</p>
+              <h2 id="screenshots-title">Application screenshots</h2>
+              <p>
+                Reviewed images will replace these placeholders when captured.
+              </p>
+            </div>
+            <div
+              class="gallery-tabs"
+              role="group"
+              aria-label="Filter screenshots"
+            >
+              <button
+                class="is-active"
+                type="button"
+                data-filter="all"
+                aria-pressed="true"
+              >
+                All
+              </button>
+              <button type="button" data-filter="learner" aria-pressed="false">
+                Learner
+              </button>
+              <button type="button" data-filter="admin" aria-pressed="false">
+                Admin
+              </button>
+            </div>
+          </div>
+
+          <div class="gallery-grid" aria-live="polite">
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <div class="image-placeholder">
+                <span>01</span><strong>Login</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Secure account access</figcaption>
+            </figure>
+            <figure
+              class="gallery-card gallery-card-wide"
+              data-category="learner"
+              data-reveal
+            >
+              <div class="image-placeholder">
+                <span>02</span><strong>Dashboard</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Learner overview and daily challenge</figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <div class="image-placeholder">
+                <span>03</span><strong>Quiz</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Server-issued quiz experience</figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <div class="image-placeholder">
+                <span>04</span><strong>Result</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Score and answer review</figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <div class="image-placeholder">
+                <span>05</span><strong>Leaderboard</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Ranked learner progress</figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <div class="image-placeholder">
+                <span>06</span><strong>Achievements</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Unlocks and progress</figcaption>
+            </figure>
+            <figure
+              class="gallery-card gallery-card-wide"
+              data-category="admin"
+              data-reveal
+            >
+              <div class="image-placeholder admin-placeholder">
+                <span>07</span><strong>Admin dashboard</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Platform summary and trends</figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <div class="image-placeholder admin-placeholder">
+                <span>08</span><strong>Admin analytics</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Platform performance analytics</figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <div class="image-placeholder admin-placeholder">
+                <span>09</span><strong>Questions</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>Question management</figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <div class="image-placeholder admin-placeholder">
+                <span>10</span><strong>Users</strong
+                ><small>Screenshot placeholder</small>
+              </div>
+              <figcaption>User and role management</figcaption>
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section stack-section"
+        id="stack"
+        aria-labelledby="stack-title"
+      >
+        <div class="container">
+          <div class="section-heading centered" data-reveal>
+            <p class="eyebrow">Technology stack</p>
+            <h2 id="stack-title">Purposeful tools, clear boundaries</h2>
+          </div>
+          <div class="stack-grid">
+            <article data-reveal>
+              <span>N</span>
+              <h3>Node.js</h3>
+              <p>Runtime</p>
+            </article>
+            <article data-reveal>
+              <span>Ex</span>
+              <h3>Express 5</h3>
+              <p>Web server</p>
+            </article>
+            <article data-reveal>
+              <span>Mo</span>
+              <h3>MongoDB</h3>
+              <p>Database</p>
+            </article>
+            <article data-reveal>
+              <span>Mj</span>
+              <h3>Mongoose</h3>
+              <p>Data models</p>
+            </article>
+            <article data-reveal>
+              <span>E</span>
+              <h3>EJS</h3>
+              <p>Rendering</p>
+            </article>
+            <article data-reveal>
+              <span>JS</span>
+              <h3>JavaScript</h3>
+              <p>Browser</p>
+            </article>
+            <article data-reveal>
+              <span>J</span>
+              <h3>Jest</h3>
+              <p>Test suites</p>
+            </article>
+            <article data-reveal>
+              <span>Pw</span>
+              <h3>Playwright</h3>
+              <p>Browser checks</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section architecture-section"
+        id="architecture"
+        aria-labelledby="architecture-title"
+      >
+        <div class="container architecture-grid">
+          <div class="architecture-copy" data-reveal>
+            <p class="eyebrow">Modular monolith</p>
+            <h2 id="architecture-title">
+              Explicit layers. One atomic quiz workflow.
+            </h2>
+            <p>
+              One Node.js process serves EJS pages, static assets, and JSON
+              APIs. Routes expose policy, controllers coordinate requests,
+              services own reusable workflows, and Mongoose models enforce
+              persistence rules.
+            </p>
+            <ul class="architecture-notes">
+              <li>
+                <strong>Server authoritative:</strong> correct answers never
+                leave the start endpoint.
+              </li>
+              <li>
+                <strong>Transactional:</strong> score, XP, rewards, and session
+                finalization commit together.
+              </li>
+              <li>
+                <strong>Role aware:</strong> learner ownership and administrator
+                authorization remain explicit.
+              </li>
+            </ul>
+            <a class="text-link" href="../ARCHITECTURE.md"
+              >Read architecture documentation →</a
+            >
+          </div>
+
+          <div
+            class="architecture-map"
+            aria-label="QuizMaster Pro architecture diagram"
+            data-reveal
+          >
+            <div class="architecture-node node-browser">
+              <small>Presentation</small><strong>Browser</strong
+              ><span>EJS · CSS · JavaScript</span>
+            </div>
+            <div class="connector" aria-hidden="true"><span>HTTP</span></div>
+            <div class="architecture-node node-server">
+              <small>Application</small><strong>Express</strong
+              ><span>Middleware · Routes · Controllers · Services</span>
+            </div>
+            <div class="connector" aria-hidden="true">
+              <span>Mongoose</span>
+            </div>
+            <div class="architecture-node node-data">
+              <small>Persistence</small><strong>MongoDB</strong
+              ><span>Replica-set transactions</span>
+            </div>
+            <div class="integration-row">
+              <div><small>Optional</small><strong>SMTP</strong></div>
+              <div><small>Optional</small><strong>Cloudinary</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section security-section"
+        id="security"
+        aria-labelledby="security-title"
+      >
+        <div class="container">
+          <div class="security-header" data-reveal>
+            <div>
+              <p class="eyebrow">Security by design</p>
+              <h2 id="security-title">
+                Protection across identity, requests, and data
+              </h2>
+            </div>
+            <a class="button button-secondary" href="../SECURITY.md"
+              >Security documentation</a
+            >
+          </div>
+          <div class="security-grid">
+            <article data-reveal>
+              <span aria-hidden="true">JWT</span>
+              <h3>Constrained tokens</h3>
+              <p>
+                HS256, issuer, audience, expiry, and per-user token version.
+              </p>
+            </article>
+            <article data-reveal>
+              <span aria-hidden="true">ID</span>
+              <h3>Fresh authorization</h3>
+              <p>
+                Protected requests reload current role, status, and ownership.
+              </p>
+            </article>
+            <article data-reveal>
+              <span aria-hidden="true">TX</span>
+              <h3>Atomic completion</h3>
+              <p>
+                MongoDB transactions and unique indexes protect quiz rewards.
+              </p>
+            </article>
+            <article data-reveal>
+              <span aria-hidden="true">WEB</span>
+              <h3>Browser hardening</h3>
+              <p>
+                Helmet, CSP, CORS, exact-origin mutation checks, and secure
+                cookies.
+              </p>
+            </article>
+            <article data-reveal>
+              <span aria-hidden="true">IN</span>
+              <h3>Input controls</h3>
+              <p>
+                Bounded bodies, validated queries, safe links, and operator-key
+                rejection.
+              </p>
+            </article>
+            <article data-reveal>
+              <span aria-hidden="true">PWD</span>
+              <h3>Credential safety</h3>
+              <p>
+                bcrypt passwords and hashed, expiring, single-use recovery
+                tokens.
+              </p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section testing-section"
+        id="testing"
+        aria-labelledby="testing-title"
+      >
+        <div class="container testing-grid">
+          <div class="testing-copy" data-reveal>
+            <p class="eyebrow">Verified quality</p>
+            <h2 id="testing-title">Tested from utilities to rendered pages</h2>
+            <p>
+              Jest covers unit, route, security, MongoDB integration, and
+              replica-set transaction behavior. Playwright audits public,
+              learner, and administrator experiences at desktop and mobile
+              sizes.
+            </p>
+          </div>
+          <div class="test-stat" data-reveal>
+            <strong>230</strong><span>Jest tests</span
+            ><small>11 passing suites</small>
+          </div>
+          <div class="test-stat" data-reveal>
+            <strong>26</strong><span>Playwright checks</span
+            ><small>Desktop and mobile Chromium</small>
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section documentation-section"
+        id="documentation"
+        aria-labelledby="documentation-title"
+      >
+        <div class="container">
+          <div class="section-heading" data-reveal>
+            <p class="eyebrow">Project documentation</p>
+            <h2 id="documentation-title">
+              Understand, install, and evaluate the project
+            </h2>
+          </div>
+          <div class="documentation-grid">
+            <a href="../README.md" data-reveal
+              ><span>01</span>
+              <div>
+                <h3>README</h3>
+                <p>Overview, features, usage, and project navigation.</p>
+              </div>
+              <i aria-hidden="true">→</i></a
+            >
+            <a href="../INSTALLATION.md" data-reveal
+              ><span>02</span>
+              <div>
+                <h3>Installation</h3>
+                <p>Prerequisites, environment, setup, and troubleshooting.</p>
+              </div>
+              <i aria-hidden="true">→</i></a
+            >
+            <a href="../API.md" data-reveal
+              ><span>03</span>
+              <div>
+                <h3>API</h3>
+                <p>Endpoint contracts, access boundaries, and examples.</p>
+              </div>
+              <i aria-hidden="true">→</i></a
+            >
+            <a href="../ARCHITECTURE.md" data-reveal
+              ><span>04</span>
+              <div>
+                <h3>Architecture</h3>
+                <p>Layers, request flow, trust boundaries, and deployment.</p>
+              </div>
+              <i aria-hidden="true">→</i></a
+            >
+            <a href="../DATABASE.md" data-reveal
+              ><span>05</span>
+              <div>
+                <h3>Database</h3>
+                <p>Models, relationships, transactions, and indexes.</p>
+              </div>
+              <i aria-hidden="true">→</i></a
+            >
+            <a href="../SECURITY.md" data-reveal
+              ><span>06</span>
+              <div>
+                <h3>Security</h3>
+                <p>Controls, disclosure, verification, and limitations.</p>
+              </div>
+              <i aria-hidden="true">→</i></a
+            >
+          </div>
+        </div>
+      </section>
+
+      <section
+        class="section limitations-section"
+        id="limitations"
+        aria-labelledby="limitations-title"
+      >
+        <div class="container limitations-grid">
+          <div data-reveal>
+            <p class="eyebrow">Known limitations</p>
+            <h2 id="limitations-title">
+              Clear boundaries for the current release candidate
+            </h2>
+            <p>
+              These constraints are documented in the project and should be
+              revisited before relevant production scale.
+            </p>
+          </div>
+          <ul class="limitations-list" data-reveal>
+            <li>
+              <span>01</span>
+              <p>
+                <strong>Single-process rate limits</strong> are not shared
+                across application instances.
+              </p>
+            </li>
+            <li>
+              <span>02</span>
+              <p>
+                <strong>CSV reports are memory-buffered</strong> and intended
+                for portfolio-scale data.
+              </p>
+            </li>
+            <li>
+              <span>03</span>
+              <p>
+                <strong>List pagination is offset-based</strong> and can slow on
+                deep pages.
+              </p>
+            </li>
+            <li>
+              <span>04</span>
+              <p>
+                <strong>Daily completions are embedded</strong> in the daily
+                challenge document.
+              </p>
+            </li>
+            <li>
+              <span>05</span>
+              <p>
+                <strong>SMTP and Cloudinary are optional</strong> and require
+                external configuration.
+              </p>
+            </li>
+            <li>
+              <span>06</span>
+              <p>
+                <strong>Browser automation targets Chromium</strong>; broader
+                browser and assistive-technology review remains future work.
+              </p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="cta-section" aria-labelledby="cta-title">
+        <div class="container cta-card" data-reveal>
+          <div>
+            <p class="eyebrow">Explore the source</p>
+            <h2 id="cta-title">See how QuizMaster Pro is built</h2>
+            <p>
+              Review the application structure, technical documentation, and
+              automated test suite on GitHub.
+            </p>
+          </div>
+          <a
+            class="button button-light"
+            href="https://github.com/Ashish-Vision/QuizMaster-Pro"
+            target="_blank"
+            rel="noopener noreferrer"
+            >Open repository <span aria-hidden="true">↗</span></a
+          >
         </div>
       </section>
     </main>
 
-    <footer>
-      <p>QuizMaster Pro — Built by Ashish Mamillapalli</p>
+    <footer class="site-footer">
+      <div class="container footer-grid">
+        <div>
+          <a class="brand" href="#top"
+            ><span class="brand-mark" aria-hidden="true">Q</span
+            ><span>QuizMaster <strong>Pro</strong></span></a
+          >
+          <p>A static portfolio showcase for the QuizMaster Pro project.</p>
+        </div>
+        <div class="footer-author">
+          <span>Created by</span>
+          <strong>Ashish Mamillapalli</strong>
+          <a
+            href="https://github.com/Ashish-Vision/QuizMaster-Pro"
+            target="_blank"
+            rel="noopener noreferrer"
+            >GitHub repository ↗</a
+          >
+        </div>
+      </div>
+      <div class="container footer-bottom">
+        <p>QuizMaster Pro · Portfolio project</p>
+        <a href="#top">Back to top ↑</a>
+      </div>
     </footer>
   </body>
 </html>
