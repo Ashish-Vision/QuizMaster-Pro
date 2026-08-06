@@ -144,6 +144,20 @@ async function getQuestions(req, res, next) {
 
     const requestedSortBy = normalizeText(req.query.sortBy);
 
+    if (requestedSortBy && !ALLOWED_SORT_FIELDS.has(requestedSortBy)) {
+      return res.status(400).json({
+        success: false,
+        message: "Question sort field is invalid.",
+      });
+    }
+
+    if (req.query.sortOrder && !["asc", "desc"].includes(req.query.sortOrder)) {
+      return res.status(400).json({
+        success: false,
+        message: "Question sort order must be asc or desc.",
+      });
+    }
+
     const sortBy = ALLOWED_SORT_FIELDS.has(requestedSortBy)
       ? requestedSortBy
       : "createdAt";

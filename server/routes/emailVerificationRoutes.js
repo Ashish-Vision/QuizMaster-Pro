@@ -7,12 +7,15 @@ const {
   resendVerification,
 } = require("../controllers/emailVerificationController");
 
-const { forgotPasswordLimiter } = require("../middleware/rateLimitMiddleware");
+const {
+  emailVerificationLimiter,
+  resendVerificationLimiter,
+} = require("../middleware/rateLimitMiddleware");
 
 const router = express.Router();
 
-router.get("/verify/:token", verifyEmail);
+router.get("/verify/:token", emailVerificationLimiter, verifyEmail);
 
-router.post("/resend", forgotPasswordLimiter, resendVerification);
+router.post("/resend", resendVerificationLimiter, resendVerification);
 
 module.exports = router;

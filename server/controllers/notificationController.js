@@ -132,7 +132,7 @@ async function markNotificationAsRead(req, res, next) {
         readAt: new Date(),
       },
       {
-        new: true,
+        returnDocument: "after",
       },
     ).lean();
 

@@ -1,6 +1,7 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const { incrementUserTokenVersion } = require("../utils/authToken");
 
 const User = require("../models/User");
 const Score = require("../models/Score");
@@ -432,6 +433,7 @@ async function updateUserRole(req, res, next) {
     }
 
     user.role = role;
+    incrementUserTokenVersion(user);
 
     await user.save({
       validateBeforeSave: false,
@@ -520,6 +522,7 @@ async function updateUserStatus(req, res, next) {
     }
 
     user.isActive = isActive;
+    incrementUserTokenVersion(user);
 
     await user.save({
       validateBeforeSave: false,

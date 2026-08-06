@@ -64,6 +64,20 @@ const resetPasswordLimiter = createJsonRateLimiter({
   message: "Too many password-reset attempts. Please wait before trying again.",
 });
 
+const emailVerificationLimiter = createJsonRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 10,
+  message:
+    "Too many email-verification attempts. Please wait before trying again.",
+});
+
+const resendVerificationLimiter = createJsonRateLimiter({
+  windowMs: 15 * 60 * 1000,
+  limit: 5,
+  message:
+    "Too many verification-email requests. Please wait before trying again.",
+});
+
 /*
  * General authenticated settings updates.
  */
@@ -78,5 +92,7 @@ module.exports = {
   registrationLimiter,
   forgotPasswordLimiter,
   resetPasswordLimiter,
+  emailVerificationLimiter,
+  resendVerificationLimiter,
   settingsUpdateLimiter,
 };

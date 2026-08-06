@@ -127,17 +127,30 @@ async function verifyEmail(req, res, next) {
       });
     }
 
-    user.emailVerified = true;
+    const verifiedUser = await User.findOneAndUpdate(
+      {
+        _id: user._id,
+        emailVerificationToken: hashedToken,
+        emailVerificationExpires: { $gt: new Date() },
+        isActive: true,
+      },
+      {
+        $set: {
+          emailVerified: true,
+          emailVerifiedAt: new Date(),
+          emailVerificationToken: null,
+          emailVerificationExpires: null,
+        },
+      },
+      { returnDocument: "after", runValidators: true },
+    );
 
-    user.emailVerifiedAt = new Date();
-
-    user.emailVerificationToken = null;
-
-    user.emailVerificationExpires = null;
-
-    await user.save({
-      validateBeforeSave: false,
-    });
+    if (!verifiedUser) {
+      return res.status(400).json({
+        success: false,
+        message: "This email-verification link is invalid or has expired.",
+      });
+    }
 
     return res.status(200).json({
       success: true,
