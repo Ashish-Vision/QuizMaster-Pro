@@ -2,6 +2,7 @@
   "name": "quizmaster-pro",
   "version": "1.0.0",
   "description": "Secure full-stack quiz platform with user and administrator experiences.",
+  "private": true,
   "main": "server/server.js",
   "directories": {
     "doc": "docs",
@@ -16,7 +17,11 @@
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --runInBand",
+    "test:integration": "jest --runInBand tests/*.integration.test.js",
     "test:e2e": "playwright test",
+    "check:syntax": "find server client/js scripts tests e2e -type f -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "check": "npm run check:syntax && npm run lint && npm run format:check && npm test",
+    "audit:prod": "npm audit --omit=dev",
     "lint": "eslint server client/js scripts tests e2e *.js",
     "format:check": "prettier --check package.json server client tests e2e docs *.md",
     "format": "prettier --write package.json server client tests e2e docs *.md"
@@ -27,11 +32,22 @@
     "express",
     "mongodb"
   ],
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ashish-Vision/QuizMaster-Pro.git"
+  },
+  "homepage": "https://github.com/Ashish-Vision/QuizMaster-Pro#readme",
+  "bugs": {
+    "url": "https://github.com/Ashish-Vision/QuizMaster-Pro/issues"
+  },
+  "author": "Ashish-Vision",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",
-    "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",
@@ -45,8 +61,6 @@
     "morgan": "^1.11.0",
     "multer": "^2.2.0",
     "nodemailer": "^9.0.3",
-    "socket.io": "^4.8.3",
-    "uuid": "^14.0.1",
     "validator": "^13.15.35"
   },
   "devDependencies": {

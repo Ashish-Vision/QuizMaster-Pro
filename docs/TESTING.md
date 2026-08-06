@@ -1,9 +1,95 @@
 # Testing
 
-Run `npm test` for Jest, `npm run test:coverage` for coverage, and `npm run test:e2e` for desktop/mobile Chromium. Run `npx playwright install chromium` once on a new workstation.
+QuizMaster Pro uses Jest and Supertest for unit/API/database tests and Playwright for browser flows. All automated database tests create temporary isolated databases and must never target a developer or production database.
 
-Jest covers security utilities, application headers/public contracts, request hardening, environment validation, avatar signatures, token constraints, and quiz attempt schema invariants. Playwright visits every public, user, and administrator page with isolated synthetic identities; it does not use production credentials or external services.
+## Prerequisites
 
-Before release also run `npm run lint`, `npm run format:check`, `git diff --check`, syntax checks, `npm audit --omit=dev`, a production fail-fast smoke test, and manual SMTP/Cloudinary checks with dedicated non-production accounts.
+- Node.js and npm versions compatible with `package-lock.json`
+- MongoDB 8.0.28 available locally or downloadable by `mongodb-memory-server`
+- Chromium installed for Playwright
 
-Tests must never send real email, upload to a real Cloudinary account, or target a production database. Use a disposable MongoDB replica set for transaction integration tests.
+Install dependencies and the browser once on a new workstation:
+
+```bash
+npm ci
+npx playwright install chromium
+```
+
+The integration harness pins MongoDB 8.0.28. It uses `MONGOMS_SYSTEM_BINARY` when configured, otherwise `/usr/bin/mongod` when present, and otherwise the managed `mongodb-memory-server` binary. Quiz completion and inactive-question tests use a single-node `MongoMemoryReplSet` with WiredTiger because MongoDB transactions require a replica set. Other database tests use an isolated `MongoMemoryServer` when transactions are not involved.
+
+## Commands
+
+```bash
+npm test                 # complete Jest suite
+npm run test:watch       # interactive Jest watch mode
+npm run test:integration # database integration suites only
+npm run test:coverage    # Jest with text and LCOV coverage
+npm run test:e2e         # desktop and mobile Chromium
+npm run check            # syntax, lint, formatting, and Jest
+npm run audit:prod       # production dependency audit
+```
+
+`npm run check` is the standard local quality gate. E2E remains separate because it starts a fixture server and two browser projects and therefore takes longer.
+
+## Test categories
+
+- Utility/security tests cover JWT configuration, input hardening, file signatures, notification links, CSV encoding, normalization, pagination, and browser helpers.
+- Route-contract tests verify middleware ordering, user/admin authorization, assets, and API mapping.
+- Database integration tests cover authentication revocation, recovery tokens, ownership, platform features, inactive questions, and historical behavior.
+- Replica-set integration tests cover server-authoritative quiz completion, replay/concurrency safety, daily challenge consistency, and transaction rollback.
+- Playwright audits all rendered pages for hydration failures, console/page errors, overflow, responsive behavior, keyboard dialogs/navigation, and representative accessibility structure.
+
+## Test database safety
+
+- Test files set `NODE_ENV=test` before importing the application.
+- Each database suite starts its own temporary MongoDB process and receives a generated connection URI.
+- Collections are cleared between cases; no shared developer database URI is used.
+- Teardown disconnects Mongoose and stops the temporary MongoDB process.
+- Email is mocked where recovery/verification behavior is tested.
+- Browser E2E uses deterministic API fixtures and synthetic user IDs, not real accounts.
+
+Never add a normal development or production MongoDB URI to a test command. Never enable real SMTP or Cloudinary credentials in automated tests.
+
+## Coverage
+
+`npm run test:coverage` prints statement, branch, function, and line coverage and writes an HTML report to `coverage/lcov-report/index.html`. Coverage is diagnostic: prioritize security boundaries, ownership, transactions, and domain calculations rather than pursuing artificial 100% coverage.
+
+## Expected duration
+
+On a typical local workstation:
+
+- Jest: approximately 30–60 seconds, including temporary MongoDB startup
+- Coverage: approximately 40–90 seconds
+- Playwright desktop/mobile: approximately 40–60 seconds
+
+The first run can take longer if `mongodb-memory-server` or Playwright must obtain a binary. This repository prefers an available system MongoDB binary to keep later runs fast and deterministic.
+
+## Troubleshooting
+
+### MongoDB binary not found
+
+Install a compatible local MongoDB server, set `MONGOMS_SYSTEM_BINARY`, or allow `mongodb-memory-server` to download its pinned binary. Confirm a system installation with:
+
+```bash
+/usr/bin/mongod --version
+```
+
+### Transaction tests fail immediately
+
+Confirm the suite uses `MongoMemoryReplSet`, WiredTiger, and a replica-set URI. A standalone MongoDB process cannot execute multi-document transactions.
+
+### Port 5000 is already in use
+
+Stop the local development server before E2E, or allow Playwright to reuse the already-running fixture-compatible test server. The E2E server binds only to `127.0.0.1`.
+
+### Chromium is missing
+
+Run `npx playwright install chromium` and repeat `npm run test:e2e`.
+
+### Tests hang after completion
+
+Run Jest with `--detectOpenHandles`. Check that temporary MongoDB instances, timers, HTTP servers, and Mongoose connections are stopped in teardown.
+
+### Rate-limit tests become inconsistent
+
+Do not share accounts or mutable request counters across cases. Use unique synthetic emails and keep limiter tests serial and deterministic.

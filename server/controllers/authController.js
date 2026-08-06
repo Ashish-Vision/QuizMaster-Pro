@@ -10,10 +10,7 @@ const {
 } = require("../utils/helpers");
 
 const { createAndSendVerification } = require("./emailVerificationController");
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
+const { normalizeText } = require("../utils/normalize");
 
 async function register(req, res, next) {
   try {

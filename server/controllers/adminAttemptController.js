@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 
 const Score = require("../models/Score");
 const User = require("../models/User");
+const { escapeRegex } = require("../utils/mongoSearch");
+const { normalizeText } = require("../utils/normalize");
 
 const ALLOWED_SORTS = {
   newest: {
@@ -36,14 +38,6 @@ const ALLOWED_SORTS = {
     completedAt: -1,
   },
 };
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function normalizeAttempt(attempt) {
   return {

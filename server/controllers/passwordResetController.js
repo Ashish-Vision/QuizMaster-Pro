@@ -1,13 +1,13 @@
 "use strict";
 
 const crypto = require("crypto");
+const bcrypt = require("bcrypt");
 
 const validator = require("validator");
 
 const User = require("../models/User");
 
 const { sendPasswordResetEmail } = require("../services/emailService");
-const { incrementUserTokenVersion } = require("../utils/authToken");
 
 const RESET_TOKEN_EXPIRY_MINUTES = 15;
 
@@ -267,13 +267,31 @@ async function resetPassword(req, res, next) {
       });
     }
 
-    user.password = newPassword;
-    incrementUserTokenVersion(user);
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: user._id,
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: new Date() },
+        isActive: true,
+      },
+      {
+        $set: {
+          password: hashedPassword,
+          passwordResetToken: null,
+          passwordResetExpires: null,
+        },
+        $inc: { tokenVersion: 1 },
+      },
+      { returnDocument: "after", runValidators: true },
+    );
 
-    user.passwordResetToken = null;
-    user.passwordResetExpires = null;
-
-    await user.save();
+    if (!updatedUser) {
+      return res.status(400).json({
+        success: false,
+        message: "This password-reset link is invalid or has expired.",
+      });
+    }
 
     return res.status(200).json({
       success: true,

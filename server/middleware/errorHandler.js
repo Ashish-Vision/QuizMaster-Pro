@@ -8,7 +8,24 @@ function notFoundHandler(req, res) {
 }
 
 function errorHandler(error, req, res, next) {
-  const statusCode = error.statusCode || 500;
+  let statusCode = error.statusCode || error.status || 500;
+  let message = error.message;
+
+  if (error.type === "entity.parse.failed" || error instanceof SyntaxError) {
+    statusCode = 400;
+    message = "The request body contains invalid JSON.";
+  } else if (error.name === "ValidationError") {
+    statusCode = 400;
+    message =
+      Object.values(error.errors || {})[0]?.message ||
+      "The request contains invalid data.";
+  } else if (error.name === "CastError") {
+    statusCode = 400;
+    message = "The request contains an invalid identifier.";
+  } else if (error.code === 11000) {
+    statusCode = 409;
+    message = "A record with that value already exists.";
+  }
 
   if (statusCode >= 500) {
     if (process.env.NODE_ENV === "development") {
@@ -29,11 +46,7 @@ function errorHandler(error, req, res, next) {
 
   return res.status(statusCode).json({
     success: false,
-    message:
-      statusCode === 500 ? "An internal server error occurred." : error.message,
-    ...(process.env.NODE_ENV === "development" && {
-      stack: error.stack,
-    }),
+    message: statusCode >= 500 ? "An internal server error occurred." : message,
   });
 }
 

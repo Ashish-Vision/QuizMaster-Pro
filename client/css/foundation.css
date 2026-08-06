@@ -1,0 +1,125 @@
+:root {
+  --surface-elevated: #18263c;
+  --danger: #ff647c;
+  --focus-color: #8fdcff;
+  --focus-ring: 0 0 0 3px rgba(50, 214, 255, 0.35);
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --radius-sm: 0.625rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --transition-fast: 150ms ease;
+  --transition-normal: 220ms ease;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  overflow-wrap: anywhere;
+}
+
+body.modal-open {
+  overflow: hidden;
+}
+
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 3px solid var(--focus-color);
+  outline-offset: 3px;
+  box-shadow: var(--focus-ring);
+}
+
+:where(button, input, select, textarea):disabled,
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.58;
+}
+
+:where(input, select, textarea) {
+  max-width: 100%;
+}
+
+:where(.table-container, .table-wrapper, .data-table-wrapper) {
+  max-width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  scrollbar-gutter: stable;
+}
+
+:where(.pagination, .pagination-controls) {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+:where(
+  .modal-panel,
+  .modal-content,
+  .modal-card,
+  .levelup-card,
+  .delete-modal-panel,
+  .reset-modal-panel
+) {
+  max-width: min(100%, calc(100vw - 2rem));
+  max-height: calc(100dvh - 2rem);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+:where(.modal, .modal-backdrop)[aria-hidden="false"] {
+  isolation: isolate;
+}
+
+:where(.state-panel, .loading-state, .error-state, .empty-state) {
+  text-align: center;
+}
+
+:where(.page-title, .page-heading, h1) {
+  text-wrap: balance;
+}
+
+:where(p, td, th, .table-cell, .entity-row, .notification-message) {
+  overflow-wrap: anywhere;
+}
+
+@media (pointer: coarse) {
+  :where(button, [role="button"], input, select, textarea, .pagination a) {
+    min-height: 44px;
+  }
+}
+
+@media (max-width: 480px) {
+  :where(
+    .modal-panel,
+    .modal-content,
+    .modal-card,
+    .levelup-card,
+    .delete-modal-panel,
+    .reset-modal-panel
+  ) {
+    max-width: calc(100vw - 1rem);
+    max-height: calc(100dvh - 1rem);
+  }
+
+  :where(.pagination, .pagination-controls) > * {
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

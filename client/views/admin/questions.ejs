@@ -11,6 +11,8 @@
 
     <link rel="stylesheet" href="/css/admin/questions.css" />
 
+    <script src="/js/shared.js"></script>
+    <script src="/js/dialogs.js" defer></script>
     <script src="/js/admin/questions.js" defer></script>
   </head>
 
@@ -437,7 +439,12 @@
             ></textarea>
           </div>
 
-          <p id="questionFormMessage" class="form-message"></p>
+          <p
+            id="questionFormMessage"
+            class="form-message"
+            role="status"
+            aria-live="polite"
+          ></p>
 
           <footer class="modal-actions">
             <button

@@ -1,6 +1,8 @@
 # QuizMaster-Pro Full Project Audit
 
-> Release-candidate update (2026-08-05): this report originally described the pre-remediation tree. The authoritative current classification is below; original evidence is retained for traceability.
+> **Historical baseline:** this document preserves original findings and intermediate classifications for traceability. Several summaries below predate later transaction, security, testing, and cleanup stages. The authoritative current classification is [`docs/FINAL_SECURITY_REVIEW.md`](docs/FINAL_SECURITY_REVIEW.md).
+
+> Release-candidate update (2026-08-05): this intermediate classification is retained as an audit artifact and is superseded by the final review linked above.
 
 ## Release-candidate classification
 

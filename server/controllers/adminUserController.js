@@ -1,6 +1,9 @@
 "use strict";
 
 const mongoose = require("mongoose");
+const { incrementUserTokenVersion } = require("../utils/authToken");
+const { escapeRegex } = require("../utils/mongoSearch");
+const { normalizeText } = require("../utils/normalize");
 
 const User = require("../models/User");
 const Score = require("../models/Score");
@@ -10,14 +13,6 @@ const ALLOWED_ROLES = new Set(["user", "admin"]);
 const ALLOWED_STATUSES = new Set(["all", "active", "disabled"]);
 
 const ALLOWED_SORTS = new Set(["newest", "oldest", "xp", "quizzes", "name"]);
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function getAuthenticatedUserId(req) {
   return String(req.user?._id || req.user?.id || "");
@@ -432,6 +427,7 @@ async function updateUserRole(req, res, next) {
     }
 
     user.role = role;
+    incrementUserTokenVersion(user);
 
     await user.save({
       validateBeforeSave: false,
@@ -520,6 +516,7 @@ async function updateUserStatus(req, res, next) {
     }
 
     user.isActive = isActive;
+    incrementUserTokenVersion(user);
 
     await user.save({
       validateBeforeSave: false,

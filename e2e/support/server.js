@@ -5,6 +5,8 @@ process.env.JWT_SECRET = "e2e-only-secret-that-is-at-least-thirty-two-bytes";
 
 const app = require("../../server/app");
 const User = require("../../server/models/User");
+const express = require("express");
+const { getApiFixture } = require("./apiFixtures");
 
 const USER_ID = "64b000000000000000000001";
 const ADMIN_ID = "64b000000000000000000002";
@@ -29,4 +31,15 @@ User.findById = (id) => ({
   },
 });
 
-app.listen(5000, "127.0.0.1");
+const fixtureServer = express();
+
+fixtureServer.get("/api/*path", (req, res, next) => {
+  const fixture = getApiFixture(req.path);
+
+  if (!fixture) return next();
+
+  return res.status(200).json(fixture);
+});
+
+fixtureServer.use(app);
+fixtureServer.listen(5000, "127.0.0.1");

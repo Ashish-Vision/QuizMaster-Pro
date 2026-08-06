@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 
 const Question = require("../models/Question");
 const Score = require("../models/Score");
+const { escapeRegex } = require("../utils/mongoSearch");
+const { normalizeText } = require("../utils/normalize");
 
 const ALLOWED_DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
@@ -14,14 +16,6 @@ const ALLOWED_SORT_FIELDS = new Set([
   "category",
   "difficulty",
 ]);
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function normalizeOptions(options) {
   if (!Array.isArray(options)) {
@@ -143,6 +137,20 @@ async function getQuestions(req, res, next) {
     const difficulty = normalizeText(req.query.difficulty);
 
     const requestedSortBy = normalizeText(req.query.sortBy);
+
+    if (requestedSortBy && !ALLOWED_SORT_FIELDS.has(requestedSortBy)) {
+      return res.status(400).json({
+        success: false,
+        message: "Question sort field is invalid.",
+      });
+    }
+
+    if (req.query.sortOrder && !["asc", "desc"].includes(req.query.sortOrder)) {
+      return res.status(400).json({
+        success: false,
+        message: "Question sort order must be asc or desc.",
+      });
+    }
 
     const sortBy = ALLOWED_SORT_FIELDS.has(requestedSortBy)
       ? requestedSortBy

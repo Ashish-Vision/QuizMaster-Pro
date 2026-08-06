@@ -1,5 +1,7 @@
 # QuizMaster Pro — Frontend Refactor Review
 
+> Historical baseline: this inventory is retained as the original frontend backlog. Shared browser utilities are now migrating incrementally through `client/js/shared.js`; current structure is documented in [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
+
 Review date: 2026-08-05  
 Scope: All EJS views, browser JavaScript, and CSS under `client/`.  
 Constraint: Review only; no source files were changed.

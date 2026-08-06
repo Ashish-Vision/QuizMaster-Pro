@@ -1,6 +1,9 @@
 "use strict";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
+const POSITIVE_INTEGER_QUERY_FIELDS = new Set(["page", "limit"]);
+const BOOLEAN_QUERY_FIELDS = new Set(["unreadOnly"]);
+const MAX_SEARCH_LENGTH = 100;
 
 function containsUnsafeKey(value) {
   if (!value || typeof value !== "object") return false;
@@ -22,6 +25,46 @@ function rejectUnsafeInput(req, res, next) {
       message: "The request contains an invalid field name.",
     });
   }
+  return next();
+}
+
+function validateCommonQueryValues(req, res, next) {
+  for (const [name, value] of Object.entries(req.query || {})) {
+    if (typeof value !== "string") {
+      return res.status(400).json({
+        success: false,
+        message: `Query parameter "${name}" must be a single text value.`,
+      });
+    }
+    if (
+      POSITIVE_INTEGER_QUERY_FIELDS.has(name) &&
+      (!/^[1-9]\d*$/u.test(value) || (name === "limit" && Number(value) > 100))
+    ) {
+      return res.status(400).json({
+        success: false,
+        message:
+          name === "limit"
+            ? 'Query parameter "limit" must be an integer between 1 and 100.'
+            : 'Query parameter "page" must be a positive integer.',
+      });
+    }
+    if (
+      BOOLEAN_QUERY_FIELDS.has(name) &&
+      !["true", "false"].includes(value.toLowerCase())
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: `Query parameter "${name}" must be true or false.`,
+      });
+    }
+    if (name === "search" && value.trim().length > MAX_SEARCH_LENGTH) {
+      return res.status(400).json({
+        success: false,
+        message: `Search cannot exceed ${MAX_SEARCH_LENGTH} characters.`,
+      });
+    }
+  }
+
   return next();
 }
 
@@ -47,4 +90,6 @@ module.exports = {
   containsUnsafeKey,
   enforceSameOriginMutation,
   rejectUnsafeInput,
+  validateCommonQueryValues,
+  MAX_SEARCH_LENGTH,
 };

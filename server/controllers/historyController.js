@@ -1,26 +1,22 @@
 "use strict";
 
 const Score = require("../models/Score");
+const { normalizeText } = require("../utils/normalize");
+const {
+  createPaginationMeta,
+  parsePagination,
+} = require("../utils/pagination");
 
 async function getQuizHistory(req, res, next) {
   try {
     const userId = req.user?._id || req.user?.id;
 
-    const requestedPage = Number.parseInt(req.query.page, 10);
-    const requestedLimit = Number.parseInt(req.query.limit, 10);
-
-    const page =
-      Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-
-    const limit =
-      Number.isInteger(requestedLimit) &&
-      requestedLimit >= 1 &&
-      requestedLimit <= 50
-        ? requestedLimit
-        : 10;
-
-    const category =
-      typeof req.query.category === "string" ? req.query.category.trim() : "";
+    const { page, limit, skip } = parsePagination(req.query, {
+      defaultLimit: 10,
+      maxLimit: 50,
+      clampLimit: false,
+    });
+    const category = normalizeText(req.query.category);
 
     const filter = {
       user: userId,
@@ -29,8 +25,6 @@ async function getQuizHistory(req, res, next) {
     if (category && category.toLowerCase() !== "all") {
       filter.category = category;
     }
-
-    const skip = (page - 1) * limit;
 
     const [history, totalAttempts, categories] = await Promise.all([
       Score.find(filter)
@@ -68,7 +62,11 @@ async function getQuizHistory(req, res, next) {
       firstCategory.localeCompare(secondCategory),
     );
 
-    const totalPages = Math.max(1, Math.ceil(totalAttempts / limit));
+    const pagination = createPaginationMeta({
+      page,
+      limit,
+      totalItems: totalAttempts,
+    });
 
     return res.status(200).json({
       success: true,
@@ -78,12 +76,8 @@ async function getQuizHistory(req, res, next) {
       categories,
 
       pagination: {
-        currentPage: page,
-        totalPages,
+        ...pagination,
         totalAttempts,
-        limit,
-        hasPreviousPage: page > 1,
-        hasNextPage: page < totalPages,
       },
     });
   } catch (error) {

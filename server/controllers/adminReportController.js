@@ -2,16 +2,13 @@
 
 const { logRequestActivity } = require("../services/activityLogService");
 const { createCsv } = require("../utils/csv");
+const { normalizeText } = require("../utils/normalize");
 
 const Achievement = require("../models/Achievement");
 const Notification = require("../models/Notification");
 const Question = require("../models/Question");
 const Score = require("../models/Score");
 const User = require("../models/User");
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
 
 function normalizeDays(value, fallback = 30) {
   const parsed = Number.parseInt(value, 10);

@@ -11,6 +11,7 @@
 
     <link rel="stylesheet" href="/css/admin/achievements.css" />
 
+    <script src="/js/dialogs.js" defer></script>
     <script src="/js/admin/achievements.js" defer></script>
   </head>
 
@@ -203,14 +204,20 @@
 
     <!-- ================= MODAL ================= -->
 
-    <div id="achievementModal" class="modal hidden">
+    <div id="achievementModal" class="modal hidden" aria-hidden="true">
       <div class="modal-backdrop"></div>
 
-      <section class="modal-panel">
+      <section
+        class="modal-panel"
+        role="dialog"
+        aria-labelledby="modalTitle"
+      >
         <div class="modal-header">
           <h2 id="modalTitle">Achievement</h2>
 
-          <button id="closeModal">×</button>
+          <button id="closeModal" type="button" aria-label="Close dialog">
+            ×
+          </button>
         </div>
 
         <div id="modalBody"></div>

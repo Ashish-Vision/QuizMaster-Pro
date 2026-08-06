@@ -1,6 +1,7 @@
 "use strict";
 
 const Notification = require("../models/Notification");
+const { normalizeText } = require("../utils/normalize");
 
 const ALLOWED_TYPES = new Set([
   "quiz",
@@ -10,10 +11,6 @@ const ALLOWED_TYPES = new Set([
   "account",
   "system",
 ]);
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
 
 async function createNotification({
   userId,

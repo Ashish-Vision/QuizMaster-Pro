@@ -1,5 +1,12 @@
 "use strict";
 
+const {
+  escapeHtml,
+  formatDate: formatSharedDate,
+  getInitials,
+  toggleElement,
+} = window.QuizMaster;
+
 const state = {
   attempts: [],
   categories: [],
@@ -62,37 +69,8 @@ const elements = {
   confirmDeleteButton: document.getElementById("confirmDeleteAttemptButton"),
 };
 
-function toggleElement(element, shouldShow) {
-  if (!element) {
-    return;
-  }
-
-  element.classList.toggle("hidden", !shouldShow);
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
 function formatDate(dateValue) {
-  const date = new Date(dateValue);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown";
-  }
-
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  }).format(date);
+  return formatSharedDate(dateValue, { includeTime: true });
 }
 
 function formatDuration(secondsValue) {
@@ -102,17 +80,6 @@ function formatDuration(secondsValue) {
   const seconds = Math.floor(totalSeconds % 60);
 
   return `${minutes}m ${seconds}s`;
-}
-
-function getInitials(user) {
-  if (!user) {
-    return "U";
-  }
-
-  const first = user.firstName?.charAt(0) || "";
-  const last = user.lastName?.charAt(0) || "";
-
-  return `${first}${last}`.toUpperCase() || "U";
 }
 
 function createAvatarMarkup(user, className) {

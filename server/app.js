@@ -49,6 +49,7 @@ const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
 const {
   enforceSameOriginMutation,
   rejectUnsafeInput,
+  validateCommonQueryValues,
 } = require("./middleware/requestSecurityMiddleware");
 
 /* ============================================================
@@ -92,6 +93,10 @@ app.use(
       },
     },
     crossOriginEmbedderPolicy: false,
+    strictTransportSecurity:
+      process.env.NODE_ENV === "production"
+        ? { maxAge: 31_536_000, includeSubDomains: true }
+        : false,
   }),
 );
 
@@ -156,6 +161,7 @@ app.use(
 
 app.use(cookieParser());
 app.use(rejectUnsafeInput);
+app.use(validateCommonQueryValues);
 app.use(enforceSameOriginMutation);
 
 /* ============================================================
@@ -193,21 +199,24 @@ app.get("/favicon.ico", (req, res) => {
    Public Page Routes
 ============================================================ */
 
-app.get("/", (req, res) => {
-  return res.render("index");
-});
+function renderPage(view, createLocals = () => ({})) {
+  return (req, res) => res.render(view, createLocals(req));
+}
 
-app.get("/login", (req, res) => {
-  return res.render("login");
-});
+const publicPages = [
+  ["/", "index"],
+  ["/login", "login"],
+  ["/register", "register"],
+  ["/forgot-password", "forgot-password"],
+  ["/verify-email", "verify-email"],
+  ["/resend-verification", "resend-verification"],
+  ["/terms", "terms"],
+  ["/privacy", "privacy"],
+];
 
-app.get("/register", (req, res) => {
-  return res.render("register");
-});
-
-app.get("/forgot-password", (req, res) => {
-  return res.render("forgot-password");
-});
+for (const [routePath, view] of publicPages) {
+  app.get(routePath, renderPage(view));
+}
 
 app.get("/reset-password", (req, res) => {
   return res.render("reset-password", {
@@ -215,38 +224,30 @@ app.get("/reset-password", (req, res) => {
   });
 });
 
-app.get("/verify-email", (req, res) => {
-  return res.render("verify-email");
-});
-
-app.get("/resend-verification", (req, res) => {
-  return res.render("resend-verification");
-});
-
-app.get("/terms", (req, res) => res.render("terms"));
-app.get("/privacy", (req, res) => res.render("privacy"));
-
 /* ============================================================
    Protected User Page Routes
 ============================================================ */
 
-app.get("/dashboard", protect, (req, res) => {
-  return res.render("dashboard", {
-    user: req.user,
-  });
-});
+const userPages = [
+  ["/dashboard", "dashboard"],
+  ["/quiz", "quiz"],
+  ["/daily-challenge", "dashboard"],
+  ["/leaderboard", "leaderboard"],
+  ["/history", "history"],
+  ["/profile", "profile"],
+  ["/achievements", "achievements"],
+  ["/analytics", "analytics"],
+  ["/settings", "settings"],
+  ["/notifications", "notifications"],
+];
 
-app.get("/quiz", protect, (req, res) => {
-  return res.render("quiz", {
-    user: req.user,
-  });
-});
-
-app.get("/daily-challenge", protect, (req, res) => {
-  return res.render("dashboard", {
-    user: req.user,
-  });
-});
+for (const [routePath, view] of userPages) {
+  app.get(
+    routePath,
+    protect,
+    renderPage(view, (req) => ({ user: req.user })),
+  );
+}
 
 app.get("/result/:resultId", protect, (req, res) => {
   return res.render("result", {
@@ -262,116 +263,31 @@ app.get("/result", protect, (req, res) => {
   });
 });
 
-app.get("/leaderboard", protect, (req, res) => {
-  return res.render("leaderboard", {
-    user: req.user,
-  });
-});
-
-app.get("/history", protect, (req, res) => {
-  return res.render("history", {
-    user: req.user,
-  });
-});
-
-app.get("/profile", protect, (req, res) => {
-  return res.render("profile", {
-    user: req.user,
-  });
-});
-
-app.get("/achievements", protect, (req, res) => {
-  return res.render("achievements", {
-    user: req.user,
-  });
-});
-
-app.get("/analytics", protect, (req, res) => {
-  return res.render("analytics", {
-    user: req.user,
-  });
-});
-
-app.get("/settings", protect, (req, res) => {
-  return res.render("settings", {
-    user: req.user,
-  });
-});
-
-app.get("/notifications", protect, (req, res) => {
-  return res.render("notifications", {
-    user: req.user,
-  });
-});
-
 /* ============================================================
    Protected Administrator Page Routes
 ============================================================ */
-app.get("/admin", protect, adminOnly, (req, res) => {
-  return res.render("admin/dashboard", {
-    user: req.user,
-  });
-});
+const adminPages = [
+  ["/admin", "admin/dashboard"],
+  ["/admin/questions", "admin/questions"],
+  ["/admin/categories", "admin/categories"],
+  ["/admin/users", "admin/users"],
+  ["/admin/attempts", "admin/attempts"],
+  ["/admin/analytics", "admin/analytics"],
+  ["/admin/achievements", "admin/achievements"],
+  ["/admin/notifications", "admin/notifications"],
+  ["/admin/reports", "admin/reports"],
+  ["/admin/activity-logs", "admin/activity-logs"],
+  ["/admin/settings", "admin/settings"],
+];
 
-app.get("/admin/questions", protect, adminOnly, (req, res) => {
-  return res.render("admin/questions", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/categories", protect, adminOnly, (req, res) => {
-  return res.render("admin/categories", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/users", protect, adminOnly, (req, res) => {
-  return res.render("admin/users", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/attempts", protect, adminOnly, (req, res) => {
-  return res.render("admin/attempts", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/analytics", protect, adminOnly, (req, res) => {
-  return res.render("admin/analytics", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/achievements", protect, adminOnly, (req, res) => {
-  return res.render("admin/achievements", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/notifications", protect, adminOnly, (req, res) => {
-  return res.render("admin/notifications", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/reports", protect, adminOnly, (req, res) => {
-  return res.render("admin/reports", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/activity-logs", protect, adminOnly, (req, res) => {
-  return res.render("admin/activity-logs", {
-    user: req.user,
-  });
-});
-
-app.get("/admin/settings", protect, adminOnly, (req, res) => {
-  return res.render("admin/settings", {
-    user: req.user,
-  });
-});
+for (const [routePath, view] of adminPages) {
+  app.get(
+    routePath,
+    protect,
+    adminOnly,
+    renderPage(view, (req) => ({ user: req.user })),
+  );
+}
 /* ============================================================
    API Routes
 ============================================================ */

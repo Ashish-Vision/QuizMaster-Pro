@@ -6,6 +6,8 @@ uploads/
 dist/
 build/
 coverage/
+playwright-report/
+test-results/
 *.log
 .vscode/
 .DS_Store

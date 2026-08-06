@@ -3,10 +3,7 @@
 const mongoose = require("mongoose");
 
 const ActivityLog = require("../models/ActivityLog");
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
+const { normalizeText } = require("../utils/normalize");
 
 function getRequestIpAddress(req) {
   if (!req) {

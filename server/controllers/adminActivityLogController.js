@@ -1,30 +1,12 @@
 "use strict";
 
 const ActivityLog = require("../models/ActivityLog");
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function normalizePage(value) {
-  const parsed = Number.parseInt(value, 10);
-
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
-}
-
-function normalizeLimit(value) {
-  const parsed = Number.parseInt(value, 10);
-
-  if (!Number.isInteger(parsed) || parsed < 1) {
-    return 15;
-  }
-
-  return Math.min(parsed, 100);
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
+const { createContainsSearch } = require("../utils/mongoSearch");
+const { normalizeText } = require("../utils/normalize");
+const {
+  createPaginationMeta,
+  parsePagination,
+} = require("../utils/pagination");
 
 function normalizeLog(log) {
   return {
@@ -59,8 +41,9 @@ function normalizeLog(log) {
  */
 async function getActivityLogs(req, res, next) {
   try {
-    const page = normalizePage(req.query.page);
-    const limit = normalizeLimit(req.query.limit);
+    const { page, limit, skip } = parsePagination(req.query, {
+      defaultLimit: 15,
+    });
 
     const search = normalizeText(req.query.search);
     const action = normalizeText(req.query.action).toUpperCase();
@@ -76,32 +59,10 @@ async function getActivityLogs(req, res, next) {
       filter.entityType = entityType;
     }
 
-    if (search) {
-      const safeSearch = escapeRegex(search);
-
-      filter.$or = [
-        {
-          description: {
-            $regex: safeSearch,
-            $options: "i",
-          },
-        },
-        {
-          entityId: {
-            $regex: safeSearch,
-            $options: "i",
-          },
-        },
-        {
-          ipAddress: {
-            $regex: safeSearch,
-            $options: "i",
-          },
-        },
-      ];
-    }
-
-    const skip = (page - 1) * limit;
+    Object.assign(
+      filter,
+      createContainsSearch(search, ["description", "entityId", "ipAddress"]),
+    );
 
     const [logs, filteredCount] = await Promise.all([
       ActivityLog.find(filter)
@@ -120,7 +81,11 @@ async function getActivityLogs(req, res, next) {
       ActivityLog.countDocuments(filter),
     ]);
 
-    const totalPages = Math.max(1, Math.ceil(filteredCount / limit));
+    const pagination = createPaginationMeta({
+      page,
+      limit,
+      totalItems: filteredCount,
+    });
 
     return res.status(200).json({
       success: true,
@@ -134,12 +99,8 @@ async function getActivityLogs(req, res, next) {
       logs: logs.map(normalizeLog),
 
       pagination: {
-        currentPage: page,
-        totalPages,
+        ...pagination,
         totalLogs: filteredCount,
-        limit,
-        hasPreviousPage: page > 1,
-        hasNextPage: page < totalPages,
       },
     });
   } catch (error) {

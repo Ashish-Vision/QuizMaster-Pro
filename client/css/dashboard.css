@@ -813,14 +813,23 @@ section {
   transform: translateY(-2px);
 }
 
-@media (max-width: 850px) {
-  .user-area {
+@media (max-width: 1100px) {
+  .header {
     flex-wrap: wrap;
+  }
+
+  .user-area {
+    min-width: 0;
+    flex: 1 1 680px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 
   .dashboard-navigation {
     order: 3;
     width: 100%;
+    flex-wrap: wrap;
+    justify-content: flex-end;
   }
 }
 
@@ -2036,3 +2045,4 @@ section {
     grid-template-columns: 1fr;
   }
 }
+@import url("/css/foundation.css");
