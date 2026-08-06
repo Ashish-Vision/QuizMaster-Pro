@@ -32,22 +32,22 @@ The most important verified risks are:
 
 ## Risk rating summary
 
-| ID | Severity | Status | Finding |
-|---|---|---|---|
-| SA-001 | Critical | Confirmed | Client-authoritative quiz submissions permit replay/XP farming and bypass the unused QuizSession design |
-| SA-002 | High | Confirmed | No explicit CSRF defense for cookie-authenticated mutations |
-| SA-003 | High | Confirmed, configuration-dependent | Password-reset and verification URL Host-header poisoning fallback |
-| SA-004 | High | Confirmed | CSP disabled despite dynamic HTML injection sinks |
-| SA-005 | Medium | Confirmed | DOM XSS sinks interpolate error/achievement values into `innerHTML` |
-| SA-006 | Medium | Confirmed | Process-local/IP-centric rate limiting is insufficient for scaled or distributed deployments |
-| SA-007 | Medium | Confirmed | Request validation is manual, duplicated, and does not consistently reject malformed/unknown inputs |
-| SA-008 | Medium | Confirmed | Search inputs have no length bound, enabling expensive regex-driven resource consumption |
-| SA-009 | Medium | Confirmed | Upload validation trusts client MIME and buffers the full file in application memory |
-| SA-010 | Medium | Confirmed | Production environment and JWT-secret strength are not validated at startup |
-| SA-011 | Medium | Confirmed | Email verification mutates state on GET and can be consumed by scanners/prefetchers |
-| SA-012 | Low | Confirmed | Cookie lifetime is hard-coded separately from JWT lifetime and cookie name lacks `__Host-` hardening |
-| SA-013 | Low | Confirmed | Development origins remain in the production CORS allowlist |
-| SA-014 | Low | Confirmed | Health endpoint reveals runtime environment |
+| ID     | Severity | Status                             | Finding                                                                                                 |
+| ------ | -------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| SA-001 | Critical | Confirmed                          | Client-authoritative quiz submissions permit replay/XP farming and bypass the unused QuizSession design |
+| SA-002 | High     | Confirmed                          | No explicit CSRF defense for cookie-authenticated mutations                                             |
+| SA-003 | High     | Confirmed, configuration-dependent | Password-reset and verification URL Host-header poisoning fallback                                      |
+| SA-004 | High     | Confirmed                          | CSP disabled despite dynamic HTML injection sinks                                                       |
+| SA-005 | Medium   | Confirmed                          | DOM XSS sinks interpolate error/achievement values into `innerHTML`                                     |
+| SA-006 | Medium   | Confirmed                          | Process-local/IP-centric rate limiting is insufficient for scaled or distributed deployments            |
+| SA-007 | Medium   | Confirmed                          | Request validation is manual, duplicated, and does not consistently reject malformed/unknown inputs     |
+| SA-008 | Medium   | Confirmed                          | Search inputs have no length bound, enabling expensive regex-driven resource consumption                |
+| SA-009 | Medium   | Confirmed                          | Upload validation trusts client MIME and buffers the full file in application memory                    |
+| SA-010 | Medium   | Confirmed                          | Production environment and JWT-secret strength are not validated at startup                             |
+| SA-011 | Medium   | Confirmed                          | Email verification mutates state on GET and can be consumed by scanners/prefetchers                     |
+| SA-012 | Low      | Confirmed                          | Cookie lifetime is hard-coded separately from JWT lifetime and cookie name lacks `__Host-` hardening    |
+| SA-013 | Low      | Confirmed                          | Development origins remain in the production CORS allowlist                                             |
+| SA-014 | Low      | Confirmed                          | Health endpoint reveals runtime environment                                                             |
 
 No finding was identified for NoSQL operator injection in the reviewed query paths, JWT algorithm confusion, raw reset-token storage, wildcard credentialed CORS, arbitrary notification redirects, or unrestricted upload size/type.
 

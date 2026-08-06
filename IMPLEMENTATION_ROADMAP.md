@@ -17,39 +17,39 @@ Scope: All 31 architectural findings, ranked from highest to lowest expected ret
 
 ROI considers risk reduction, user/business impact, implementation cost, dependency value, and the amount of future rework avoided.
 
-| Rank | Finding | Improvement | Phase | Hours | ROI rationale |
-|---:|---|---|---:|---:|---|
-| 1 | AR-001 | Enforce server-issued QuizSessions and one-time submissions | 1 | 32 | Eliminates direct XP farming and establishes the core attempt boundary. |
-| 2 | AR-002 | Make quiz completion transactional | 1 | 40 | Prevents the most damaging cross-collection inconsistencies. |
-| 3 | AR-029 | Establish automated tests, linting, formatting, and CI checks | 1 | 24 | Reduces risk across every later change and is essential for concurrency work. |
-| 4 | AR-003 | Make User counters and streak updates concurrency-safe | 1 | 8 | Prevents silent loss of legitimate rewards at low incremental cost inside the transaction. |
-| 5 | AR-005 | Hide daily questions/explanations until session start | 1 | 8 | Closes a practical answer-disclosure path with a small session-related change. |
-| 6 | AR-018 | Calculate quiz timing from server timestamps | 1 | 4 | Restores analytics integrity cheaply once sessions exist. |
-| 7 | AR-017 | Add idempotent notification keys | 1 | 10 | Prevents duplicate user-visible events during retries and transaction recovery. |
-| 8 | AR-031 | Hash public QuizSession identifiers at rest | 1 | 4 | Cheap defense in depth before the session API becomes established. |
-| 9 | AR-004 | Normalize daily challenge completions | 2 | 32 | Removes a hard MongoDB document-size ceiling and provides enforceable uniqueness. |
-| 10 | AR-008 | Make administrator attempt removal referentially safe | 2 | 24 | Prevents broken counters, dangling references, and invalid achievement history. |
-| 11 | AR-007 | Make category rename atomic | 2 | 12 | Protects questions and historical analytics from split category state. |
-| 12 | AR-013 | Bound and index leaderboard queries | 3 | 12 | Removes a clear linear memory/latency bottleneck before user growth. |
-| 13 | AR-014 | Consolidate duplicate leaderboard APIs | 3 | 5 | Small change that eliminates conflicting security and ranking semantics. |
-| 14 | AR-015 | Add a compound question-selection index | 3 | 4 | Low-cost query improvement on a frequent path. |
-| 15 | AR-016 | Add measured User/admin query indexes | 3 | 8 | Improves several high-traffic and administrator queries with modest effort. |
-| 16 | AR-010 | Move rate limiting to a shared store | 3 | 12 | Preserves brute-force defenses after horizontal scaling or restarts. |
-| 17 | AR-021 | Consolidate profile updates and reverify changed email | 3 | 14 | Fixes a security-relevant identity inconsistency and removes duplicate behavior. |
-| 18 | AR-012 | Add explicit CSRF/origin protection | 3 | 18 | Strengthens every cookie-authenticated mutation, though SameSite already lowers immediate risk. |
-| 19 | AR-011 | Remove unsafe HTML sinks and enable CSP | 3 | 32 | Strong XSS prevention and containment, but broad client/view work raises cost. |
-| 20 | AR-009 | Enforce platform settings in runtime behavior | 4 | 28 | Makes an existing administrator feature trustworthy; value depends on operational use. |
-| 21 | AR-006 | Move daily challenge generation out of GET | 2 | 10 | Restores HTTP safety and cleaner operations, but has less direct user impact. |
-| 22 | AR-027 | Introduce typed application errors | 4 | 16 | Improves reliability and reduces controller boilerplate across future work. |
-| 23 | AR-022 | Centralize request validation | 4 | 28 | Prevents rule drift, but migration touches many stable endpoints. |
-| 24 | AR-026 | Standardize/version API contracts and HTTP semantics | 4 | 24 | High long-term value with compatibility and client coordination cost. |
-| 25 | AR-023 | Consolidate browser API/auth/formatting utilities | 5 | 36 | Meaningful maintenance gain, but limited immediate server-side risk reduction. |
-| 26 | AR-020 | Extract business/query services from oversized controllers | 4 | 48 | Large maintainability payoff after contracts are stabilized; expensive if done earlier. |
-| 27 | AR-019 | Split page routing and application composition | 4 | 10 | Reduces central-file churn but does not change product behavior. |
-| 28 | AR-025 | Introduce shared EJS layouts and page partials | 5 | 24 | Reduces repeated markup and enables CSP/asset consistency after security work. |
-| 29 | AR-024 | Consolidate CSS tokens, base rules, and components | 5 | 48 | Improves design consistency but has high regression/testing cost. |
-| 30 | AR-030 | Remove unused dependencies and placeholder scaffolding | 5 | 4 | Cheap cleanup with limited operational impact. |
-| 31 | AR-028 | Minimize the public health response | 3 | 1 | Very easy, but mitigates only minor information disclosure. |
+| Rank | Finding | Improvement                                                   | Phase | Hours | ROI rationale                                                                                   |
+| ---: | ------- | ------------------------------------------------------------- | ----: | ----: | ----------------------------------------------------------------------------------------------- |
+|    1 | AR-001  | Enforce server-issued QuizSessions and one-time submissions   |     1 |    32 | Eliminates direct XP farming and establishes the core attempt boundary.                         |
+|    2 | AR-002  | Make quiz completion transactional                            |     1 |    40 | Prevents the most damaging cross-collection inconsistencies.                                    |
+|    3 | AR-029  | Establish automated tests, linting, formatting, and CI checks |     1 |    24 | Reduces risk across every later change and is essential for concurrency work.                   |
+|    4 | AR-003  | Make User counters and streak updates concurrency-safe        |     1 |     8 | Prevents silent loss of legitimate rewards at low incremental cost inside the transaction.      |
+|    5 | AR-005  | Hide daily questions/explanations until session start         |     1 |     8 | Closes a practical answer-disclosure path with a small session-related change.                  |
+|    6 | AR-018  | Calculate quiz timing from server timestamps                  |     1 |     4 | Restores analytics integrity cheaply once sessions exist.                                       |
+|    7 | AR-017  | Add idempotent notification keys                              |     1 |    10 | Prevents duplicate user-visible events during retries and transaction recovery.                 |
+|    8 | AR-031  | Hash public QuizSession identifiers at rest                   |     1 |     4 | Cheap defense in depth before the session API becomes established.                              |
+|    9 | AR-004  | Normalize daily challenge completions                         |     2 |    32 | Removes a hard MongoDB document-size ceiling and provides enforceable uniqueness.               |
+|   10 | AR-008  | Make administrator attempt removal referentially safe         |     2 |    24 | Prevents broken counters, dangling references, and invalid achievement history.                 |
+|   11 | AR-007  | Make category rename atomic                                   |     2 |    12 | Protects questions and historical analytics from split category state.                          |
+|   12 | AR-013  | Bound and index leaderboard queries                           |     3 |    12 | Removes a clear linear memory/latency bottleneck before user growth.                            |
+|   13 | AR-014  | Consolidate duplicate leaderboard APIs                        |     3 |     5 | Small change that eliminates conflicting security and ranking semantics.                        |
+|   14 | AR-015  | Add a compound question-selection index                       |     3 |     4 | Low-cost query improvement on a frequent path.                                                  |
+|   15 | AR-016  | Add measured User/admin query indexes                         |     3 |     8 | Improves several high-traffic and administrator queries with modest effort.                     |
+|   16 | AR-010  | Move rate limiting to a shared store                          |     3 |    12 | Preserves brute-force defenses after horizontal scaling or restarts.                            |
+|   17 | AR-021  | Consolidate profile updates and reverify changed email        |     3 |    14 | Fixes a security-relevant identity inconsistency and removes duplicate behavior.                |
+|   18 | AR-012  | Add explicit CSRF/origin protection                           |     3 |    18 | Strengthens every cookie-authenticated mutation, though SameSite already lowers immediate risk. |
+|   19 | AR-011  | Remove unsafe HTML sinks and enable CSP                       |     3 |    32 | Strong XSS prevention and containment, but broad client/view work raises cost.                  |
+|   20 | AR-009  | Enforce platform settings in runtime behavior                 |     4 |    28 | Makes an existing administrator feature trustworthy; value depends on operational use.          |
+|   21 | AR-006  | Move daily challenge generation out of GET                    |     2 |    10 | Restores HTTP safety and cleaner operations, but has less direct user impact.                   |
+|   22 | AR-027  | Introduce typed application errors                            |     4 |    16 | Improves reliability and reduces controller boilerplate across future work.                     |
+|   23 | AR-022  | Centralize request validation                                 |     4 |    28 | Prevents rule drift, but migration touches many stable endpoints.                               |
+|   24 | AR-026  | Standardize/version API contracts and HTTP semantics          |     4 |    24 | High long-term value with compatibility and client coordination cost.                           |
+|   25 | AR-023  | Consolidate browser API/auth/formatting utilities             |     5 |    36 | Meaningful maintenance gain, but limited immediate server-side risk reduction.                  |
+|   26 | AR-020  | Extract business/query services from oversized controllers    |     4 |    48 | Large maintainability payoff after contracts are stabilized; expensive if done earlier.         |
+|   27 | AR-019  | Split page routing and application composition                |     4 |    10 | Reduces central-file churn but does not change product behavior.                                |
+|   28 | AR-025  | Introduce shared EJS layouts and page partials                |     5 |    24 | Reduces repeated markup and enables CSP/asset consistency after security work.                  |
+|   29 | AR-024  | Consolidate CSS tokens, base rules, and components            |     5 |    48 | Improves design consistency but has high regression/testing cost.                               |
+|   30 | AR-030  | Remove unused dependencies and placeholder scaffolding        |     5 |     4 | Cheap cleanup with limited operational impact.                                                  |
+|   31 | AR-028  | Minimize the public health response                           |     3 |     1 | Very easy, but mitigates only minor information disclosure.                                     |
 
 ## Phase 1 — Quiz integrity and delivery safety
 
@@ -355,14 +355,14 @@ ROI considers risk reduction, user/business impact, implementation cost, depende
 
 ## Effort summary
 
-| Phase | Focus | Hours |
-|---:|---|---:|
-| 1 | Quiz integrity and delivery safety | 130 |
-| 2 | Data integrity and scalable challenge storage | 78 |
-| 3 | Security hardening and query performance | 106 |
-| 4 | Backend contracts and maintainability | 154 |
-| 5 | Frontend and repository consolidation | 112 |
-| **Total** | **All 31 findings** | **580 hours** |
+|     Phase | Focus                                         |         Hours |
+| --------: | --------------------------------------------- | ------------: |
+|         1 | Quiz integrity and delivery safety            |           130 |
+|         2 | Data integrity and scalable challenge storage |            78 |
+|         3 | Security hardening and query performance      |           106 |
+|         4 | Backend contracts and maintainability         |           154 |
+|         5 | Frontend and repository consolidation         |           112 |
+| **Total** | **All 31 findings**                           | **580 hours** |
 
 With a 25% planning contingency, the portfolio budget is approximately **725 hours**.
 

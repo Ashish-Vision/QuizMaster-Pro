@@ -1,0 +1,57 @@
+"use strict";
+
+module.exports = [
+  {
+    files: ["**/*.js"],
+    ignores: [
+      "node_modules/**",
+      "coverage/**",
+      "playwright-report/**",
+      "test-results/**",
+    ],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: "commonjs",
+      globals: {
+        Buffer: "readonly",
+        URL: "readonly",
+        URLSearchParams: "readonly",
+        __dirname: "readonly",
+        alert: "readonly",
+        console: "readonly",
+        document: "readonly",
+        getComputedStyle: "readonly",
+        fetch: "readonly",
+        FormData: "readonly",
+        localStorage: "readonly",
+        module: "readonly",
+        performance: "readonly",
+        process: "readonly",
+        require: "readonly",
+        requestAnimationFrame: "readonly",
+        sessionStorage: "readonly",
+        IntersectionObserver: "readonly",
+        setInterval: "readonly",
+        setTimeout: "readonly",
+        clearInterval: "readonly",
+        clearTimeout: "readonly",
+        window: "readonly",
+        beforeEach: "readonly",
+        describe: "readonly",
+        expect: "readonly",
+        test: "readonly",
+      },
+    },
+    rules: {
+      "no-constant-condition": ["error", { checkLoops: false }],
+      "no-debugger": "error",
+      "no-dupe-keys": "error",
+      "no-undef": "error",
+      "no-unreachable": "error",
+      "no-unused-vars": [
+        "warn",
+        { argsIgnorePattern: "^_", caughtErrors: "none" },
+      ],
+    },
+  },
+];

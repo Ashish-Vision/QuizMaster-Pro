@@ -1,8 +1,8 @@
 {
   "name": "quizmaster-pro",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Secure full-stack quiz platform with user and administrator experiences.",
+  "main": "server/server.js",
   "directories": {
     "doc": "docs",
     "test": "tests"
@@ -12,11 +12,22 @@
     "dev": "nodemon server/server.js",
     "seed:questions": "node server/database/seedQuestions.js",
     "reset:questions": "node server/database/resetQuestions.js",
-    "test:email": "node scripts/testEmailConnection.js"
+    "test:email": "node scripts/testEmailConnection.js",
+    "test": "jest --runInBand",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage --runInBand",
+    "test:e2e": "playwright test",
+    "lint": "eslint server client/js scripts tests e2e *.js",
+    "format:check": "prettier --check package.json server client tests e2e docs *.md",
+    "format": "prettier --write package.json server client tests e2e docs *.md"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "quiz",
+    "education",
+    "express",
+    "mongodb"
+  ],
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -39,8 +50,12 @@
     "validator": "^13.15.35"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "eslint": "^10.8.0",
+    "jest": "^30.4.2",
+    "mongodb-memory-server": "^11.2.0",
     "nodemon": "^3.1.14",
-    "prettier": "^3.9.6"
+    "prettier": "^3.9.6",
+    "supertest": "^7.2.2"
   }
 }

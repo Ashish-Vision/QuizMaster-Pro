@@ -114,7 +114,10 @@ async function requestPasswordReset(req, res, next) {
      *
      * Never return the reset URL in production.
      */
-    if (process.env.NODE_ENV !== "production") {
+    if (
+      process.env.NODE_ENV === "development" &&
+      process.env.EXPOSE_DEVELOPMENT_RESET_URL === "true"
+    ) {
       return res.status(200).json({
         ...genericResponse,
 

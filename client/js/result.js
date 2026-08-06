@@ -66,12 +66,6 @@ function formatNumber(value) {
   return getNumber(value).toLocaleString("en-IN");
 }
 
-function formatPercentage(value) {
-  const number = getNumber(value);
-
-  return Number.isInteger(number) ? `${number}%` : `${number.toFixed(1)}%`;
-}
-
 function formatTime(totalSeconds) {
   const safeSeconds = Math.max(0, Math.floor(getNumber(totalSeconds)));
 

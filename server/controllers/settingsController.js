@@ -252,12 +252,7 @@ async function changePassword(req, res, next) {
 
     await user.save();
 
-    return sendAuthResponse(
-      res,
-      200,
-      "Password changed successfully.",
-      user,
-    );
+    return sendAuthResponse(res, 200, "Password changed successfully.", user);
   } catch (error) {
     if (error.name === "ValidationError") {
       const validationMessages = Object.values(error.errors).map(

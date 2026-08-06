@@ -299,12 +299,10 @@ async function submitQuiz(req, res, next) {
       quizSession.category !== normalizedCategory ||
       quizSession.mode !== (isDailyChallenge ? "daily" : "standard")
     ) {
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "The submission does not match this quiz session.",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "The submission does not match this quiz session.",
+      });
     }
     if (
       isDailyChallenge &&

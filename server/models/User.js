@@ -142,6 +142,16 @@ userSchema.virtual("fullName").get(function getFullName() {
   return `${this.firstName} ${this.lastName}`;
 });
 
+userSchema.index({
+  isActive: 1,
+  role: 1,
+  totalXp: -1,
+  quizzesCompleted: -1,
+  correctAnswers: -1,
+  createdAt: 1,
+  _id: 1,
+});
+
 userSchema.pre("save", async function hashPassword() {
   if (!this.isModified("password")) {
     return;

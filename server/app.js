@@ -38,7 +38,6 @@ const adminReportRoutes = require("./routes/adminReportRoutes");
 const adminActivityLogRoutes = require("./routes/adminActivityLogRoutes");
 const adminSettingsRoutes = require("./routes/adminSettingsRoutes");
 
-
 /* ============================================================
    Middleware Imports
 ============================================================ */
@@ -47,6 +46,10 @@ const { protect } = require("./middleware/authMiddleware");
 const { adminOnly } = require("./middleware/adminMiddleware");
 
 const { notFoundHandler, errorHandler } = require("./middleware/errorHandler");
+const {
+  enforceSameOriginMutation,
+  rejectUnsafeInput,
+} = require("./middleware/requestSecurityMiddleware");
 
 /* ============================================================
    Application
@@ -72,7 +75,22 @@ app.set("views", path.join(__dirname, "../client/views"));
 
 app.use(
   helmet({
-    contentSecurityPolicy: false,
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"],
+        imgSrc: ["'self'", "data:", "https://res.cloudinary.com"],
+        connectSrc: ["'self'"],
+        objectSrc: ["'none'"],
+        baseUri: ["'self'"],
+        formAction: ["'self'"],
+        frameAncestors: ["'none'"],
+        upgradeInsecureRequests:
+          process.env.NODE_ENV === "production" ? [] : null,
+      },
+    },
     crossOriginEmbedderPolicy: false,
   }),
 );
@@ -83,8 +101,9 @@ app.use(
 
 const allowedOrigins = [
   process.env.CLIENT_ORIGIN,
-  "http://localhost:5000",
-  "http://127.0.0.1:5000",
+  ...(process.env.NODE_ENV === "production"
+    ? []
+    : ["http://localhost:5000", "http://127.0.0.1:5000"]),
 ].filter(Boolean);
 
 app.use(
@@ -136,6 +155,8 @@ app.use(
 );
 
 app.use(cookieParser());
+app.use(rejectUnsafeInput);
+app.use(enforceSameOriginMutation);
 
 /* ============================================================
    Request Logging
@@ -152,8 +173,17 @@ if (process.env.NODE_ENV !== "test") {
 app.use(
   express.static(path.join(__dirname, "../client"), {
     index: false,
+    etag: true,
+    maxAge: process.env.NODE_ENV === "production" ? "1h" : 0,
   }),
 );
+
+app.use((req, res, next) => {
+  if (req.accepts("html") && !req.path.startsWith("/api/")) {
+    res.set("Cache-Control", "no-store");
+  }
+  next();
+});
 
 app.get("/favicon.ico", (req, res) => {
   return res.status(204).end();
@@ -193,6 +223,9 @@ app.get("/resend-verification", (req, res) => {
   return res.render("resend-verification");
 });
 
+app.get("/terms", (req, res) => res.render("terms"));
+app.get("/privacy", (req, res) => res.render("privacy"));
+
 /* ============================================================
    Protected User Page Routes
 ============================================================ */
@@ -205,6 +238,12 @@ app.get("/dashboard", protect, (req, res) => {
 
 app.get("/quiz", protect, (req, res) => {
   return res.render("quiz", {
+    user: req.user,
+  });
+});
+
+app.get("/daily-challenge", protect, (req, res) => {
+  return res.render("dashboard", {
     user: req.user,
   });
 });
@@ -400,6 +439,12 @@ app.get("/api/health", (req, res) => {
     environment: process.env.NODE_ENV || "development",
     timestamp: new Date().toISOString(),
   });
+});
+
+app.get("/api/ready", (req, res) => {
+  const mongoose = require("mongoose");
+  const ready = mongoose.connection.readyState === 1;
+  return res.status(ready ? 200 : 503).json({ success: ready, ready });
 });
 
 /* ============================================================

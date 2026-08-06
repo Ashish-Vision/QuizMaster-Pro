@@ -131,7 +131,7 @@ function createAchievementCard(achievement) {
 
   article.dataset.status = achievement.isUnlocked ? "unlocked" : "locked";
 
-  article.dataset.category = achievement.category;
+  article.dataset.category = String(achievement.category || "");
 
   const statusLabel = achievement.isUnlocked ? "Unlocked" : "Locked";
 
@@ -141,7 +141,7 @@ function createAchievementCard(achievement) {
     <div class="achievement-card-header">
       <div class="achievement-icon-wrapper">
         <span class="achievement-icon">
-          ${achievement.icon || "🏆"}
+          ${escapeHtml(achievement.icon || "🏆")}
         </span>
       </div>
 
@@ -156,12 +156,12 @@ function createAchievementCard(achievement) {
 
     <div class="achievement-content">
       <span class="achievement-category">
-        ${formatCategory(achievement.category)}
+        ${escapeHtml(formatCategory(achievement.category))}
       </span>
 
-      <h3>${achievement.title}</h3>
+      <h3>${escapeHtml(achievement.title)}</h3>
 
-      <p>${achievement.description}</p>
+      <p>${escapeHtml(achievement.description)}</p>
     </div>
 
     <div class="achievement-footer">
@@ -172,14 +172,23 @@ function createAchievementCard(achievement) {
       <strong>
         ${
           achievement.isUnlocked
-            ? formatUnlockDate(achievement.unlockedAt)
-            : getRequirementText(achievement)
+            ? escapeHtml(formatUnlockDate(achievement.unlockedAt))
+            : escapeHtml(getRequirementText(achievement))
         }
       </strong>
     </div>
   `;
 
   return article;
+}
+
+function escapeHtml(value) {
+  return String(value ?? "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
 }
 
 function getRequirementText(achievement) {

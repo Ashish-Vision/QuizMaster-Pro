@@ -8,13 +8,24 @@ function notFoundHandler(req, res) {
 }
 
 function errorHandler(error, req, res, next) {
-  console.error(error);
+  const statusCode = error.statusCode || 500;
+
+  if (statusCode >= 500) {
+    if (process.env.NODE_ENV === "development") {
+      console.error(error);
+    } else {
+      console.error({
+        message: "Request failed with an internal error.",
+        method: req.method,
+        path: req.path,
+        statusCode,
+      });
+    }
+  }
 
   if (res.headersSent) {
     return next(error);
   }
-
-  const statusCode = error.statusCode || 500;
 
   return res.status(statusCode).json({
     success: false,

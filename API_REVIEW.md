@@ -19,20 +19,20 @@ The main weaknesses are contract consistency rather than missing access control:
 
 ## Severity summary
 
-| Severity | Finding |
-|---|---|
-| High | Duplicate, contradictory leaderboard contracts |
-| High | API authentication failures can redirect instead of returning JSON |
-| High | No centralized validation/error translation; database validation failures can surface as 500 |
-| High | Quiz submission contract remains client-authoritative and is not session-based |
-| Medium | Pagination contract and invalid-input behavior vary by endpoint |
-| Medium | Sorting/search/filter contracts vary and are incompletely validated |
-| Medium | Response envelope and field naming are inconsistent |
-| Medium | REST resource/method naming is inconsistent |
-| Medium | Email verification mutates state through GET |
-| Medium | No API versioning or machine-readable error codes |
-| Low | Delete/reset/status responses lack a unified status policy |
-| Low | Public authentication endpoint naming is inconsistent |
+| Severity | Finding                                                                                      |
+| -------- | -------------------------------------------------------------------------------------------- |
+| High     | Duplicate, contradictory leaderboard contracts                                               |
+| High     | API authentication failures can redirect instead of returning JSON                           |
+| High     | No centralized validation/error translation; database validation failures can surface as 500 |
+| High     | Quiz submission contract remains client-authoritative and is not session-based               |
+| Medium   | Pagination contract and invalid-input behavior vary by endpoint                              |
+| Medium   | Sorting/search/filter contracts vary and are incompletely validated                          |
+| Medium   | Response envelope and field naming are inconsistent                                          |
+| Medium   | REST resource/method naming is inconsistent                                                  |
+| Medium   | Email verification mutates state through GET                                                 |
+| Medium   | No API versioning or machine-readable error codes                                            |
+| Low      | Delete/reset/status responses lack a unified status policy                                   |
+| Low      | Public authentication endpoint naming is inconsistent                                        |
 
 ## Complete route inventory
 
@@ -40,98 +40,98 @@ Legend: **User** means `protect`; **Admin** means `protect` plus `adminOnly`; **
 
 ### Authentication and account lifecycle
 
-| Endpoint | Access | Success | Review |
-|---|---|---|---|
-| `POST /api/auth/register` | Public, rate-limited | 201 | Correct creation method/status; manually validates body. |
-| `POST /api/auth/login` | Public, rate-limited | 200 | Correct action endpoint; returns 401 for bad credentials and 403 for disabled/unverified accounts. |
-| `POST /api/auth/logout` | Public | 200 | Correct non-GET mutation and safe cookie clearing; being public makes logout idempotently usable with an expired token. |
-| `GET /api/auth/me` | User | 200 | Correct authenticated singleton read. |
-| `GET /api/email-verification/verify/:token` | Public | 200 | **Unsafe GET:** verifies and mutates user state; link scanners/prefetchers can consume the token. |
-| `POST /api/email-verification/resend` | Public, reset limiter | 200 | Method is reasonable, but the reused `forgotPasswordLimiter` is misleading and couples unrelated throttling (`server/routes/emailVerificationRoutes.js:10-16`). |
-| `POST /api/password-reset/forgot` | Public, rate-limited | 200 | Correct anti-enumeration design: returns a generic response for unknown email (`server/controllers/passwordResetController.js:38-59`). |
-| `GET /api/password-reset/validate/:token` | Public | 200 | Safe validation read, though putting a secret in the path increases proxy/log exposure. |
-| `PATCH /api/password-reset/reset/:token` | Public, rate-limited | 200 | Mutation method is acceptable; `POST` is more conventional for consuming a one-time reset token. Token in body or fragment-backed exchange reduces URL logging. |
+| Endpoint                                    | Access                | Success | Review                                                                                                                                                          |
+| ------------------------------------------- | --------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `POST /api/auth/register`                   | Public, rate-limited  | 201     | Correct creation method/status; manually validates body.                                                                                                        |
+| `POST /api/auth/login`                      | Public, rate-limited  | 200     | Correct action endpoint; returns 401 for bad credentials and 403 for disabled/unverified accounts.                                                              |
+| `POST /api/auth/logout`                     | Public                | 200     | Correct non-GET mutation and safe cookie clearing; being public makes logout idempotently usable with an expired token.                                         |
+| `GET /api/auth/me`                          | User                  | 200     | Correct authenticated singleton read.                                                                                                                           |
+| `GET /api/email-verification/verify/:token` | Public                | 200     | **Unsafe GET:** verifies and mutates user state; link scanners/prefetchers can consume the token.                                                               |
+| `POST /api/email-verification/resend`       | Public, reset limiter | 200     | Method is reasonable, but the reused `forgotPasswordLimiter` is misleading and couples unrelated throttling (`server/routes/emailVerificationRoutes.js:10-16`). |
+| `POST /api/password-reset/forgot`           | Public, rate-limited  | 200     | Correct anti-enumeration design: returns a generic response for unknown email (`server/controllers/passwordResetController.js:38-59`).                          |
+| `GET /api/password-reset/validate/:token`   | Public                | 200     | Safe validation read, though putting a secret in the path increases proxy/log exposure.                                                                         |
+| `PATCH /api/password-reset/reset/:token`    | Public, rate-limited  | 200     | Mutation method is acceptable; `POST` is more conventional for consuming a one-time reset token. Token in body or fragment-backed exchange reduces URL logging. |
 
 ### Quiz, challenge, result, and user data
 
-| Endpoint | Access | Success | Review |
-|---|---|---|---|
-| `GET /api/quiz/categories` | User | 200 | Safe collection metadata read. Naming would be clearer under `/api/categories` or `/api/quiz-categories`. |
-| `GET /api/quiz/start/:category` | User | 200 | Currently performs random selection but does not create a QuizSession (`server/controllers/quizController.js:143-202`). “start” is action-oriented and a random GET is not cache-stable. When session creation is integrated, this **must become POST**. |
-| `POST /api/quiz/submit` | User | 201 | Creates Score, so 201 is defensible. URI is action-oriented; recommended `POST /api/quiz-sessions/:id/submissions` or `POST /api/quiz-results`. |
-| `GET /api/quiz/result/:resultId` | User/owner | 200 | Ownership correctly included in query (`server/controllers/quizController.js:755-758`). Prefer plural `/results/:id`. |
-| `GET /api/daily-challenge` | User | 200; 404/410/503 | Singleton “today” semantics are understandable. Singular resource name differs from plural conventions. |
-| `GET /api/daily-challenge/:challengeId` | User | 200 | Validates ObjectId and availability. |
-| `POST /api/daily-challenge/:challengeId/start` | User | 200 | Correctly uses POST for session-producing action. Prefer `POST /api/daily-challenges/:id/sessions`, returning 201 when a session is created. |
-| `GET /api/history` | User | 200 | Paginated, filtered by category, ownership scoped. |
-| `GET /api/profile` | User | 200 | Correct singleton read. |
-| `PUT /api/profile` | User | 200 | Handler performs a partial name update (`server/controllers/profileController.js:872-920`), so PATCH is semantically more accurate than PUT. |
-| `POST /api/profile/avatar` | User, upload validation | 200 | If this creates/replaces a subresource, `PUT /api/profile/avatar` is more idempotent and descriptive. |
-| `DELETE /api/profile/avatar` | User | 200 | Valid; 200 is consistent with a response body. |
-| `GET /api/settings` | User | 200 | Correct singleton read. |
-| `PATCH /api/settings/profile` | User, rate-limited | 200 | Duplicates `PUT /api/profile`; consolidate ownership of profile mutation. |
-| `PATCH /api/settings/password` | User, rate-limited | 200 | Appropriate method; old tokens are invalidated through token version changes. |
-| `GET /api/achievements` | User | 200 | Correct collection read. |
-| `GET /api/analytics` | User | 200 | Correct read; this is an aggregate/read model rather than a resource mutation. |
+| Endpoint                                       | Access                  | Success          | Review                                                                                                                                                                                                                                                   |
+| ---------------------------------------------- | ----------------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/quiz/categories`                     | User                    | 200              | Safe collection metadata read. Naming would be clearer under `/api/categories` or `/api/quiz-categories`.                                                                                                                                                |
+| `GET /api/quiz/start/:category`                | User                    | 200              | Currently performs random selection but does not create a QuizSession (`server/controllers/quizController.js:143-202`). “start” is action-oriented and a random GET is not cache-stable. When session creation is integrated, this **must become POST**. |
+| `POST /api/quiz/submit`                        | User                    | 201              | Creates Score, so 201 is defensible. URI is action-oriented; recommended `POST /api/quiz-sessions/:id/submissions` or `POST /api/quiz-results`.                                                                                                          |
+| `GET /api/quiz/result/:resultId`               | User/owner              | 200              | Ownership correctly included in query (`server/controllers/quizController.js:755-758`). Prefer plural `/results/:id`.                                                                                                                                    |
+| `GET /api/daily-challenge`                     | User                    | 200; 404/410/503 | Singleton “today” semantics are understandable. Singular resource name differs from plural conventions.                                                                                                                                                  |
+| `GET /api/daily-challenge/:challengeId`        | User                    | 200              | Validates ObjectId and availability.                                                                                                                                                                                                                     |
+| `POST /api/daily-challenge/:challengeId/start` | User                    | 200              | Correctly uses POST for session-producing action. Prefer `POST /api/daily-challenges/:id/sessions`, returning 201 when a session is created.                                                                                                             |
+| `GET /api/history`                             | User                    | 200              | Paginated, filtered by category, ownership scoped.                                                                                                                                                                                                       |
+| `GET /api/profile`                             | User                    | 200              | Correct singleton read.                                                                                                                                                                                                                                  |
+| `PUT /api/profile`                             | User                    | 200              | Handler performs a partial name update (`server/controllers/profileController.js:872-920`), so PATCH is semantically more accurate than PUT.                                                                                                             |
+| `POST /api/profile/avatar`                     | User, upload validation | 200              | If this creates/replaces a subresource, `PUT /api/profile/avatar` is more idempotent and descriptive.                                                                                                                                                    |
+| `DELETE /api/profile/avatar`                   | User                    | 200              | Valid; 200 is consistent with a response body.                                                                                                                                                                                                           |
+| `GET /api/settings`                            | User                    | 200              | Correct singleton read.                                                                                                                                                                                                                                  |
+| `PATCH /api/settings/profile`                  | User, rate-limited      | 200              | Duplicates `PUT /api/profile`; consolidate ownership of profile mutation.                                                                                                                                                                                |
+| `PATCH /api/settings/password`                 | User, rate-limited      | 200              | Appropriate method; old tokens are invalidated through token version changes.                                                                                                                                                                            |
+| `GET /api/achievements`                        | User                    | 200              | Correct collection read.                                                                                                                                                                                                                                 |
+| `GET /api/analytics`                           | User                    | 200              | Correct read; this is an aggregate/read model rather than a resource mutation.                                                                                                                                                                           |
 
 ### Leaderboards and notifications
 
-| Endpoint | Access | Success | Review |
-|---|---|---|---|
-| `GET /api/leaderboard` | User | 200 | Canonical implementation filters active regular users but loads all ranked users to find current rank (`server/controllers/leaderboardController.js:11-50`). No pagination/limit. |
-| `GET /api/users/leaderboard` | User | 200 | Duplicate implementation accepts `limit`, includes admins and disabled users, and uses contradictory ordering (`server/controllers/userController.js:7-25`). Deprecate it. |
-| `GET /api/notifications` | User | 200 | Paginated and owner-scoped. `unreadOnly` accepts any non-`true` value as false rather than rejecting malformed booleans. |
-| `GET /api/notifications/unread-count` | User | 200 | Correct derived read. |
-| `PATCH /api/notifications/read-all` | User | 200 | Action-oriented collection mutation. A clearer model is `PATCH /api/notifications` with `{ isRead: true, filter: { isRead: false } }`, though current form is practical. |
-| `PATCH /api/notifications/:notificationId/read` | User/owner | 200 | Ownership is correctly enforced in the atomic update (`server/controllers/notificationController.js:125-137`). Repeated calls remain successful if the record exists. |
-| `DELETE /api/notifications/:notificationId` | User/owner | 200 | Correct ownership enforcement. Could standardize on 204 if deletion bodies are removed globally. |
+| Endpoint                                        | Access     | Success | Review                                                                                                                                                                            |
+| ----------------------------------------------- | ---------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GET /api/leaderboard`                          | User       | 200     | Canonical implementation filters active regular users but loads all ranked users to find current rank (`server/controllers/leaderboardController.js:11-50`). No pagination/limit. |
+| `GET /api/users/leaderboard`                    | User       | 200     | Duplicate implementation accepts `limit`, includes admins and disabled users, and uses contradictory ordering (`server/controllers/userController.js:7-25`). Deprecate it.        |
+| `GET /api/notifications`                        | User       | 200     | Paginated and owner-scoped. `unreadOnly` accepts any non-`true` value as false rather than rejecting malformed booleans.                                                          |
+| `GET /api/notifications/unread-count`           | User       | 200     | Correct derived read.                                                                                                                                                             |
+| `PATCH /api/notifications/read-all`             | User       | 200     | Action-oriented collection mutation. A clearer model is `PATCH /api/notifications` with `{ isRead: true, filter: { isRead: false } }`, though current form is practical.          |
+| `PATCH /api/notifications/:notificationId/read` | User/owner | 200     | Ownership is correctly enforced in the atomic update (`server/controllers/notificationController.js:125-137`). Repeated calls remain successful if the record exists.             |
+| `DELETE /api/notifications/:notificationId`     | User/owner | 200     | Correct ownership enforcement. Could standardize on 204 if deletion bodies are removed globally.                                                                                  |
 
 ### Administrator reads and management
 
 All endpoints below are correctly protected by router-level `protect` then `adminOnly` middleware.
 
-| Endpoint | Success | Review |
-|---|---|---|
-| `GET /api/admin/dashboard` | 200 | Aggregate read; consistent. |
-| `GET /api/admin/analytics` | 200 | Accepts `days`; invalid/out-of-range input is silently defaulted rather than rejected. |
-| `GET /api/admin/activity-logs` | 200 | Paginated/searchable, but action/entity filter enums are not validated (`server/controllers/adminActivityLogController.js:62-77`). |
-| `GET /api/admin/activity-logs/summary` | 200 | Correct derived read. |
-| `GET /api/admin/attempts` | 200 | Paginated/search/filter/sort. Invalid `userId` gets 400, but invalid sort silently becomes newest. |
-| `GET /api/admin/attempts/:attemptId` | 200 | Correct 400 malformed ID / 404 missing distinction. |
-| `DELETE /api/admin/attempts/:attemptId` | 200 | Deletion also recalculates user totals; correct domain behavior, but status/body policy should be documented. |
-| `GET /api/admin/users` | 200 | Strong enum validation for role/status/sort; invalid pagination silently defaults. |
-| `GET /api/admin/users/:userId` | 200 | Correct ID and not-found handling. |
-| `PATCH /api/admin/users/:userId/role` | 200 | Appropriate partial domain update; safeguards last-admin/self changes. |
-| `PATCH /api/admin/users/:userId/status` | 200 | Appropriate partial domain update; 200 no-op responses are used when state already matches. |
-| `GET /api/admin/categories` | 200 | Category is derived from Question strings rather than a first-class resource, making rename/delete bulk operations. |
-| `PATCH /api/admin/categories/:categoryName` | 200 | Semantically acceptable, but names in path require encoding and are mutable identifiers. Prefer Category IDs. |
-| `DELETE /api/admin/categories/:categoryName` | 200 | Correctly returns 409 when historical attempts prevent deletion. Prefer stable ID. |
-| `GET /api/admin/questions` | 200 | Good allowlist for sort field; invalid sort/order silently defaults while invalid difficulty returns 400. |
-| `POST /api/admin/questions` | 201 | Correct method/status and duplicate conflict 409. |
-| `GET /api/admin/questions/meta/options` | 200 | Static metadata endpoint is correctly ordered before `/:questionId`; `/meta/options` is awkward—prefer `/metadata`. |
-| `GET /api/admin/questions/:questionId` | 200 | Correct 400/404 handling. |
-| `PUT /api/admin/questions/:questionId` | 200 | Full payload validation makes PUT reasonable. |
-| `DELETE /api/admin/questions/:questionId` | 200 | Correct 409 when referenced by a Score. |
-| `GET /api/admin/achievements` | 200 | Search/filter/sort but no page/limit; output is definition-level aggregation, so bounded size currently makes this acceptable. |
-| `GET /api/admin/achievements/:code` | 200 | Uses mutable string code; validated and returns 404 when absent. |
-| `GET /api/admin/notifications` | 200 | Paginated and validates type/status; also returns an unpaginated active-user recipient list, creating an oversized coupled response. |
-| `POST /api/admin/notifications` | 201 | Correct creation status; validates recipients, types, content, and safe internal links. |
-| `DELETE /api/admin/notifications/batch/:batchId` | 200 | Correct route ordering before `/:notificationId`; batch deletion is practical but action/collection semantics should be documented. |
-| `DELETE /api/admin/notifications/:notificationId` | 200 | Correct malformed/missing handling. |
-| `GET /api/admin/settings` | 200 | Correct singleton read. |
-| `PATCH /api/admin/settings` | 200 | Correct partial update, but controller validation delegates heavily to the service; expose stable per-field errors. |
-| `POST /api/admin/settings/reset` | 200 | Action endpoint is acceptable; could be `DELETE /api/admin/settings/overrides` if defaults/overrides become distinct resources. |
+| Endpoint                                          | Success | Review                                                                                                                               |
+| ------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `GET /api/admin/dashboard`                        | 200     | Aggregate read; consistent.                                                                                                          |
+| `GET /api/admin/analytics`                        | 200     | Accepts `days`; invalid/out-of-range input is silently defaulted rather than rejected.                                               |
+| `GET /api/admin/activity-logs`                    | 200     | Paginated/searchable, but action/entity filter enums are not validated (`server/controllers/adminActivityLogController.js:62-77`).   |
+| `GET /api/admin/activity-logs/summary`            | 200     | Correct derived read.                                                                                                                |
+| `GET /api/admin/attempts`                         | 200     | Paginated/search/filter/sort. Invalid `userId` gets 400, but invalid sort silently becomes newest.                                   |
+| `GET /api/admin/attempts/:attemptId`              | 200     | Correct 400 malformed ID / 404 missing distinction.                                                                                  |
+| `DELETE /api/admin/attempts/:attemptId`           | 200     | Deletion also recalculates user totals; correct domain behavior, but status/body policy should be documented.                        |
+| `GET /api/admin/users`                            | 200     | Strong enum validation for role/status/sort; invalid pagination silently defaults.                                                   |
+| `GET /api/admin/users/:userId`                    | 200     | Correct ID and not-found handling.                                                                                                   |
+| `PATCH /api/admin/users/:userId/role`             | 200     | Appropriate partial domain update; safeguards last-admin/self changes.                                                               |
+| `PATCH /api/admin/users/:userId/status`           | 200     | Appropriate partial domain update; 200 no-op responses are used when state already matches.                                          |
+| `GET /api/admin/categories`                       | 200     | Category is derived from Question strings rather than a first-class resource, making rename/delete bulk operations.                  |
+| `PATCH /api/admin/categories/:categoryName`       | 200     | Semantically acceptable, but names in path require encoding and are mutable identifiers. Prefer Category IDs.                        |
+| `DELETE /api/admin/categories/:categoryName`      | 200     | Correctly returns 409 when historical attempts prevent deletion. Prefer stable ID.                                                   |
+| `GET /api/admin/questions`                        | 200     | Good allowlist for sort field; invalid sort/order silently defaults while invalid difficulty returns 400.                            |
+| `POST /api/admin/questions`                       | 201     | Correct method/status and duplicate conflict 409.                                                                                    |
+| `GET /api/admin/questions/meta/options`           | 200     | Static metadata endpoint is correctly ordered before `/:questionId`; `/meta/options` is awkward—prefer `/metadata`.                  |
+| `GET /api/admin/questions/:questionId`            | 200     | Correct 400/404 handling.                                                                                                            |
+| `PUT /api/admin/questions/:questionId`            | 200     | Full payload validation makes PUT reasonable.                                                                                        |
+| `DELETE /api/admin/questions/:questionId`         | 200     | Correct 409 when referenced by a Score.                                                                                              |
+| `GET /api/admin/achievements`                     | 200     | Search/filter/sort but no page/limit; output is definition-level aggregation, so bounded size currently makes this acceptable.       |
+| `GET /api/admin/achievements/:code`               | 200     | Uses mutable string code; validated and returns 404 when absent.                                                                     |
+| `GET /api/admin/notifications`                    | 200     | Paginated and validates type/status; also returns an unpaginated active-user recipient list, creating an oversized coupled response. |
+| `POST /api/admin/notifications`                   | 201     | Correct creation status; validates recipients, types, content, and safe internal links.                                              |
+| `DELETE /api/admin/notifications/batch/:batchId`  | 200     | Correct route ordering before `/:notificationId`; batch deletion is practical but action/collection semantics should be documented.  |
+| `DELETE /api/admin/notifications/:notificationId` | 200     | Correct malformed/missing handling.                                                                                                  |
+| `GET /api/admin/settings`                         | 200     | Correct singleton read.                                                                                                              |
+| `PATCH /api/admin/settings`                       | 200     | Correct partial update, but controller validation delegates heavily to the service; expose stable per-field errors.                  |
+| `POST /api/admin/settings/reset`                  | 200     | Action endpoint is acceptable; could be `DELETE /api/admin/settings/overrides` if defaults/overrides become distinct resources.      |
 
 ### Administrator reports
 
-| Endpoint | Success | Review |
-|---|---|---|
-| `GET /api/admin/reports/summary` | 200 JSON | Correct read. |
-| `GET /api/admin/reports/users` | 200 CSV | Correct export read; role/status filter validation is weaker than admin user list. |
-| `GET /api/admin/reports/attempts` | 200 CSV | `days` silently normalizes/defaults. |
-| `GET /api/admin/reports/questions` | 200 CSV | Category/difficulty filters are accepted; align enum validation with question list. |
-| `GET /api/admin/reports/categories` | 200 CSV | Correct export read. |
-| `GET /api/admin/reports/achievements` | 200 CSV | Correct export read. |
+| Endpoint                              | Success  | Review                                                                              |
+| ------------------------------------- | -------- | ----------------------------------------------------------------------------------- |
+| `GET /api/admin/reports/summary`      | 200 JSON | Correct read.                                                                       |
+| `GET /api/admin/reports/users`        | 200 CSV  | Correct export read; role/status filter validation is weaker than admin user list.  |
+| `GET /api/admin/reports/attempts`     | 200 CSV  | `days` silently normalizes/defaults.                                                |
+| `GET /api/admin/reports/questions`    | 200 CSV  | Category/difficulty filters are accepted; align enum validation with question list. |
+| `GET /api/admin/reports/categories`   | 200 CSV  | Correct export read.                                                                |
+| `GET /api/admin/reports/achievements` | 200 CSV  | Correct export read.                                                                |
 
 CSV responses intentionally cannot follow the JSON `{ success, data }` envelope. They set `text/csv` and attachment disposition at `server/controllers/adminReportController.js:35-40`; this exception should be explicit in API documentation.
 

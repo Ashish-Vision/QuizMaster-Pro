@@ -54,7 +54,7 @@ client/css/components/stat-card.css
 Proposed interface:
 
 ```js
-createStatCard({ icon, label, value, detail, tone, href })
+createStatCard({ icon, label, value, detail, tone, href });
 ```
 
 Use modifier classes such as `stat-card--success` rather than page-specific component copies. Keep complex domain cards (quiz question, result review, daily challenge) separate.
@@ -343,9 +343,9 @@ Pages redirect differently, clear different localStorage keys, and produce diffe
 Create `client/js/services/session.js`:
 
 ```js
-handleSessionExpired()
-logout({ redirectTo = "/login" } = {})
-clearSessionStorage()
+handleSessionExpired();
+logout(({ redirectTo = "/login" } = {}));
+clearSessionStorage();
 ```
 
 The shared API client should call `handleSessionExpired` for protected requests. Use one authoritative list/prefix policy for browser storage cleanup.

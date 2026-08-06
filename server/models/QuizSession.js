@@ -7,7 +7,9 @@ const QUIZ_SESSION_IDENTIFIER_BYTES = 32;
 const QUIZ_SESSION_IDENTIFIER_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 
 function createQuizSessionIdentifier() {
-  return crypto.randomBytes(QUIZ_SESSION_IDENTIFIER_BYTES).toString("base64url");
+  return crypto
+    .randomBytes(QUIZ_SESSION_IDENTIFIER_BYTES)
+    .toString("base64url");
 }
 
 const quizSessionSchema = new mongoose.Schema(
@@ -136,12 +138,11 @@ quizSessionSchema.path("expiresAt").validate(function validateExpiration(
   return Boolean(this.startedAt && expiresAt && expiresAt > this.startedAt);
 }, "Quiz session expiration must be after its start time.");
 
-quizSessionSchema.path("dailyChallenge").validate(
-  function validateDailyChallenge(dailyChallenge) {
+quizSessionSchema
+  .path("dailyChallenge")
+  .validate(function validateDailyChallenge(dailyChallenge) {
     return this.mode === "daily" || !dailyChallenge;
-  },
-  "Only daily quiz sessions may reference a daily challenge.",
-);
+  }, "Only daily quiz sessions may reference a daily challenge.");
 
 quizSessionSchema.index({
   user: 1,

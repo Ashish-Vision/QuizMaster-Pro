@@ -1,8 +1,45 @@
 # QuizMaster-Pro Full Project Audit
 
+> Release-candidate update (2026-08-05): this report originally described the pre-remediation tree. The authoritative current classification is below; original evidence is retained for traceability.
+
+## Release-candidate classification
+
+| Finding                                     | Current classification                          | Evidence / disposition                                                                                                                                                                  |
+| ------------------------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| QM-001 replayable quizzes                   | Fixed, focused tests                            | `QuizSession` supplies opaque single-use identifiers; submit claims `active` to `processing`; unique score/session indexes. Full replica-set concurrency integration remains a blocker. |
+| QM-002 wrong admin question handlers        | Fixed, route loaded                             | `adminQuestionRoutes` imports question handlers and exposes list/create/metadata/read/update/delete.                                                                                    |
+| QM-003 user dashboard calls admin API       | Fixed, browser audited                          | User dashboard calls quiz, leaderboard, achievements, and notification user APIs only.                                                                                                  |
+| QM-004 non-transactional completion         | Fixed in code; integration verification pending | Quiz attempt, score, daily completion, counters, achievements, notifications, and completion share one Mongoose transaction. Replica-set rollback/concurrency tests remain required.    |
+| QM-005 sessions survive password changes    | Fixed, tested                                   | JWT `tokenVersion` is checked and incremented on password change/reset.                                                                                                                 |
+| QM-006 unsafe notification links            | Fixed, tested                                   | Server validator permits only safe same-origin relative paths.                                                                                                                          |
+| QM-007 CSV formula injection                | Fixed, tested                                   | Shared CSV encoder neutralizes formula prefixes before quoting.                                                                                                                         |
+| QM-008 inactive questions selected          | Fixed, inspected                                | New standard/daily selection uses `isActive: { $ne: false }`; historical results remain readable.                                                                                       |
+| QM-009 CSP disabled                         | Fixed, HTTP tested                              | Helmet CSP is enabled with self-only scripts and narrowly scoped style/font/image sources.                                                                                              |
+| QM-010 JWT constraints missing              | Fixed, tested                                   | HS256, issuer, audience, expiry, and token version are enforced.                                                                                                                        |
+| QM-011 Host-derived security URLs           | Fixed for production                            | Production requires validated `APP_ORIGIN`/`CLIENT_ORIGIN`; header fallback is development-only.                                                                                        |
+| QM-012 process-local limits                 | Open limitation                                 | Safe for one process; a shared store is required before horizontal scaling.                                                                                                             |
+| QM-013 MIME-only avatar validation          | Fixed, tested                                   | Multipart MIME and JPEG/PNG/WebP signatures must agree. Decode/re-encode and pixel caps remain defense-in-depth work.                                                                   |
+| QM-014 reset URL exposed outside production | Fixed                                           | Raw URL requires explicit `EXPOSE_DEVELOPMENT_RESET_URL=true` and development mode.                                                                                                     |
+| QM-015 requests without Origin              | Mitigated                                       | CORS remains transport policy; production cookie mutations separately require exact same origin.                                                                                        |
+| QM-016 leaderboard loads all users          | Fixed                                           | Top ten is bounded, total uses count, current rank uses a count query, and a matching compound index was added.                                                                         |
+| QM-017 embedded daily completions           | Open release blocker for high scale             | Moving completions requires a migration/product rollout and was intentionally not attempted.                                                                                            |
+| QM-018 offset pagination                    | Documented limitation                           | Endpoints are bounded; cursor migration is documented for a later compatible API.                                                                                                       |
+| QM-019 unbounded report memory              | Open warning                                    | Exports remain memory-buffered and need streaming/bounds before large datasets.                                                                                                         |
+| QM-020/QM-021 repeated aggregations         | Open optimization                               | No correctness regression confirmed; redesign deferred.                                                                                                                                 |
+| QM-022 duplicate leaderboard APIs           | Open compatibility warning                      | Removal would be incompatible. Canonical client behavior is `/api/leaderboard`.                                                                                                         |
+| QM-023 browser duplication                  | Open maintainability warning                    | No broad frontend rewrite performed.                                                                                                                                                    |
+| QM-024 achievement innerHTML                | Fixed                                           | Database-controlled fields are HTML-escaped before template insertion; CSP remains defense in depth.                                                                                    |
+| QM-025/QM-026 server duplication            | Open maintainability warning                    | No risky consolidation performed.                                                                                                                                                       |
+| QM-027 empty placeholders                   | Partially fixed                                 | README, env validation, and Docker Compose implemented. `client/index.html`, `client/js/api.js`, and service/validator placeholders remain tracked and require an ownership decision.   |
+| QM-028 package metadata/dependencies        | Partially fixed                                 | Entry point, description, scripts, and metadata corrected. Dependency removal was intentionally not attempted without runtime/deployment proof.                                         |
+| QM-029 no automated tests                   | Fixed foundation, coverage blocker              | Jest and Playwright scripts/suites added; current controller/service coverage is not sufficient for release.                                                                            |
+| QM-030/QM-031 ownership                     | Verified fixed                                  | Result and notification mutations remain scoped to the authenticated user.                                                                                                              |
+| QM-032 token hashing                        | Verified fixed                                  | Reset and verification tokens remain SHA-256 hashes at rest.                                                                                                                            |
+| QM-033 regex injection                      | Verified fixed                                  | Search input remains escaped before regex use.                                                                                                                                          |
+
 Audit date: 2026-08-05  
 Scope: application source, routes, controllers, models, services, middleware, browser JavaScript, views, configuration, scripts, and package metadata.  
-Method: read-only static review of the current working tree, JavaScript syntax checking, and production dependency audit.  
+Method: read-only static review of the current working tree, JavaScript syntax checking, and production dependency audit.
 
 Status vocabulary:
 
@@ -118,7 +155,7 @@ The current production dependency audit (`npm audit --omit=dev`) reported 0 know
 - **Status:** Confirmed
 - **Exact location:** `server/controllers/passwordResetController.js:21`, `server/controllers/passwordResetController.js:24`, `server/controllers/emailVerificationController.js:16`, `server/controllers/emailVerificationController.js:19`
 - **Description:** If configured origins are missing, password-reset and email-verification links are constructed from request protocol and Host.
-- **Evidence:** Both URL builders fall back to ``${req.protocol}://${req.get("host")}``. In a deployment with permissive Host/proxy routing, a crafted request can cause security emails to contain attacker-controlled origins.
+- **Evidence:** Both URL builders fall back to `${req.protocol}://${req.get("host")}`. In a deployment with permissive Host/proxy routing, a crafted request can cause security emails to contain attacker-controlled origins.
 - **Recommended fix:** Require and URL-validate one canonical `APP_ORIGIN` in production at startup. Do not generate security links from request headers.
 
 ### QM-012 — Rate limiting is local to each Node process
@@ -345,4 +382,3 @@ The current production dependency audit (`npm audit --omit=dev`) reported 0 know
 - Administrator routers generally apply authentication and administrator authorization centrally.
 - JSON/urlencoded request bodies and avatar byte size are capped.
 - Current production dependency audit reports no known advisories.
-

@@ -8,20 +8,35 @@ async function getLeaderboard(req, res, next) {
   try {
     const currentUserId = req.user?._id || req.user?.id;
 
-    const users = await User.find({
+    const eligibility = {
       isActive: true,
       role: "user",
-    })
-      .select(
-        "firstName lastName avatar totalXp quizzesCompleted correctAnswers currentStreak",
-      )
-      .sort({
-        totalXp: -1,
-        quizzesCompleted: -1,
-        correctAnswers: -1,
-        createdAt: 1,
-      })
-      .lean();
+    };
+    const sort = {
+      totalXp: -1,
+      quizzesCompleted: -1,
+      correctAnswers: -1,
+      createdAt: 1,
+      _id: 1,
+    };
+
+    const [users, totalPlayers, currentUserDocument] = await Promise.all([
+      User.find(eligibility)
+        .select(
+          "firstName lastName avatar totalXp quizzesCompleted correctAnswers currentStreak",
+        )
+        .sort(sort)
+        .limit(10)
+        .lean(),
+      User.countDocuments(eligibility),
+      mongoose.Types.ObjectId.isValid(currentUserId)
+        ? User.findOne({ ...eligibility, _id: currentUserId })
+            .select(
+              "firstName lastName avatar totalXp quizzesCompleted correctAnswers currentStreak createdAt",
+            )
+            .lean()
+        : null,
+    ]);
 
     const rankedUsers = users.map((user, index) => ({
       rank: index + 1,
@@ -40,13 +55,60 @@ async function getLeaderboard(req, res, next) {
         String(user._id) === String(currentUserId),
     }));
 
-    const topUsers = rankedUsers.slice(0, 10);
+    const topUsers = rankedUsers;
+    let currentUser =
+      topUsers.find((user) => user.isCurrentUser === true) || null;
 
-    const currentUser = rankedUsers.find((user) => user.isCurrentUser === true);
+    if (!currentUser && currentUserDocument) {
+      const {
+        totalXp = 0,
+        quizzesCompleted = 0,
+        correctAnswers = 0,
+        createdAt,
+      } = currentUserDocument;
+      const ahead = await User.countDocuments({
+        ...eligibility,
+        $or: [
+          { totalXp: { $gt: totalXp } },
+          { totalXp, quizzesCompleted: { $gt: quizzesCompleted } },
+          {
+            totalXp,
+            quizzesCompleted,
+            correctAnswers: { $gt: correctAnswers },
+          },
+          {
+            totalXp,
+            quizzesCompleted,
+            correctAnswers,
+            createdAt: { $lt: createdAt },
+          },
+          {
+            totalXp,
+            quizzesCompleted,
+            correctAnswers,
+            createdAt,
+            _id: { $lt: currentUserDocument._id },
+          },
+        ],
+      });
+      currentUser = {
+        rank: ahead + 1,
+        userId: currentUserDocument._id,
+        firstName: currentUserDocument.firstName,
+        lastName: currentUserDocument.lastName,
+        fullName: `${currentUserDocument.firstName} ${currentUserDocument.lastName}`,
+        avatar: currentUserDocument.avatar || "",
+        totalXp,
+        quizzesCompleted,
+        correctAnswers,
+        currentStreak: currentUserDocument.currentStreak || 0,
+        isCurrentUser: true,
+      };
+    }
 
     return res.status(200).json({
       success: true,
-      totalPlayers: rankedUsers.length,
+      totalPlayers,
       leaderboard: topUsers,
       currentUser: currentUser || null,
     });

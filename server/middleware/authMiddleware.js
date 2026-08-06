@@ -1,10 +1,7 @@
 "use strict";
 
 const User = require("../models/User");
-const {
-  tokenVersionMatches,
-  verifyAuthToken,
-} = require("../utils/authToken");
+const { tokenVersionMatches, verifyAuthToken } = require("../utils/authToken");
 const { getAuthCookieClearOptions } = require("../utils/helpers");
 
 /**

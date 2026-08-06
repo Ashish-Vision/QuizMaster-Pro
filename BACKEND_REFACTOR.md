@@ -47,10 +47,10 @@ Most functions are the same `typeof value === "string" ? value.trim() : ""`, but
 Create `server/utils/normalize.js`:
 
 ```js
-normalizeText(value, { lowercase = false, uppercase = false } = {})
-normalizeEmail(value)
-normalizeNumber(value, { fallback = 0, min, max } = {})
-normalizeBoolean(value, { fallback } = {})
+normalizeText(value, ({ lowercase = false, uppercase = false } = {}));
+normalizeEmail(value);
+normalizeNumber(value, ({ fallback = 0, min, max } = {}));
+normalizeBoolean(value, ({ fallback } = {}));
 ```
 
 Keep domain-specific normalization such as question options or categories in their feature validator; do not turn this into an untyped catch-all coercion layer.
@@ -161,7 +161,7 @@ executePagedQuery({
   limit,
   populate,
   transform,
-})
+});
 ```
 
 It should enforce a stable `_id` tie-break, use `lean()`, return `{items, totalItems, pagination}`, and not know feature-specific filters. For complex aggregation pages, retain explicit pipelines rather than forcing them through this helper.
@@ -189,9 +189,9 @@ The regex escape function is duplicated verbatim. `$or` blocks repeat the same c
 Create `server/utils/mongoSearch.js`:
 
 ```js
-escapeRegex(value)
-createContainsSearch(search, fields, { maxLength = 100 } = {})
-createExactCaseInsensitiveSearch(value)
+escapeRegex(value);
+createContainsSearch(search, fields, ({ maxLength = 100 } = {}));
+createExactCaseInsensitiveSearch(value);
 ```
 
 Return a Mongo filter fragment, not a mutable query. Enforce maximum search length. For growing collections, plan migration from unanchored regex to MongoDB text/Atlas Search rather than pretending a utility solves query performance.
@@ -248,8 +248,8 @@ Every action performs `mongoose.Types.ObjectId.isValid`, constructs a 400 respon
 Create `server/middleware/validateParams.js`:
 
 ```js
-validateObjectIdParam("questionId")
-validateObjectIdParams(["challengeId", "resultId"])
+validateObjectIdParam("questionId");
+validateObjectIdParams(["challengeId", "resultId"]);
 ```
 
 The middleware should store the normalized value in `req.validated.params` or simply guarantee validity. Also expose `assertObjectId(value, field)` for service entry points invoked outside HTTP.
@@ -310,13 +310,13 @@ The same length/email rules are maintained in several controllers and again in t
 Create `server/validators/accountValidators.js`:
 
 ```js
-validatePersonName(value, field)
-validateEmail(value)
-validatePassword(value, { field = "password" } = {})
-validatePasswordConfirmation(password, confirmation)
-validateRegistrationPayload(body)
-validateProfilePayload(body)
-validatePasswordChangePayload(body)
+validatePersonName(value, field);
+validateEmail(value);
+validatePassword(value, ({ field = "password" } = {}));
+validatePasswordConfirmation(password, confirmation);
+validateRegistrationPayload(body);
+validateProfilePayload(body);
+validatePasswordChangePayload(body);
 ```
 
 Use a structured result or schema-validation library. Keep User schema validation as the persistence backstop, but source constraints such as 2/50 and 8/128 from shared constants.
@@ -377,12 +377,12 @@ User objects are formatted differently by authentication, settings, admin users,
 Create `server/serializers/userSerializer.js` and `server/constants/projections.js`:
 
 ```js
-USER_PUBLIC_FIELDS
-USER_ADMIN_FIELDS
-serializePublicUser(user)
-serializeAccount(user)
-serializeAdminUser(user)
-serializeLeaderboardUser(user, context)
+USER_PUBLIC_FIELDS;
+USER_ADMIN_FIELDS;
+serializePublicUser(user);
+serializeAccount(user);
+serializeAdminUser(user);
+serializeLeaderboardUser(user, context);
 ```
 
 Serializers should be explicit allowlists; do not create one serializer that conditionally exposes every field based on loosely supplied flags.
@@ -410,10 +410,10 @@ The same score, answer counts, accuracy, XP, timing, and completion fields are s
 Create `server/serializers/scoreSerializer.js`:
 
 ```js
-SCORE_SUMMARY_FIELDS
-serializeScoreSummary(score)
-serializeScoreResult(score, { includeReview })
-serializeAdminAttempt(score)
+SCORE_SUMMARY_FIELDS;
+serializeScoreSummary(score);
+serializeScoreResult(score, { includeReview });
+serializeAdminAttempt(score);
 ```
 
 CSV row construction can consume the serializer but should remain in the reporting feature because spreadsheet formatting is presentation-specific.
@@ -439,8 +439,8 @@ User/admin APIs independently map IDs, metadata, dates, and populated user field
 Create `server/serializers/notificationSerializer.js` with user/admin variants, and extend `notificationService` with:
 
 ```js
-buildNotificationDocument(input)
-createNotifications(inputs, { session } = {})
+buildNotificationDocument(input);
+createNotifications(inputs, ({ session } = {}));
 ```
 
 Keep recipient selection in the administrator feature; it is business logic, not serialization.
@@ -465,8 +465,8 @@ Two endpoints implement similar ranking with different role/active filters, sort
 Create `server/services/leaderboardService.js`:
 
 ```js
-getLeaderboard({ currentUserId, limit, cursor })
-getUserRank(userId)
+getLeaderboard({ currentUserId, limit, cursor });
+getUserRank(userId);
 ```
 
 Use one controller/DTO and deprecate the duplicate route. The service should own eligibility and stable tie-break rules.
@@ -491,10 +491,10 @@ Both endpoints validate/update names, but one also changes email. They use diffe
 Create `server/services/accountService.js`:
 
 ```js
-getAccount(userId)
-updateProfile(userId, input)
-changeEmail(userId, email)
-changePassword(userId, input)
+getAccount(userId);
+updateProfile(userId, input);
+changeEmail(userId, email);
+changePassword(userId, input);
 ```
 
 Keep response serialization separate. Make both pages call one canonical API during migration, then remove the duplicate route.
@@ -548,9 +548,9 @@ Several features independently call `Question.distinct("category")` or `Score.di
 Create `server/services/categoryQueryService.js` with explicit methods:
 
 ```js
-getPlayableCategories()
-getQuestionBankCategories()
-getAttemptCategories({ userId } = {})
+getPlayableCategories();
+getQuestionBankCategories();
+getAttemptCategories(({ userId } = {}));
 ```
 
 Do not replace them with one ambiguous `getCategories(filter)` method. Cache global option lists briefly and invalidate on question/category administration changes.
@@ -579,10 +579,10 @@ User, Score, Question, Achievement, Notification, active-user, and role counts a
 Create `server/services/adminMetricsService.js`:
 
 ```js
-getPlatformCounts({ session } = {})
-getUserStatusCounts()
-getQuestionCounts()
-getAttemptCounts()
+getPlatformCounts(({ session } = {}));
+getUserStatusCounts();
+getQuestionCounts();
+getAttemptCounts();
 ```
 
 Return named, documented metrics. Add short-lived caching for expensive global metrics when exact real-time consistency is unnecessary. Keep report-window counts separate because they accept date filters.
@@ -610,11 +610,11 @@ Accuracy, answer totals, XP, category performance, activity dates, and recent pe
 Create composable pipeline builders under `server/queries/scoreQueries.js`:
 
 ```js
-scoreMatch({ userId, dateRange, category })
-answerTotalsGroup()
-accuracySummaryGroup()
-categoryPerformancePipeline(options)
-dailyActivityPipeline(options)
+scoreMatch({ userId, dateRange, category });
+answerTotalsGroup();
+accuracySummaryGroup();
+categoryPerformancePipeline(options);
+dailyActivityPipeline(options);
 ```
 
 Build feature-specific read services on these fragments. Test pipeline output against fixtures. Avoid a single parameter-heavy “analytics service” that returns every dashboard shape.
@@ -641,12 +641,12 @@ Several controllers independently calculate UTC day starts, date keys, day seque
 Create `server/utils/dateRange.js`:
 
 ```js
-startOfUtcDay(date)
-addUtcDays(date, count)
-toUtcDateKey(date)
-createUtcDayRange(date)
-createDateSeries({ start, days })
-mergeSeries(records, { key, defaults })
+startOfUtcDay(date);
+addUtcDays(date, count);
+toUtcDateKey(date);
+createUtcDayRange(date);
+createDateSeries({ start, days });
+mergeSeries(records, { key, defaults });
 ```
 
 DailyChallenge statics may delegate to these pure helpers. Keep display formatting out of the backend utility.
@@ -674,10 +674,10 @@ DailyChallenge statics may delegate to these pure helpers. Keep display formatti
 Add pure functions to `server/utils/number.js`:
 
 ```js
-toFiniteNumber(value, fallback = 0)
-toNonNegativeNumber(value, fallback = 0)
-roundNumber(value, decimalPlaces = 2)
-clamp(value, min, max)
+toFiniteNumber(value, (fallback = 0));
+toNonNegativeNumber(value, (fallback = 0));
+roundNumber(value, (decimalPlaces = 2));
+clamp(value, min, max);
 ```
 
 Domain concepts such as XP normalization should retain domain-named wrappers around these primitives.
