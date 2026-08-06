@@ -1,111 +1,166 @@
+<div align="center">
+
+<!-- PROJECT LOGO PLACEHOLDER: replace with a reviewed QuizMaster Pro logo asset. -->
+
+### 🧠 Project Logo Placeholder
+
 # QuizMaster Pro
 
-QuizMaster Pro is a secure full-stack quiz platform built with Express, EJS, vanilla JavaScript, and MongoDB. It combines a responsive learner experience with administrator content management, analytics, reporting, and a transaction-safe quiz engine.
+### Learn. Compete. Improve.
 
-**Status:** local v1.0.0 release candidate. This repository is a portfolio project, not a hosted public service.
+A secure, full-stack quiz platform with server-authoritative quizzes, learner progress systems, personal analytics, and a complete administrator experience.
 
-## Highlights
+[![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Replica_Set-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Tests](https://img.shields.io/badge/tests-230_Jest_%2B_26_Playwright-passing-brightgreen)](#testing)
+[![License](https://img.shields.io/badge/license-All_Rights_Reserved-lightgrey)](LICENSE)
+
+[Installation](#installation) · [API](#api-overview) · [Architecture](#architecture) · [Contributing](#contributing)
+
+<!-- PROJECT BANNER PLACEHOLDER: replace with a reviewed repository banner. -->
+
+> **Professional banner placeholder — QuizMaster Pro application showcase**
+
+</div>
+
+> **Project status:** local v1.0.0 release candidate. QuizMaster Pro is a portfolio project and is not presented as a hosted public service.
+
+## Table of contents
+
+- [Project overview](#project-overview)
+- [Key features](#key-features)
+- [Screenshots](#screenshots)
+- [Technology stack](#technology-stack)
+- [Folder structure](#folder-structure)
+- [Installation](#installation)
+- [Environment variables](#environment-variables)
+- [Usage](#usage)
+- [API overview](#api-overview)
+- [Database schema](#database-schema)
+- [Architecture](#architecture)
+- [Security features](#security-features)
+- [Testing](#testing)
+- [Future roadmap](#future-roadmap)
+- [Contributing](#contributing)
+- [License](#license)
+- [Author](#author)
+
+## Project overview
+
+QuizMaster Pro is a server-rendered Node.js application built with Express, EJS, vanilla JavaScript, and MongoDB. It combines account management, category-based quizzes, daily challenges, progress tracking, personal analytics, and administrator tooling in one modular application.
+
+Quiz integrity is enforced by the server. Starting a quiz creates an opaque, expiring session containing the immutable question set. Submission is scored against that session inside a MongoDB transaction so results, XP, counters, daily completion, achievements, notifications, and session state succeed or fail together.
+
+The frontend has no framework or compilation step. Express renders semantic EJS pages and serves page-specific JavaScript and responsive CSS directly.
+
+## Key features
 
 ### Learner experience
 
-- Registration, email verification, login, recovery, and session-aware account security
-- Category-based quizzes with server-issued, expiring sessions
-- Daily challenges, XP, levels, streaks, achievements, and notifications
-- Owned result review, history, leaderboard, and performance analytics
-- Profile, avatar, account settings, and password management
-- Responsive dark UI for desktop, tablet, and mobile
+- Registration, email verification, login, logout, and password recovery
+- Category-based quizzes using expiring, server-issued sessions
+- Daily challenges with configured XP and badge rewards
+- Owned result review and paginated quiz history
+- XP, levels, streaks, achievements, and notifications
+- Leaderboard and personal performance analytics
+- Profile information, avatar upload/removal, and account settings
+- Responsive desktop and mobile interface
 
 ### Administrator experience
 
-- Dashboard statistics and analytics
-- Question and category management
-- User role/status management with session revocation
-- Attempt review, achievements, notifications, reports, and activity logs
-- Platform settings with administrator-only authorization
+- Platform dashboard and analytics
+- Question creation, editing, activation, and safe deletion
+- Category statistics, renaming, and guarded deletion
+- User search, role changes, and account-status management
+- Quiz-attempt inspection and controlled deletion
+- Achievement statistics and details
+- Notification creation and management
+- CSV reports with spreadsheet-safe encoding
+- Platform settings and administrator activity logs
 
-### Security and integrity
+### Quality and integrity
 
-- HS256 JWTs with issuer, audience, expiry, and per-user token version
-- HttpOnly, SameSite cookies and exact-origin mutation checks
-- Server-authoritative question sets and atomic `active → processing → completed` claims
-- MongoDB transactions for score, XP, counters, daily completion, achievements, and notifications
-- Replay/concurrency protection with unique indexes and deterministic conflicts
-- Ownership-scoped results and notifications
-- Active-question enforcement with historical-session compatibility
-- CSP, request-key hardening, rate limits, upload signature/dimension checks
-- Same-origin notification links and spreadsheet-safe CSV encoding
+- Transactional, replay-safe quiz submission
+- Active-question enforcement with historical-result compatibility
+- Explicit learner, owner, and administrator authorization boundaries
+- Loading, empty, validation, and error states
+- Keyboard-aware navigation and dialogs
+- Desktop and mobile Chromium audits
 
-## Technology
+## Screenshots
 
-| Layer          | Technology                                         |
-| -------------- | -------------------------------------------------- |
-| Server         | Node.js, Express, EJS                              |
-| Database       | MongoDB, Mongoose, replica-set transactions        |
-| Browser        | Semantic HTML, CSS, vanilla JavaScript             |
-| Authentication | JWT, bcrypt, HttpOnly cookies                      |
-| Integrations   | Nodemailer SMTP, optional Cloudinary avatars       |
-| Tests          | Jest, Supertest, mongodb-memory-server, Playwright |
-| Quality        | ESLint, Prettier, npm audit, GitHub Actions        |
+Screenshots are intentionally represented by placeholders until reviewed images are captured from a local session using synthetic data.
 
-## Architecture
+| Learner experience                                                       | Administrator experience                                                             |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| **Login placeholder**<br>`docs/images/screenshots/login.png`             | **Admin dashboard placeholder**<br>`docs/images/screenshots/admin-dashboard.png`     |
+| **Dashboard placeholder**<br>`docs/images/screenshots/dashboard.png`     | **Admin analytics placeholder**<br>`docs/images/screenshots/admin-analytics.png`     |
+| **Quiz placeholder**<br>`docs/images/screenshots/quiz.png`               | **Question management placeholder**<br>`docs/images/screenshots/admin-questions.png` |
+| **Result placeholder**<br>`docs/images/screenshots/result.png`           | **User management placeholder**<br>`docs/images/screenshots/admin-users.png`         |
+| **Leaderboard placeholder**<br>`docs/images/screenshots/leaderboard.png` | **Attempt management placeholder**<br>`docs/images/screenshots/admin-attempts.png`   |
 
-```mermaid
-flowchart LR
-  Browser[Browser: EJS + vanilla JS] --> Express[Express pages and JSON APIs]
-  Express --> Security[Security and authorization middleware]
-  Security --> Controllers[Controllers]
-  Controllers --> Services[Domain services]
-  Controllers --> Models[Mongoose models]
-  Services --> Models
-  Models --> Mongo[(MongoDB replica set)]
-```
+See [the screenshot guide](docs/SCREENSHOT_GUIDE.md) before adding images. Never capture real credentials, tokens, email addresses, or private user data.
 
-Quiz submission is deliberately server-authoritative:
+## Technology stack
 
-```mermaid
-sequenceDiagram
-  participant B as Browser
-  participant A as Quiz API
-  participant M as MongoDB transaction
-  B->>A: Start category quiz
-  A-->>B: Opaque session ID + questions without answers
-  B->>A: Session ID + selected answers
-  A->>M: Atomically claim active session
-  M->>M: Score, counters, rewards, result, completion
-  M-->>A: Commit once
-  A-->>B: Owned result ID
-```
+| Area             | Technology                                               |
+| ---------------- | -------------------------------------------------------- |
+| Runtime          | Node.js 22+                                              |
+| Server           | Express 5, CommonJS                                      |
+| Rendering        | EJS                                                      |
+| Browser          | HTML, CSS, vanilla JavaScript                            |
+| Database         | MongoDB, Mongoose                                        |
+| Authentication   | JSON Web Tokens, bcrypt, HttpOnly cookies                |
+| Security         | Helmet, CSP, CORS, express-rate-limit, request hardening |
+| Email            | Nodemailer with optional SMTP configuration              |
+| Avatar storage   | Optional Cloudinary integration                          |
+| Unit/API testing | Jest, Supertest                                          |
+| Database testing | mongodb-memory-server and replica-set fixtures           |
+| Browser testing  | Playwright with desktop and Pixel 7 profiles             |
+| Code quality     | ESLint, Prettier, npm audit                              |
 
-See [Architecture](docs/ARCHITECTURE.md) for current boundaries and data flows.
-
-## Repository structure
+## Folder structure
 
 ```text
-client/views/       EJS pages and partials
-client/js/          Page behavior and shared browser utilities
-client/css/         Design foundations and page-specific styles
-server/routes/      HTTP method/path and middleware contracts
-server/controllers/ Validation and response coordination
-server/services/    Reusable domain workflows and integrations
-server/models/      Mongoose schemas, validation, and indexes
-server/middleware/  Authentication, security, uploads, and errors
-server/utils/       JWT, CSV, URL, normalization, and pagination helpers
-server/database/    Explicit question seed/reset scripts
-tests/              Jest unit, contract, and MongoDB integration suites
-e2e/                Playwright desktop/mobile audits
-docs/               Architecture, API, security, testing, and review guides
+QuizMaster-Pro/
+├── client/
+│   ├── css/                 # Shared, feature, responsive, and admin styles
+│   ├── js/                  # Page-specific browser behavior
+│   │   └── admin/           # Administrator page scripts
+│   └── views/               # EJS pages and shared partials
+├── server/
+│   ├── config/              # Environment, MongoDB, and Cloudinary setup
+│   ├── controllers/         # HTTP request coordination
+│   ├── database/            # Bundled questions and seed/reset commands
+│   ├── middleware/          # Authentication, authorization, security, uploads
+│   ├── models/              # Mongoose schemas, validation, and indexes
+│   ├── routes/              # Page and JSON API contracts
+│   ├── services/            # Reusable domain workflows
+│   ├── utils/               # JWT, CSV, URL, pagination, and input helpers
+│   ├── app.js               # Express composition
+│   └── server.js            # Environment, database, and HTTP startup
+├── tests/                   # Jest unit, contract, security, and integration tests
+├── e2e/                     # Playwright desktop/mobile audits
+├── docs/                    # Showcase and supporting technical documentation
+├── scripts/                 # Local verification utilities
+├── .env.example             # Safe environment template
+├── package.json             # Dependencies and project commands
+└── README.md
 ```
 
-## Prerequisites
+## Installation
 
-- Node.js 22 or newer (`24.x` is used by the quality workflow)
+### Prerequisites
+
+- Node.js 22 or newer
 - npm
-- MongoDB 8-compatible server configured as a replica set
-- Chromium for Playwright tests
+- MongoDB configured as a replica set
+- Chromium when running Playwright tests
 
-MongoDB transactions are required for quiz completion. A standalone MongoDB instance can render pages but cannot safely complete quizzes.
+MongoDB transactions are required for quiz completion. A standalone MongoDB instance is insufficient for the complete workflow.
 
-## Local installation
+### Setup
 
 ```bash
 git clone https://github.com/Ashish-Vision/QuizMaster-Pro.git
@@ -114,9 +169,7 @@ npm ci
 cp .env.example .env
 ```
 
-Edit `.env` using [Environment configuration](docs/ENVIRONMENT.md). Never commit `.env`.
-
-Start or initialize a local MongoDB replica set, then optionally seed the question collection:
+Configure `.env`, start your MongoDB replica set, and optionally seed the bundled questions:
 
 ```bash
 npm run seed:questions
@@ -125,68 +178,264 @@ npm run dev
 
 Open `http://localhost:5000`.
 
-`npm run reset:questions` replaces the question collection and is intentionally explicit. Use it only with a disposable local database.
+For database setup, production validation, troubleshooting, and first-administrator instructions, see [INSTALLATION.md](INSTALLATION.md).
 
-## First administrator
+## Environment variables
 
-Register and verify a normal account. In your local MongoDB instance, change that account’s `role` from `user` to `admin`, then log in again so authorization is evaluated through a fresh token. The application intentionally has no public “create admin” endpoint.
+### Required and core variables
 
-## Commands
+| Variable         | Required   | Description                                                   |
+| ---------------- | ---------- | ------------------------------------------------------------- |
+| `NODE_ENV`       | Yes        | Runtime mode, normally `development`, `test`, or `production` |
+| `PORT`           | No         | HTTP port; defaults to `5000`                                 |
+| `MONGODB_URI`    | Yes        | MongoDB replica-set connection URI                            |
+| `JWT_SECRET`     | Yes        | Random JWT secret of at least 32 bytes                        |
+| `JWT_EXPIRES_IN` | No         | JWT lifetime; defaults to `7d`                                |
+| `JWT_ISSUER`     | No         | Expected JWT issuer; defaults to `quizmaster-pro`             |
+| `JWT_AUDIENCE`   | No         | Expected JWT audience; defaults to `quizmaster-pro-users`     |
+| `APP_ORIGIN`     | Production | Canonical application origin; HTTPS is required in production |
+| `CLIENT_ORIGIN`  | Production | Allowed browser origin; must match `APP_ORIGIN` in production |
 
-| Command                    | Purpose                                     |
-| -------------------------- | ------------------------------------------- |
-| `npm run dev`              | Start with Nodemon                          |
-| `npm start`                | Start the application normally              |
-| `npm run seed:questions`   | Seed questions into an empty/local database |
-| `npm run reset:questions`  | Replace local question data                 |
-| `npm run check`            | Syntax, lint, formatting, and Jest          |
-| `npm test`                 | Complete Jest suite                         |
-| `npm run test:integration` | MongoDB integration suites                  |
-| `npm run test:coverage`    | Jest coverage report                        |
-| `npm run test:e2e`         | Desktop/mobile Chromium                     |
-| `npm run format`           | Apply Prettier                              |
-| `npm run audit:prod`       | Production dependency audit                 |
+### Optional integrations
 
-The current validated baseline is 230 Jest tests and 26 Playwright checks. Fresh complete-server coverage is 57.22% statements, 34.70% branches, 51.81% functions, and 57.24% lines; critical routes, models, utilities, quiz integrity, analytics, leaderboard, and achievement paths are substantially higher. See [Testing](docs/TESTING.md).
+| Group                  | Variables                                                                                                      |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------- |
+| SMTP                   | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASSWORD`, `EMAIL_FROM_NAME`, `EMAIL_FROM_ADDRESS` |
+| Local recovery testing | `EXPOSE_DEVELOPMENT_RESET_URL`                                                                                 |
+| Cloudinary             | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET`                                         |
+| MongoDB test binary    | `MONGOMS_SYSTEM_BINARY`                                                                                        |
+
+Minimal local example:
+
+```dotenv
+NODE_ENV=development
+PORT=5000
+MONGODB_URI=mongodb://127.0.0.1:27017/quizmaster_pro?replicaSet=rs0
+JWT_SECRET=replace-with-at-least-32-random-bytes
+JWT_EXPIRES_IN=7d
+JWT_ISSUER=quizmaster-pro
+JWT_AUDIENCE=quizmaster-pro-users
+APP_ORIGIN=http://localhost:5000
+CLIENT_ORIGIN=http://localhost:5000
+```
+
+Never commit `.env` or real credentials. The full variable reference is available in [INSTALLATION.md](INSTALLATION.md).
+
+## Usage
+
+### Learner workflow
+
+1. Register an account.
+2. Verify the email address using the configured email flow.
+3. Log in and open the dashboard.
+4. Start a category quiz or the current daily challenge.
+5. Submit answers and review the owned result.
+6. Track history, rank, analytics, XP, streaks, achievements, and notifications.
+7. Manage profile and account settings.
+
+### Administrator workflow
+
+The application intentionally has no public administrator-creation endpoint. Promote a verified local user directly in MongoDB, then log in again so authorization uses a fresh token.
+
+Administrators can use the protected interface to review analytics and activity, manage quiz content and users, inspect attempts, create notifications, export reports, and adjust platform settings.
+
+### Common commands
+
+| Command                   | Purpose                                           |
+| ------------------------- | ------------------------------------------------- |
+| `npm run dev`             | Start with Nodemon                                |
+| `npm start`               | Start normally with Node.js                       |
+| `npm run seed:questions`  | Seed an empty question collection                 |
+| `npm run reset:questions` | Replace question data in a disposable environment |
+| `npm run check`           | Run syntax, lint, formatting, and Jest checks     |
+| `npm run test:e2e`        | Run Playwright desktop/mobile checks              |
+| `npm run audit:prod`      | Audit production dependencies                     |
 
 ## API overview
 
-JSON APIs are grouped under `/api/auth`, `/api/quiz`, `/api/daily-challenge`, user feature prefixes, and `/api/admin/*`. Protected APIs accept the authentication cookie; administrators additionally require the current user role. See [API reference](docs/API.md).
+Protected endpoints accept the HttpOnly authentication cookie or a Bearer token. Administrator APIs require the current user to have the `admin` role.
 
-## Screenshots and media
+| Area                  | Representative endpoints                                                                                                                   |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Authentication        | `POST /api/auth/register`, `POST /api/auth/login`, `POST /api/auth/logout`, `GET /api/auth/me`                                             |
+| Verification/recovery | `/api/email-verification/*`, `/api/password-reset/*`                                                                                       |
+| Quiz                  | `GET /api/quiz/categories`, `GET /api/quiz/start/:category`, `POST /api/quiz/submit`, `GET /api/quiz/result/:resultId`                     |
+| Daily challenge       | `GET /api/daily-challenge`, `POST /api/daily-challenge/:challengeId/start`                                                                 |
+| Learner data          | `/api/history`, `/api/leaderboard`, `/api/analytics`, `/api/achievements`                                                                  |
+| Account               | `/api/profile`, `/api/settings`, `/api/notifications`                                                                                      |
+| Administration        | `/api/admin/dashboard`, `/api/admin/analytics`, `/api/admin/users`, `/api/admin/questions`, `/api/admin/categories`, `/api/admin/attempts` |
+| Operations            | `GET /api/health`, `GET /api/ready`                                                                                                        |
 
-Screenshots are intentionally not fabricated. Follow [the screenshot guide](docs/SCREENSHOT_GUIDE.md) and add reviewed images under:
+Example quiz submission:
 
-- `docs/images/user/`
-- `docs/images/admin/`
-- `docs/images/architecture/`
+```bash
+curl -b cookies.txt -X POST http://localhost:5000/api/quiz/submit \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "quizSessionId":"opaque-server-issued-id",
+    "answers":[
+      {"questionId":"64b000000000000000000031","selectedAnswer":2}
+    ]
+  }'
+```
 
-A short demo GIF or video can be linked here after it is recorded from the local application with synthetic data.
+See [API.md](API.md) for endpoint tables, access requirements, status codes, and additional examples.
 
-## Known limitations
+## Database schema
 
-- This is a local portfolio release candidate, not a production-certified service.
-- Rate limiting is process-local.
-- Daily challenge completions are embedded and intended for portfolio-scale data.
-- CSV reports are memory-buffered and offset pagination is used.
-- SMTP and Cloudinary flows require optional external credentials and are mocked in automation.
-- Automated browser coverage currently targets Chromium; manual screen-reader testing remains recommended.
-- The repository owner must still choose and add a LICENSE file. Package publication is disabled until then.
+QuizMaster Pro currently uses nine Mongoose models.
 
-## Future improvements
+| Model             | Purpose                                                                  |
+| ----------------- | ------------------------------------------------------------------------ |
+| `User`            | Identity, credentials, role/status, token version, and progress counters |
+| `Question`        | Four-option categorized quiz content and correct answer                  |
+| `QuizSession`     | Immutable server-issued question set and attempt lifecycle               |
+| `Score`           | Owned historical result and answer review data                           |
+| `DailyChallenge`  | Daily question set, reward metadata, and completion summaries            |
+| `Achievement`     | Unique per-user achievement unlocks                                      |
+| `Notification`    | Owned application notifications and read state                           |
+| `ActivityLog`     | Administrator actions and request context                                |
+| `PlatformSetting` | Typed, categorized platform configuration                                |
 
-- Cursor pagination and streamed bounded reports
-- Broader direct coverage of large administrator/profile controllers
-- Decode/re-encode avatar processing and metadata stripping verification
-- Firefox/WebKit and dedicated assistive-technology testing
-- Further incremental replacement of legacy escaped HTML templates with DOM construction
+```mermaid
+erDiagram
+  USER ||--o{ QUIZ_SESSION : starts
+  USER ||--o{ SCORE : owns
+  USER ||--o{ ACHIEVEMENT : unlocks
+  USER ||--o{ NOTIFICATION : receives
+  USER ||--o{ ACTIVITY_LOG : performs_as_admin
+  QUESTION }o--o{ QUIZ_SESSION : issued_in
+  QUESTION }o--o{ SCORE : reviewed_in
+  DAILY_CHALLENGE }o--o{ QUESTION : contains
+  DAILY_CHALLENGE ||--o{ QUIZ_SESSION : creates
+  QUIZ_SESSION ||--o| SCORE : produces
+```
 
-## Contributing and security
+See [DATABASE.md](DATABASE.md) for fields, relationships, indexes, lifecycle rules, and scale considerations.
 
-Read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request. Report security concerns using [SECURITY.md](SECURITY.md), without placing secrets or private user data in a public issue.
+## Architecture
 
-## License and author
+QuizMaster Pro is a modular monolith with explicit HTTP, domain, persistence, and trust boundaries.
 
-Copyright remains with the repository owner. No open-source license has been selected yet; see the release checklist before publishing or inviting reuse.
+```mermaid
+flowchart LR
+  Browser[Browser: EJS + vanilla JavaScript]
+  App[Express application]
+  Security[Helmet, origin, input, auth, role middleware]
+  Routes[Page and API routes]
+  Controllers[Controllers]
+  Services[Domain services]
+  Models[Mongoose models]
+  Mongo[(MongoDB replica set)]
+  SMTP[Optional SMTP]
+  Cloudinary[Optional Cloudinary]
 
-Maintained by [Ashish-Vision](https://github.com/Ashish-Vision).
+  Browser --> App
+  App --> Security
+  Security --> Routes
+  Routes --> Controllers
+  Controllers --> Services
+  Controllers --> Models
+  Services --> Models
+  Models --> Mongo
+  Services -.-> SMTP
+  Controllers -.-> Cloudinary
+```
+
+Detailed request, authentication, transaction, deployment, and testing diagrams are in [ARCHITECTURE.md](ARCHITECTURE.md).
+
+## Security features
+
+- bcrypt password hashing with 12 salt rounds
+- HS256 JWT validation with issuer, audience, expiry, and per-user token version
+- Session revocation after password, role, and account-status changes
+- HttpOnly, SameSite cookies and Secure cookies in production
+- Current-user ownership filters and fresh administrator role validation
+- Helmet headers, CSP, production HSTS, and frame denial
+- CORS allowlisting and exact-origin mutation checks
+- MongoDB operator/dotted-key input rejection and bounded request bodies
+- Rate limiting on authentication, recovery, verification, and sensitive settings routes
+- Hashed, expiring, single-use verification and recovery tokens
+- Avatar signature, format, structure, dimension, pixel, and size checks
+- Same-origin notification-link validation
+- Spreadsheet-formula-safe CSV encoding
+- Safe production errors without stack disclosure
+
+Read [SECURITY.md](SECURITY.md) for the security model, reporting process, and deployment limitations.
+
+## Testing
+
+The validated project baseline is:
+
+- **230 Jest tests** across 11 suites
+- **26 Playwright checks** across desktop Chrome and Pixel 7 profiles
+- **0 known production dependency vulnerabilities** at the latest recorded audit
+
+| Test layer              | Coverage                                                                                              |
+| ----------------------- | ----------------------------------------------------------------------------------------------------- |
+| Unit and contract       | Utilities, security helpers, middleware, routes, views, browser foundations                           |
+| MongoDB integration     | Authentication, ownership, recovery, platform features, question policy                               |
+| Replica-set integration | Quiz transactions, rollback, replay, and concurrency                                                  |
+| Browser                 | Public/user/admin pages, hydration, error handling, overflow, keyboard behavior, accessible structure |
+
+Run the quality gates:
+
+```bash
+npm run check
+npm run test:integration
+npm run test:e2e
+npm run audit:prod
+```
+
+Automated browser coverage currently targets Chromium. SMTP, Cloudinary, screen-reader sessions, and a real deployment require separate manual or integration verification.
+
+## Future roadmap
+
+Planned release work is limited to completion and presentation tasks already identified by the project:
+
+- Capture reviewed learner and administrator screenshots
+- Record a short application walkthrough
+- Complete social-preview and repository presentation assets
+- Add Firefox/WebKit and dedicated assistive-technology testing where supported
+- Expand direct coverage of large administrator/profile controllers
+- Evaluate cursor pagination, streamed reports, and analytics rollups when measured scale requires them
+- Add a shared rate-limit store before multi-instance deployment
+- Consider avatar decode/re-encode and metadata stripping as defense in depth
+
+See [ROADMAP.md](ROADMAP.md) for release gates, triggers, and explicit non-goals.
+
+## Contributing
+
+Focused contributions are welcome when they preserve server-authoritative scoring, transaction safety, ownership boundaries, accessibility, and the existing Express/EJS architecture.
+
+Before opening a pull request:
+
+```bash
+npm run check
+npm run test:e2e
+npm run audit:prod
+```
+
+Bug fixes should include regression coverage. Visual changes should include reviewed desktop/mobile screenshots. Never commit `.env`, credentials, tokens, real user data, coverage output, browser reports, or local database files.
+
+Read [CONTRIBUTING.md](CONTRIBUTING.md) for branching, commit, database, testing, documentation, and review standards.
+
+## License
+
+Copyright © 2026 Ashish-Vision. All rights reserved.
+
+The repository is marked `UNLICENSED`. Source is available for viewing and portfolio evaluation, but permission to use, copy, modify, distribute, sublicense, or sell it is not granted without prior written permission. See [LICENSE](LICENSE).
+
+## Author
+
+**Ashish-Vision**
+
+- GitHub: [@Ashish-Vision](https://github.com/Ashish-Vision)
+- Repository: [QuizMaster Pro](https://github.com/Ashish-Vision/QuizMaster-Pro)
+- Issues: [Project issue tracker](https://github.com/Ashish-Vision/QuizMaster-Pro/issues)
+
+---
+
+<div align="center">
+  Built as a secure, testable, and locally reproducible full-stack portfolio project.
+</div>

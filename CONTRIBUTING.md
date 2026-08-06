@@ -1,35 +1,89 @@
-# Contributing
+# Contributing to QuizMaster Pro
 
-QuizMaster Pro welcomes focused improvements that preserve its locally runnable Express/EJS architecture.
+Contributions should preserve the project's Express/EJS/vanilla-JavaScript architecture, security boundaries, and local reproducibility.
 
-## Setup
+## Before starting
 
-1. Fork or clone the repository.
-2. Run `npm ci`.
-3. Copy `.env.example` to `.env` and use local placeholder-derived values.
-4. Configure a local MongoDB replica set.
-5. Run `npm run check` and `npm run test:e2e` before changing behavior.
+1. Search existing issues and pull requests.
+2. Discuss large behavioral, schema, API, or architectural changes before implementation.
+3. Report vulnerabilities privately according to [SECURITY.md](SECURITY.md).
+
+## Development setup
+
+```bash
+git clone https://github.com/Ashish-Vision/QuizMaster-Pro.git
+cd QuizMaster-Pro
+npm ci
+cp .env.example .env
+npm run check
+npm run test:e2e
+```
+
+Configure a local MongoDB replica set as described in [INSTALLATION.md](INSTALLATION.md). Tests use isolated temporary databases; never point them at developer or production data.
 
 ## Branches and commits
 
-Use short descriptive branches such as `fix/result-ownership` or `test/admin-reports`. Prefer Conventional Commit prefixes: `feat`, `fix`, `test`, `docs`, `refactor`, `chore`, and `security`.
+Use a short, scoped branch name:
 
-Keep commits reviewable and avoid combining unrelated formatting, feature, and cleanup work.
+```text
+fix/result-ownership
+docs/api-examples
+test/admin-reports
+refactor/notification-validation
+```
+
+Prefer Conventional Commit prefixes:
+
+| Prefix     | Use                               |
+| ---------- | --------------------------------- |
+| `fix`      | Correct a confirmed defect        |
+| `feat`     | Add approved behavior             |
+| `docs`     | Documentation only                |
+| `test`     | Test-only changes                 |
+| `refactor` | Behavior-preserving restructuring |
+| `security` | Security hardening or remediation |
+| `chore`    | Tooling or maintenance            |
+
+Keep commits focused. Do not mix unrelated formatting, behavior, and cleanup work.
 
 ## Coding standards
 
-- Preserve CommonJS, EJS, CSS, and vanilla JavaScript unless an architectural change is explicitly agreed.
-- Keep controllers focused and reusable domain work in services/utilities.
-- Validate scalar types and ownership before database operations.
-- Prefer `textContent` and DOM creation for untrusted browser data.
-- Preserve keyboard behavior, visible focus, reduced motion, and mobile layouts.
-- Run Prettier through `npm run format`; do not hand-edit generated reports.
+- Use CommonJS on the server and dependency-free browser JavaScript.
+- Keep method/path/auth policy visible in route modules.
+- Keep HTTP coordination in controllers and reusable domain logic in services/utilities.
+- Validate input types, ranges, identifiers, ownership, and state before writes.
+- Never trust client-provided identity, role, category, scoring, or correct-answer data.
+- Prefer DOM creation and `textContent` for dynamic browser content.
+- Preserve keyboard operation, visible focus, reduced-motion support, and mobile layouts.
+- Use Prettier and ESLint rather than introducing unrelated manual formatting.
+
+## Database changes
+
+Schema or index changes must document:
+
+- compatibility with existing documents;
+- migration or backfill requirements;
+- transaction and uniqueness effects;
+- expected query shape and representative performance evidence;
+- rollback considerations.
+
+Do not add indexes speculatively. New quiz-completion writes must remain inside the existing transaction boundary and include replay/concurrency tests.
 
 ## Tests
 
-Every bug fix should include a regression test that fails without the correction. Use isolated temporary databases; transaction tests require `MongoMemoryReplSet`. Avoid sleeps, real SMTP/Cloudinary calls, snapshot-only assertions, and shared mutable fixtures.
+Every confirmed bug fix should include a regression test that fails before the fix. Choose the narrowest appropriate level:
 
-Minimum pull-request validation:
+| Change                     | Expected verification                 |
+| -------------------------- | ------------------------------------- |
+| Utility/validation         | Jest unit test                        |
+| Route/auth contract        | Supertest or route-contract test      |
+| Persistence/ownership      | Isolated MongoDB integration test     |
+| Quiz transaction           | `MongoMemoryReplSet` integration test |
+| Browser interaction/layout | Playwright desktop/mobile test        |
+
+Avoid arbitrary sleeps, real SMTP/Cloudinary calls, shared mutable fixtures, and snapshot-only behavioral assertions.
+
+Minimum pull-request gate:
 
 ```bash
 npm run check
@@ -37,8 +91,20 @@ npm run test:e2e
 npm run audit:prod
 ```
 
-## Pull requests
+## Documentation
 
-Explain behavior, security/compatibility effects, tests, and manual QA. Include real desktop/mobile screenshots for visible changes. Do not include `.env`, credentials, real user data, coverage output, Playwright reports, or local database files.
+Update affected API, environment, database, architecture, security, roadmap, or changelog documentation in the same pull request. Do not document unimplemented behavior.
 
-Security vulnerabilities should follow `SECURITY.md`, not a public issue.
+## Pull-request checklist
+
+- [ ] The change is scoped and explained.
+- [ ] Security, compatibility, and migration effects are documented.
+- [ ] Regression or behavior tests are included where appropriate.
+- [ ] `npm run check` passes.
+- [ ] `npm run test:e2e` passes for browser-visible changes.
+- [ ] Real desktop/mobile screenshots are included for visual changes.
+- [ ] No secrets, real user data, coverage output, Playwright reports, or local database files are committed.
+
+## Review expectations
+
+A pull request should describe what changed, why it changed, how it was tested, and any known limits. Reviewers may request smaller commits, additional ownership/security tests, migration evidence, or manual accessibility verification.
