@@ -8,6 +8,7 @@ const {
   getDailyChallengeForUser,
   getDailyChallengeDocument,
   serializeDailyChallenge,
+  areQuestionsEligibleForNewSession,
 } = require("../services/dailyChallengeService");
 
 function getUserId(req) {
@@ -171,6 +172,20 @@ async function startDailyChallenge(req, res, next) {
       user: userId,
       dailyChallenge: challengeDocument._id,
     });
+
+    if (
+      !existingSession &&
+      !(await areQuestionsEligibleForNewSession(
+        challengeDocument.questions.map((question) => question._id || question),
+      ))
+    ) {
+      return res.status(409).json({
+        success: false,
+        message:
+          "This daily challenge contains a question that is no longer available. A new session cannot be started.",
+      });
+    }
+
     const quizSession =
       existingSession ||
       (await QuizSession.create({

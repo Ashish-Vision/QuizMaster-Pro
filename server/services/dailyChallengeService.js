@@ -260,6 +260,36 @@ async function selectChallengeQuestions({ category, questionCount }) {
   return questions.map((question) => question._id);
 }
 
+async function areQuestionsEligibleForNewSession(questionIds) {
+  if (!Array.isArray(questionIds) || questionIds.length === 0) {
+    return false;
+  }
+
+  const normalizedIds = [
+    ...new Set(questionIds.map((questionId) => String(questionId))),
+  ];
+
+  if (
+    normalizedIds.length !== questionIds.length ||
+    normalizedIds.some(
+      (questionId) => !mongoose.Types.ObjectId.isValid(questionId),
+    )
+  ) {
+    return false;
+  }
+
+  const eligibleQuestionCount = await Question.countDocuments({
+    _id: {
+      $in: normalizedIds,
+    },
+    isActive: {
+      $ne: false,
+    },
+  });
+
+  return eligibleQuestionCount === normalizedIds.length;
+}
+
 async function populateChallenge(challenge) {
   if (!challenge) {
     return null;
@@ -630,6 +660,7 @@ module.exports = {
   serializeDailyChallenge,
 
   getAvailableChallengeGroups,
+  areQuestionsEligibleForNewSession,
   findChallengeByDate,
   createDailyChallenge,
   getOrCreateDailyChallenge,

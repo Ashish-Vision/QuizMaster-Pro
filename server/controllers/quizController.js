@@ -436,10 +436,6 @@ async function submitQuiz(req, res, next) {
       },
 
       category: normalizedCategory,
-
-      isActive: {
-        $ne: false,
-      },
     }).select(
       [
         "_id",
@@ -451,6 +447,14 @@ async function submitQuiz(req, res, next) {
         "difficulty",
       ].join(" "),
     );
+
+    /*
+     * Activity is enforced when the server creates the immutable session
+     * question set. Do not filter by the question's current isActive value
+     * here: an administrator may disable a question after this unexpired
+     * session was issued, and the exact server-selected set remains
+     * authoritative for this one submission.
+     */
 
     if (questions.length !== submittedQuestionIds.length) {
       return res.status(400).json({
