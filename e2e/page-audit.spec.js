@@ -414,3 +414,44 @@ test("reduced-motion preference preserves a usable quiz", async ({
     .evaluate((element) => getComputedStyle(element).animationDuration);
   expect(["0s", "0.00001s"]).toContain(animationDuration);
 });
+
+test("representative user and admin pages expose accessible structure", async ({
+  page,
+  context,
+}) => {
+  await page.goto("/login");
+  await expect(page).toHaveTitle(/Login/i);
+  await expect(page.getByRole("main")).toHaveCount(1);
+  await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+  await expect(page.getByLabel(/email address/i)).toBeVisible();
+  await expect(page.locator("#loginPassword")).toHaveAccessibleName("Password");
+  await expect(page.getByRole("button", { name: /sign in/i })).toBeVisible();
+
+  await authenticate(context, "64b000000000000000000001");
+  for (const path of [
+    "/dashboard",
+    "/quiz?category=Java",
+    "/profile",
+    "/settings",
+  ]) {
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("main")).toHaveCount(1);
+    await expect(page.getByRole("heading", { level: 1 }).first()).toBeVisible();
+    if (path.startsWith("/quiz")) {
+      const progress = page.getByRole("progressbar");
+      await expect(progress).toHaveAttribute("aria-valuemin");
+      await expect(progress).toHaveAttribute("aria-valuemax");
+      await expect(progress).toHaveAttribute("aria-valuenow");
+    }
+  }
+
+  await authenticate(context, "64b000000000000000000002");
+  for (const path of ["/admin", "/admin/questions", "/admin/users"]) {
+    await page.goto(path);
+    await page.waitForLoadState("networkidle");
+    await expect(page.getByRole("main")).toHaveCount(1);
+    await expect(page.getByRole("heading", { level: 1 })).toHaveCount(1);
+    await expect(page.getByRole("navigation").first()).toBeVisible();
+  }
+});

@@ -88,6 +88,81 @@ beforeEach(async () => {
 });
 
 describe("authentication token and cookie contracts", () => {
+  test("registration validates input and rejects duplicate accounts", async () => {
+    const invalidEmail = await request(app).post("/api/auth/register").send({
+      firstName: "Valid",
+      lastName: "Person",
+      email: "not-an-email",
+      password: "StrongPassword123!",
+    });
+    expect(invalidEmail.status).toBe(400);
+
+    const weakPassword = await request(app).post("/api/auth/register").send({
+      firstName: "Valid",
+      lastName: "Person",
+      email: "weak@example.invalid",
+      password: "short",
+    });
+    expect(weakPassword.status).toBe(400);
+
+    const registration = await request(app).post("/api/auth/register").send({
+      firstName: "  New  ",
+      lastName: "  Member  ",
+      email: "  NEW@EXAMPLE.INVALID  ",
+      password: "StrongPassword123!",
+    });
+    expect(registration.status).toBe(201);
+    expect(registration.body).toMatchObject({
+      success: true,
+      requiresEmailVerification: true,
+      email: "new@example.invalid",
+    });
+    expect(registration.headers["set-cookie"]).toBeUndefined();
+    const stored = await User.findOne({ email: "new@example.invalid" });
+    expect(stored).toMatchObject({
+      firstName: "New",
+      lastName: "Member",
+      emailVerified: false,
+    });
+
+    const duplicate = await request(app).post("/api/auth/register").send({
+      firstName: "Other",
+      lastName: "Member",
+      email: "new@example.invalid",
+      password: "StrongPassword123!",
+    });
+    expect(duplicate.status).toBe(409);
+    expect(await User.countDocuments({ email: "new@example.invalid" })).toBe(1);
+  });
+
+  test("login uses generic credential failures and blocks disabled users", async () => {
+    const user = await createUser({ email: "login-failures@example.invalid" });
+    const unknown = await request(app).post("/api/auth/login").send({
+      email: "unknown@example.invalid",
+      password: "WrongPassword123!",
+    });
+    const wrongPassword = await request(app).post("/api/auth/login").send({
+      email: user.email,
+      password: "WrongPassword123!",
+    });
+    expect(unknown.status).toBe(401);
+    expect(wrongPassword.status).toBe(401);
+    expect(unknown.body.message).toBe(wrongPassword.body.message);
+
+    user.isActive = false;
+    await user.save({ validateBeforeSave: false });
+    const disabled = await request(app).post("/api/auth/login").send({
+      email: user.email,
+      password: "InitialPassword123!",
+    });
+    expect(disabled.status).toBe(403);
+    expect(disabled.body).toEqual({
+      success: false,
+      message: "This account has been disabled.",
+    });
+    expect(disabled.headers["set-cookie"]).toBeUndefined();
+  });
+
   test("valid login creates the exact local authentication cookie", async () => {
     const user = await createUser({ email: "login@example.invalid" });
     const response = await request(app).post("/api/auth/login").send({

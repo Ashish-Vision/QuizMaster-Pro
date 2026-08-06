@@ -16,7 +16,11 @@
     "test": "jest --runInBand",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage --runInBand",
+    "test:integration": "jest --runInBand tests/*.integration.test.js",
     "test:e2e": "playwright test",
+    "check:syntax": "find server client/js scripts tests e2e -type f -name '*.js' -print0 | xargs -0 -n1 node --check",
+    "check": "npm run check:syntax && npm run lint && npm run format:check && npm test",
+    "audit:prod": "npm audit --omit=dev",
     "lint": "eslint server client/js scripts tests e2e *.js",
     "format:check": "prettier --check package.json server client tests e2e docs *.md",
     "format": "prettier --write package.json server client tests e2e docs *.md"
