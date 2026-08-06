@@ -5,10 +5,7 @@ const validator = require("validator");
 const User = require("../models/User");
 const { incrementUserTokenVersion } = require("../utils/authToken");
 const { sendAuthResponse } = require("../utils/helpers");
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
+const { normalizeText } = require("../utils/normalize");
 
 function createSafeAccount(user) {
   return {

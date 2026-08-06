@@ -25,3 +25,22 @@ Never commit `.env`. Production requires `MONGODB_URI`, a random `JWT_SECRET` of
 Register and verify a normal account, then update that account's `role` to `admin` directly in MongoDB using an authenticated administrative database session. Do not expose a public “create admin” endpoint. Restart the session after changing the role so authorization is re-evaluated.
 
 See [API](docs/API.md), [architecture](docs/ARCHITECTURE.md), [security](docs/SECURITY.md), [deployment](docs/DEPLOYMENT.md), and [testing](docs/TESTING.md).
+
+## Repository map
+
+```text
+client/views/       EJS pages and shared partials
+client/js/          Page behavior and shared browser utilities
+client/css/         Design tokens, feature styles, and responsive rules
+server/routes/      HTTP method/path and middleware contracts
+server/controllers/ HTTP validation and response coordination
+server/services/    Reusable domain workflows and integrations
+server/models/      Mongoose schemas, validation, and indexes
+server/middleware/  Authentication, security, uploads, and errors
+server/utils/       Small side-effect-free shared helpers
+tests/              Jest unit and database integration tests
+e2e/                Playwright desktop/mobile page audits
+docs/               API, architecture, security, and testing guides
+```
+
+The project intentionally uses server-rendered EJS and dependency-free browser JavaScript. Generated coverage and browser-test reports are not source files and should remain untracked.

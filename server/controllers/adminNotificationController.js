@@ -3,6 +3,12 @@
 const mongoose = require("mongoose");
 
 const { logRequestActivity } = require("../services/activityLogService");
+const { createContainsSearch } = require("../utils/mongoSearch");
+const { normalizeText } = require("../utils/normalize");
+const {
+  createPaginationMeta,
+  parsePagination,
+} = require("../utils/pagination");
 const {
   validateNotificationLink,
 } = require("../utils/notificationLinkValidator");
@@ -20,30 +26,6 @@ const ALLOWED_TYPES = new Set([
 ]);
 
 const ALLOWED_RECIPIENT_GROUPS = new Set(["all", "users", "admins", "single"]);
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function normalizePage(value) {
-  const parsed = Number.parseInt(value, 10);
-
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : 1;
-}
-
-function normalizeLimit(value) {
-  const parsed = Number.parseInt(value, 10);
-
-  if (!Number.isInteger(parsed) || parsed < 1) {
-    return 10;
-  }
-
-  return Math.min(parsed, 100);
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function normalizeNotification(notification) {
   return {
@@ -81,8 +63,9 @@ function normalizeNotification(notification) {
  */
 async function getAdminNotifications(req, res, next) {
   try {
-    const page = normalizePage(req.query.page);
-    const limit = normalizeLimit(req.query.limit);
+    const { page, limit, skip } = parsePagination(req.query, {
+      defaultLimit: 10,
+    });
 
     const search = normalizeText(req.query.search);
     const type = normalizeText(req.query.type).toLowerCase() || "all";
@@ -116,26 +99,7 @@ async function getAdminNotifications(req, res, next) {
       filter.isRead = false;
     }
 
-    if (search) {
-      const safeSearch = escapeRegex(search);
-
-      filter.$or = [
-        {
-          title: {
-            $regex: safeSearch,
-            $options: "i",
-          },
-        },
-        {
-          message: {
-            $regex: safeSearch,
-            $options: "i",
-          },
-        },
-      ];
-    }
-
-    const skip = (page - 1) * limit;
+    Object.assign(filter, createContainsSearch(search, ["title", "message"]));
 
     const [
       notifications,
@@ -191,7 +155,11 @@ async function getAdminNotifications(req, res, next) {
       }),
     ]);
 
-    const totalPages = Math.max(1, Math.ceil(filteredCount / limit));
+    const pagination = createPaginationMeta({
+      page,
+      limit,
+      totalItems: filteredCount,
+    });
 
     return res.status(200).json({
       success: true,
@@ -224,12 +192,8 @@ async function getAdminNotifications(req, res, next) {
       })),
 
       pagination: {
-        currentPage: page,
-        totalPages,
+        ...pagination,
         totalNotifications: filteredCount,
-        limit,
-        hasPreviousPage: page > 1,
-        hasNextPage: page < totalPages,
       },
     });
   } catch (error) {

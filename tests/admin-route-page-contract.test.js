@@ -171,6 +171,22 @@ describe("administrator question router contracts", () => {
 });
 
 describe("dashboard and administrator page contracts", () => {
+  test.each([
+    "/admin/questions",
+    "/admin/categories",
+    "/admin/users",
+    "/admin/attempts",
+  ])("%s loads shared utilities before its page script", async (path) => {
+    const response = await request(app)
+      .get(path)
+      .set("Cookie", authCookie(ADMIN_ID));
+    expect(response.status).toBe(200);
+    expect(response.text.indexOf('src="/js/shared.js"')).toBeGreaterThan(-1);
+    expect(response.text.indexOf('src="/js/shared.js"')).toBeLessThan(
+      response.text.indexOf(`src="/js/admin/${path.split("/").pop()}.js"`),
+    );
+  });
+
   test("the user dashboard loads only normal dashboard scripts", async () => {
     const response = await request(app)
       .get("/dashboard")

@@ -12,10 +12,7 @@ const {
   getUserRankInformation,
   calculateProfileCompletion,
 } = require("../services/rankService");
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
+const { normalizeText } = require("../utils/normalize");
 
 function normalizeNumber(value) {
   const number = Number(value);

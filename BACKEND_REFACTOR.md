@@ -1,5 +1,7 @@
 # QuizMaster Pro — Express Backend Refactor Review
 
+> Historical baseline: several recommendations in this document have since been implemented. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for current boundaries and treat this file as the original refactor backlog.
+
 Review date: 2026-08-05  
 Scope: All JavaScript under `server/`, including application composition, routes, controllers, middleware, services, models, database scripts, and utilities.  
 Constraint: Review only; no source files were changed.

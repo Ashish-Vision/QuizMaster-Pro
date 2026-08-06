@@ -4,10 +4,7 @@ const Achievement = require("../models/Achievement");
 const User = require("../models/User");
 
 const { getAchievementDefinitions } = require("../services/achievementService");
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
+const { normalizeText } = require("../utils/normalize");
 
 function roundNumber(value, decimalPlaces = 2) {
   const number = Number(value);

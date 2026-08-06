@@ -1,5 +1,7 @@
 "use strict";
 
+const { escapeHtml, formatDate, toggleElement } = window.QuizMaster;
+
 const state = {
   categories: [],
   visibleCategories: [],
@@ -57,37 +59,6 @@ const elements = {
 
   deleteButton: document.getElementById("confirmDeleteCategoryButton"),
 };
-
-function toggleElement(element, shouldShow) {
-  if (!element) {
-    return;
-  }
-
-  element.classList.toggle("hidden", !shouldShow);
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function formatDate(dateValue) {
-  const date = new Date(dateValue);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown";
-  }
-
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
 
 function showLoading() {
   toggleElement(elements.loadingState, true);

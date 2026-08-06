@@ -1,5 +1,7 @@
 # QuizMaster Pro — Architecture Review
 
+> Historical baseline: this review predates the session, transaction, security, and maintainability stages and is retained as an audit artifact. It does not describe current runtime behavior. See [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) for the maintained architecture.
+
 Review date: 2026-08-05  
 Scope: Entire current repository, excluding `node_modules` and generated/runtime data.  
 Method: Static review of the Express/Mongoose server, EJS views, browser JavaScript, CSS, scripts, configuration, routes, models, indexes, and cross-layer data flows.

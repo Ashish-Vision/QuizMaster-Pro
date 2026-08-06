@@ -4,6 +4,8 @@ const mongoose = require("mongoose");
 
 const Question = require("../models/Question");
 const Score = require("../models/Score");
+const { escapeRegex } = require("../utils/mongoSearch");
+const { normalizeText } = require("../utils/normalize");
 
 const ALLOWED_DIFFICULTIES = ["Easy", "Medium", "Hard"];
 
@@ -14,14 +16,6 @@ const ALLOWED_SORT_FIELDS = new Set([
   "category",
   "difficulty",
 ]);
-
-function normalizeText(value) {
-  return typeof value === "string" ? value.trim() : "";
-}
-
-function escapeRegex(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
 
 function normalizeOptions(options) {
   if (!Array.isArray(options)) {

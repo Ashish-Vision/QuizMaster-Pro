@@ -94,12 +94,30 @@ async function auditPage(page, path) {
   expect(response.status(), path).toBe(200);
   await page.waitForLoadState("networkidle");
   await expect(page.locator("body")).not.toBeEmpty();
-  const overflow = await page.evaluate(
-    () =>
-      document.documentElement.scrollWidth -
-      document.documentElement.clientWidth,
-  );
-  expect(overflow, `${path} horizontal overflow`).toBeLessThanOrEqual(1);
+  const overflowAudit = await page.evaluate(() => {
+    const viewportWidth = document.documentElement.clientWidth;
+    return {
+      amount: document.documentElement.scrollWidth - viewportWidth,
+      offenders: [...document.querySelectorAll("body *")]
+        .filter((element) => {
+          const bounds = element.getBoundingClientRect();
+          return bounds.right > viewportWidth + 1 || bounds.left < -1;
+        })
+        .slice(0, 5)
+        .map((element) => ({
+          selector: `${element.tagName.toLowerCase()}${element.id ? `#${element.id}` : ""}${
+            element.classList.length
+              ? `.${[...element.classList].join(".")}`
+              : ""
+          }`,
+          bounds: element.getBoundingClientRect().toJSON(),
+        })),
+    };
+  });
+  expect(
+    overflowAudit.amount,
+    `${path} horizontal overflow: ${JSON.stringify(overflowAudit.offenders)}`,
+  ).toBeLessThanOrEqual(1);
 
   expect(badResponses, `${path} unexpected HTTP failures`).toEqual([]);
   expect(consoleErrors, `${path} browser console errors`).toEqual([]);
@@ -313,4 +331,86 @@ test("completed replay navigates to its existing result", async ({
 test("administrator rendered-page audit", async ({ page, context }) => {
   await authenticate(context, "64b000000000000000000002");
   for (const path of ADMIN_PAGES) await auditPage(page, path);
+});
+
+test("representative pages avoid horizontal overflow at target widths", async ({
+  page,
+  context,
+}) => {
+  await authenticate(context, "64b000000000000000000002");
+
+  for (const width of [1440, 1024, 768, 480, 360]) {
+    await page.setViewportSize({ width, height: Math.min(1000, width * 2) });
+    for (const path of [
+      "/",
+      "/dashboard",
+      "/quiz?category=Java",
+      "/admin/questions",
+    ]) {
+      await auditPage(page, path);
+    }
+  }
+});
+
+test("public mobile navigation closes with Escape and restores focus", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 360, height: 720 });
+  await page.goto("/");
+
+  const menuButton = page.locator("#menuButton");
+  await menuButton.click();
+  await expect(menuButton).toHaveAttribute("aria-expanded", "true");
+  await expect(page.locator("#navLinks")).toHaveClass(/open/);
+
+  await page.keyboard.press("Escape");
+  await expect(menuButton).toHaveAttribute("aria-expanded", "false");
+  await expect(page.locator("#navLinks")).not.toHaveClass(/open/);
+  await expect(menuButton).toBeFocused();
+});
+
+test("admin question dialog traps focus, validates, and restores focus", async ({
+  page,
+  context,
+}) => {
+  await authenticate(context, "64b000000000000000000002");
+  await page.goto("/admin/questions");
+
+  const trigger = page.locator("#openCreateModalButton");
+  await trigger.click();
+  await expect(page.locator("#questionModal")).toHaveAttribute(
+    "aria-hidden",
+    "false",
+  );
+  await expect(page.locator("#questionText")).toBeFocused();
+
+  await page.locator("#saveQuestionButton").focus();
+  await page.keyboard.press("Tab");
+  await expect(page.locator(".modal-close-button")).toBeFocused();
+
+  await page.locator("#saveQuestionButton").click();
+  await expect(page.locator("#questionText")).toBeFocused();
+
+  await page.keyboard.press("Escape");
+  await expect(page.locator("#questionModal")).toHaveAttribute(
+    "aria-hidden",
+    "true",
+  );
+  await expect(trigger).toBeFocused();
+});
+
+test("reduced-motion preference preserves a usable quiz", async ({
+  page,
+  context,
+}) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await authenticate(context, "64b000000000000000000001");
+  await auditPage(page, "/quiz?category=Java");
+
+  await expect(page.locator(".option-button").first()).toBeVisible();
+  const animationDuration = await page
+    .locator(".option-button")
+    .first()
+    .evaluate((element) => getComputedStyle(element).animationDuration);
+  expect(["0s", "0.00001s"]).toContain(animationDuration);
 });

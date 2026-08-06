@@ -126,6 +126,9 @@ async function loginUser(event) {
 
   if (validationError) {
     setMessage(validationError, "error");
+    const firstInvalidField =
+      !email || !email.includes("@") ? elements.email : elements.password;
+    firstInvalidField?.focus();
     return;
   }
 

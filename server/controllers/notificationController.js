@@ -3,33 +3,20 @@
 const mongoose = require("mongoose");
 
 const Notification = require("../models/Notification");
+const {
+  createPaginationMeta,
+  parsePagination,
+} = require("../utils/pagination");
 
 function getUserId(req) {
   return req.user?._id || req.user?.id;
-}
-
-function normalizeLimit(value, fallback = 20, maximum = 100) {
-  const parsedValue = Number.parseInt(value, 10);
-
-  if (!Number.isInteger(parsedValue) || parsedValue < 1) {
-    return fallback;
-  }
-
-  return Math.min(parsedValue, maximum);
-}
-
-function normalizePage(value) {
-  const parsedValue = Number.parseInt(value, 10);
-
-  return Number.isInteger(parsedValue) && parsedValue >= 1 ? parsedValue : 1;
 }
 
 async function getNotifications(req, res, next) {
   try {
     const userId = getUserId(req);
 
-    const page = normalizePage(req.query.page);
-    const limit = normalizeLimit(req.query.limit);
+    const { page, limit, skip } = parsePagination(req.query);
 
     const unreadOnly = String(req.query.unreadOnly).toLowerCase() === "true";
 
@@ -40,8 +27,6 @@ async function getNotifications(req, res, next) {
     if (unreadOnly) {
       filter.isRead = false;
     }
-
-    const skip = (page - 1) * limit;
 
     const [notifications, totalNotifications, unreadCount] = await Promise.all([
       Notification.find(filter)
@@ -61,7 +46,11 @@ async function getNotifications(req, res, next) {
       }),
     ]);
 
-    const totalPages = Math.max(Math.ceil(totalNotifications / limit), 1);
+    const pagination = createPaginationMeta({
+      page,
+      limit,
+      totalItems: totalNotifications,
+    });
 
     return res.status(200).json({
       success: true,
@@ -82,12 +71,8 @@ async function getNotifications(req, res, next) {
       })),
 
       pagination: {
-        currentPage: page,
-        totalPages,
+        ...pagination,
         totalNotifications,
-        limit,
-        hasPreviousPage: page > 1,
-        hasNextPage: page < totalPages,
       },
     });
   } catch (error) {

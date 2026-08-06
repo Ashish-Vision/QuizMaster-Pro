@@ -1,5 +1,11 @@
 "use strict";
 
+const {
+  escapeHtml,
+  formatDate,
+  toggleElement: showElement,
+} = window.QuizMaster;
+
 const state = {
   questions: [],
   categories: [],
@@ -96,37 +102,6 @@ const elements = {
 
   confirmDeleteButton: document.getElementById("confirmDeleteQuestionButton"),
 };
-
-function showElement(element, shouldShow) {
-  if (!element) {
-    return;
-  }
-
-  element.classList.toggle("hidden", !shouldShow);
-}
-
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
-}
-
-function formatDate(dateValue) {
-  const date = new Date(dateValue);
-
-  if (Number.isNaN(date.getTime())) {
-    return "Unknown";
-  }
-
-  return new Intl.DateTimeFormat("en-IN", {
-    day: "2-digit",
-    month: "short",
-    year: "numeric",
-  }).format(date);
-}
 
 function getDifficultyClass(difficulty) {
   const value = String(difficulty || "").toLowerCase();

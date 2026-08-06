@@ -112,9 +112,15 @@ function validateRegistration(values) {
   clearFieldErrors();
 
   let isValid = true;
+  let firstInvalidField = null;
+
+  const markInvalid = (field) => {
+    firstInvalidField ||= field;
+  };
 
   if (!values.firstName) {
     setFieldError(elements.firstNameError, "First name is required.");
+    markInvalid(elements.firstName);
 
     isValid = false;
   } else if (values.firstName.length < 2) {
@@ -122,12 +128,14 @@ function validateRegistration(values) {
       elements.firstNameError,
       "First name must contain at least 2 characters.",
     );
+    markInvalid(elements.firstName);
 
     isValid = false;
   }
 
   if (!values.lastName) {
     setFieldError(elements.lastNameError, "Last name is required.");
+    markInvalid(elements.lastName);
 
     isValid = false;
   } else if (values.lastName.length < 2) {
@@ -135,22 +143,26 @@ function validateRegistration(values) {
       elements.lastNameError,
       "Last name must contain at least 2 characters.",
     );
+    markInvalid(elements.lastName);
 
     isValid = false;
   }
 
   if (!values.email) {
     setFieldError(elements.emailError, "Email address is required.");
+    markInvalid(elements.email);
 
     isValid = false;
   } else if (!isValidEmail(values.email)) {
     setFieldError(elements.emailError, "Enter a valid email address.");
+    markInvalid(elements.email);
 
     isValid = false;
   }
 
   if (!values.password) {
     setFieldError(elements.passwordError, "Password is required.");
+    markInvalid(elements.password);
 
     isValid = false;
   } else if (values.password.length < 8) {
@@ -158,16 +170,19 @@ function validateRegistration(values) {
       elements.passwordError,
       "Password must contain at least 8 characters.",
     );
+    markInvalid(elements.password);
 
     isValid = false;
   }
 
   if (!values.confirmPassword) {
     setFieldError(elements.confirmPasswordError, "Confirm your password.");
+    markInvalid(elements.confirmPassword);
 
     isValid = false;
   } else if (values.password !== values.confirmPassword) {
     setFieldError(elements.confirmPasswordError, "Passwords do not match.");
+    markInvalid(elements.confirmPassword);
 
     isValid = false;
   }
@@ -177,9 +192,12 @@ function validateRegistration(values) {
       elements.termsError,
       "You must accept the Terms of Service and Privacy Policy.",
     );
+    markInvalid(elements.acceptTerms);
 
     isValid = false;
   }
+
+  if (!isValid) firstInvalidField?.focus();
 
   return isValid;
 }
