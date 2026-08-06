@@ -110,7 +110,7 @@ const quizSessionSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["active", "processing", "completed", "expired"],
+      enum: ["active", "processing", "completed", "expired", "cancelled"],
       required: true,
       default: "active",
     },

@@ -84,6 +84,67 @@ function haveSameQuestionIds(submittedIds, expectedIds) {
   );
 }
 
+function getServerMeasuredDurationSeconds(
+  quizSession,
+  completedAt = new Date(),
+) {
+  const startedAt = new Date(quizSession.startedAt).getTime();
+  const expiresAt = new Date(quizSession.expiresAt).getTime();
+  const completedTime = completedAt.getTime();
+
+  if (
+    !Number.isFinite(startedAt) ||
+    !Number.isFinite(expiresAt) ||
+    expiresAt <= startedAt
+  ) {
+    return 0;
+  }
+
+  const elapsedMilliseconds = Math.max(completedTime - startedAt, 0);
+  const sessionDurationMilliseconds = expiresAt - startedAt;
+
+  return Math.floor(
+    Math.min(elapsedMilliseconds, sessionDurationMilliseconds) / 1000,
+  );
+}
+
+function sendSessionStateResponse(res, quizSession) {
+  if (quizSession.status === "completed") {
+    return res.status(409).json({
+      success: false,
+      replayed: true,
+      message: "This quiz was already submitted.",
+      existingResultId: quizSession.result || null,
+    });
+  }
+
+  if (quizSession.status === "processing") {
+    return res.status(409).json({
+      success: false,
+      replayed: false,
+      message: "Quiz submission is already being processed.",
+    });
+  }
+
+  if (quizSession.status === "cancelled") {
+    return res.status(409).json({
+      success: false,
+      replayed: false,
+      message: "This quiz session was cancelled.",
+    });
+  }
+
+  if (quizSession.status === "expired" || quizSession.expiresAt <= new Date()) {
+    return res.status(410).json({
+      success: false,
+      replayed: false,
+      message: "This quiz session has expired.",
+    });
+  }
+
+  return null;
+}
+
 function getDailyChallengeErrorResponse(reason) {
   switch (reason) {
     case "not_found":
@@ -223,6 +284,7 @@ async function startQuiz(req, res, next) {
 
 async function submitQuiz(req, res, next) {
   let databaseSession = null;
+  let requestedSessionId = null;
 
   try {
     const userId = getUserId(req);
@@ -237,9 +299,8 @@ async function submitQuiz(req, res, next) {
     const {
       category,
       answers,
-      remainingSeconds = 0,
-      quizDurationSeconds = 600,
       dailyChallengeId = null,
+      mode,
       quizSessionId,
     } = req.body;
 
@@ -250,30 +311,21 @@ async function submitQuiz(req, res, next) {
       });
     }
 
-    if (typeof category !== "string" || category.trim().length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: "A valid quiz category is required.",
-      });
-    }
+    requestedSessionId = quizSessionId.trim();
 
     if (
       !Array.isArray(answers) ||
       answers.length === 0 ||
-      answers.length > 20
+      answers.length > 25
     ) {
       return res.status(400).json({
         success: false,
-        message: "The quiz submission must contain between 1 and 20 answers.",
+        message: "The quiz submission must contain between 1 and 25 answers.",
       });
     }
 
-    const normalizedCategory = category.trim();
-
-    const isDailyChallenge = Boolean(dailyChallengeId);
-
     const quizSession = await QuizSession.findOne({
-      sessionId: quizSessionId.trim(),
+      sessionId: requestedSessionId,
       user: userId,
     });
 
@@ -282,31 +334,49 @@ async function submitQuiz(req, res, next) {
         .status(404)
         .json({ success: false, message: "Quiz session not found." });
     }
-    if (quizSession.status === "completed") {
-      return res
-        .status(409)
-        .json({ success: false, message: "This quiz was already submitted." });
+
+    const stateResponse = sendSessionStateResponse(res, quizSession);
+
+    if (stateResponse) {
+      return stateResponse;
     }
-    if (
-      quizSession.status !== "active" ||
-      quizSession.expiresAt <= new Date()
-    ) {
-      return res
-        .status(410)
-        .json({ success: false, message: "This quiz session has expired." });
+
+    if (quizSession.status !== "active") {
+      return res.status(409).json({
+        success: false,
+        message: "This quiz session is not available for submission.",
+      });
     }
+
+    const normalizedCategory = quizSession.category;
+    const isDailyChallenge = quizSession.mode === "daily";
+    const authoritativeDailyChallengeId = isDailyChallenge
+      ? String(quizSession.dailyChallenge)
+      : null;
+
     if (
-      quizSession.category !== normalizedCategory ||
-      quizSession.mode !== (isDailyChallenge ? "daily" : "standard")
+      category !== undefined &&
+      (typeof category !== "string" || category.trim() !== normalizedCategory)
     ) {
       return res.status(400).json({
         success: false,
         message: "The submission does not match this quiz session.",
       });
     }
+
+    if (mode !== undefined && mode !== quizSession.mode) {
+      return res.status(400).json({
+        success: false,
+        message: "The submission mode does not match this quiz session.",
+      });
+    }
+
     if (
-      isDailyChallenge &&
-      String(quizSession.dailyChallenge) !== String(dailyChallengeId)
+      dailyChallengeId !== null &&
+      dailyChallengeId !== undefined &&
+      dailyChallengeId !== "" &&
+      (!isDailyChallenge ||
+        String(dailyChallengeId) !== authoritativeDailyChallengeId)
     ) {
       return res.status(400).json({
         success: false,
@@ -317,7 +387,7 @@ async function submitQuiz(req, res, next) {
     let dailyChallenge = null;
 
     if (isDailyChallenge) {
-      if (!mongoose.Types.ObjectId.isValid(dailyChallengeId)) {
+      if (!mongoose.Types.ObjectId.isValid(authoritativeDailyChallengeId)) {
         return res.status(400).json({
           success: false,
           message: "The daily challenge ID is invalid.",
@@ -325,7 +395,7 @@ async function submitQuiz(req, res, next) {
       }
 
       dailyChallenge = await getDailyChallengeDocument({
-        challengeId: dailyChallengeId,
+        challengeId: authoritativeDailyChallengeId,
         populateQuestions: false,
       });
 
@@ -539,19 +609,11 @@ async function submitQuiz(req, res, next) {
 
     const totalXpEarned = standardXpEarned + dailyChallengeBonusXp;
 
-    const parsedDuration = Number(quizDurationSeconds);
-
-    const safeDuration = Number.isFinite(parsedDuration)
-      ? Math.max(0, Math.floor(parsedDuration))
-      : 600;
-
-    const parsedRemainingSeconds = Number(remainingSeconds);
-
-    const safeRemainingSeconds = Number.isFinite(parsedRemainingSeconds)
-      ? Math.max(0, Math.min(safeDuration, Math.floor(parsedRemainingSeconds)))
-      : 0;
-
-    const timeTakenSeconds = safeDuration - safeRemainingSeconds;
+    const completedAt = new Date();
+    const timeTakenSeconds = getServerMeasuredDurationSeconds(
+      quizSession,
+      completedAt,
+    );
 
     databaseSession = await mongoose.startSession();
     databaseSession.startTransaction();
@@ -564,7 +626,7 @@ async function submitQuiz(req, res, next) {
         expiresAt: { $gt: new Date() },
       },
       { $set: { status: "processing" } },
-      { new: true, session: databaseSession },
+      { returnDocument: "after", session: databaseSession },
     );
 
     if (!claimedSession) {
@@ -613,17 +675,52 @@ async function submitQuiz(req, res, next) {
           accuracy,
           xpEarned: totalXpEarned,
           timeTakenSeconds,
-          completedAt: new Date(),
+          completedAt,
         },
       ],
       { session: databaseSession },
     );
 
+    const previousTotalXp = user.totalXp || 0;
+
+    const updatedUser = await User.findOneAndUpdate(
+      {
+        _id: userId,
+        isActive: {
+          $ne: false,
+        },
+      },
+      {
+        $inc: {
+          totalXp: totalXpEarned,
+          quizzesCompleted: 1,
+          correctAnswers,
+        },
+        $set: {
+          currentStreak: newStreak,
+          lastQuizDate: completedAt,
+        },
+      },
+      {
+        returnDocument: "after",
+        runValidators: true,
+        session: databaseSession,
+      },
+    );
+
+    if (!updatedUser) {
+      const unavailableUserError = new Error(
+        "The authenticated user is no longer available.",
+      );
+      unavailableUserError.statusCode = 409;
+      throw unavailableUserError;
+    }
+
     let dailyChallengeCompletion = null;
 
     if (isDailyChallenge) {
       dailyChallengeCompletion = await completeDailyChallenge({
-        challengeId: dailyChallengeId,
+        challengeId: authoritativeDailyChallengeId,
 
         userId,
 
@@ -652,23 +749,9 @@ async function submitQuiz(req, res, next) {
       }
     }
 
-    const previousTotalXp = user.totalXp || 0;
+    const levelChange = didLevelIncrease(previousTotalXp, updatedUser.totalXp);
 
-    user.totalXp += totalXpEarned;
-
-    user.quizzesCompleted += 1;
-
-    user.correctAnswers += correctAnswers;
-
-    user.currentStreak = newStreak;
-
-    user.lastQuizDate = new Date();
-
-    await user.save({ session: databaseSession });
-
-    const levelChange = didLevelIncrease(previousTotalXp, user.totalXp);
-
-    const levelInformation = getLevelInformation(user.totalXp);
+    const levelInformation = getLevelInformation(updatedUser.totalXp);
 
     let newlyUnlockedAchievements = [];
 
@@ -709,7 +792,7 @@ async function submitQuiz(req, res, next) {
 
         xpEarned: totalXpEarned,
 
-        currentStreak: user.currentStreak,
+        currentStreak: updatedUser.currentStreak,
 
         previousStreak,
 
@@ -725,7 +808,7 @@ async function submitQuiz(req, res, next) {
     }
 
     claimedSession.status = "completed";
-    claimedSession.completedAt = new Date();
+    claimedSession.completedAt = completedAt;
     claimedSession.result = scoreDocument._id;
     await claimedSession.save({ session: databaseSession });
 
@@ -767,14 +850,14 @@ async function submitQuiz(req, res, next) {
 
         isDailyChallenge,
 
-        dailyChallengeId: isDailyChallenge ? dailyChallengeId : null,
+        dailyChallengeId: authoritativeDailyChallengeId,
       },
 
       dailyChallenge: isDailyChallenge
         ? {
             completed: true,
 
-            challengeId: dailyChallengeId,
+            challengeId: authoritativeDailyChallengeId,
 
             rewardXp: dailyChallengeBonusXp,
 
@@ -785,13 +868,13 @@ async function submitQuiz(req, res, next) {
         : null,
 
       userStats: {
-        totalXp: user.totalXp,
+        totalXp: updatedUser.totalXp,
 
-        quizzesCompleted: user.quizzesCompleted,
+        quizzesCompleted: updatedUser.quizzesCompleted,
 
-        correctAnswers: user.correctAnswers,
+        correctAnswers: updatedUser.correctAnswers,
 
-        currentStreak: user.currentStreak,
+        currentStreak: updatedUser.currentStreak,
 
         level: levelInformation.level,
 
@@ -832,12 +915,31 @@ async function submitQuiz(req, res, next) {
     }
 
     if (
-      !error.statusCode &&
-      (error.code === 112 || error.hasErrorLabel?.("TransientTransactionError"))
+      requestedSessionId &&
+      (error.statusCode === 409 ||
+        error.code === 11000 ||
+        error.code === 112 ||
+        error.hasErrorLabel?.("TransientTransactionError"))
     ) {
-      error.statusCode = 409;
-      error.message =
-        "This quiz submission conflicted with another request. Please check your quiz history.";
+      const latestSession = await QuizSession.findOne({
+        sessionId: requestedSessionId,
+        user: getUserId(req),
+      }).select("status result expiresAt");
+
+      if (latestSession) {
+        const conflictResponse = sendSessionStateResponse(res, latestSession);
+
+        if (conflictResponse) {
+          return conflictResponse;
+        }
+      }
+
+      return res.status(409).json({
+        success: false,
+        replayed: false,
+        message:
+          "This quiz submission conflicted with another request. You can retry safely.",
+      });
     }
 
     return next(error);

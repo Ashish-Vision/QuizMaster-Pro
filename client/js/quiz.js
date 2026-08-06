@@ -664,8 +664,6 @@ function closeSubmitModal() {
 
 function createSubmissionPayload() {
   return {
-    category: state.category,
-
     answers: state.questions.map((question) => ({
       questionId: question._id,
 
@@ -676,12 +674,6 @@ function createSubmissionPayload() {
         ? state.answers[question._id]
         : null,
     })),
-
-    remainingSeconds: state.remainingSeconds,
-
-    quizDurationSeconds: QUIZ_DURATION_SECONDS,
-
-    dailyChallengeId: state.isDailyChallenge ? state.dailyChallengeId : null,
     quizSessionId: state.quizSessionId,
   };
 }
@@ -722,6 +714,14 @@ async function submitQuiz() {
     }
 
     const data = await parseJsonResponse(response);
+
+    if (response.status === 409 && data.existingResultId) {
+      clearProgress();
+      window.location.href = `/result/${encodeURIComponent(
+        data.existingResultId,
+      )}`;
+      return;
+    }
 
     if (!response.ok || !data.success) {
       throw new Error(data.message || "Unable to submit the quiz.");

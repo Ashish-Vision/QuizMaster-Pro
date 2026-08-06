@@ -151,6 +151,13 @@ async function auditPage(page, path) {
   return { apiRequests };
 }
 
+async function prepareQuizSubmission(page) {
+  await page.goto("/quiz?category=Java");
+  await page.locator(".option-button").first().click();
+  await page.locator("#submitButton").click();
+  await expect(page.locator("#submitModal")).not.toHaveClass(/hidden/);
+}
+
 test("public rendered-page audit", async ({ page }) => {
   for (const path of PUBLIC_PAGES) await auditPage(page, path);
 });
@@ -216,6 +223,91 @@ test("dashboard handles a 403 response without a redirect loop", async ({
   await page.goto("/dashboard");
   await expect(page.locator(".category-error")).toContainText("Forbidden");
   expect(new URL(page.url()).pathname).toBe("/dashboard");
+});
+
+test("quiz submission suppresses rapid duplicate clicks", async ({
+  page,
+  context,
+}) => {
+  await authenticate(context, "64b000000000000000000001");
+  let submissionCount = 0;
+  let alertMessage = "";
+
+  page.on("dialog", async (dialog) => {
+    alertMessage = dialog.message();
+    await dialog.dismiss();
+  });
+  await page.route("**/api/quiz/submit", async (route) => {
+    submissionCount += 1;
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    await route.fulfill({
+      status: 409,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: false,
+        message: "Quiz submission is already being processed.",
+      }),
+    });
+  });
+
+  await prepareQuizSubmission(page);
+  await page.locator("#confirmSubmitButton").evaluate((button) => {
+    button.click();
+    button.click();
+  });
+
+  await expect(page.locator("#confirmSubmitButton")).toBeEnabled();
+  expect(submissionCount).toBe(1);
+  expect(alertMessage).toContain("already being processed");
+  expect(new URL(page.url()).pathname).toBe("/quiz");
+});
+
+test("completed replay navigates to its existing result", async ({
+  page,
+  context,
+}) => {
+  await authenticate(context, "64b000000000000000000001");
+  const resultId = "64b000000000000000000041";
+  let submissionCount = 0;
+
+  await page.route("**/api/quiz/submit", async (route) => {
+    submissionCount += 1;
+    await route.fulfill({
+      status: 409,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: false,
+        replayed: true,
+        message: "This quiz has already been completed.",
+        existingResultId: resultId,
+      }),
+    });
+  });
+  await page.route(`**/api/quiz/result/${resultId}`, (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "application/json",
+      body: JSON.stringify({
+        success: true,
+        result: {
+          resultId,
+          category: "Java",
+          score: 1,
+          totalQuestions: 1,
+          percentage: 100,
+          xpEarned: 10,
+          answers: [],
+        },
+      }),
+    }),
+  );
+
+  await prepareQuizSubmission(page);
+  await page.locator("#confirmSubmitButton").click();
+
+  await page.waitForURL(`**/result/${resultId}`);
+  expect(submissionCount).toBe(1);
+  expect(new URL(page.url()).pathname).toBe(`/result/${resultId}`);
 });
 
 test("administrator rendered-page audit", async ({ page, context }) => {

@@ -581,7 +581,7 @@ async function completeDailyChallenge({
     },
 
     {
-      new: true,
+      returnDocument: "after",
       runValidators: true,
       session,
     },
