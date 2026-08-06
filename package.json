@@ -2,6 +2,7 @@
   "name": "quizmaster-pro",
   "version": "1.0.0",
   "description": "Secure full-stack quiz platform with user and administrator experiences.",
+  "private": true,
   "main": "server/server.js",
   "directories": {
     "doc": "docs",
@@ -31,7 +32,19 @@
     "express",
     "mongodb"
   ],
-  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ashish-Vision/QuizMaster-Pro.git"
+  },
+  "homepage": "https://github.com/Ashish-Vision/QuizMaster-Pro#readme",
+  "bugs": {
+    "url": "https://github.com/Ashish-Vision/QuizMaster-Pro/issues"
+  },
+  "author": "Ashish-Vision",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=22"
+  },
   "type": "commonjs",
   "dependencies": {
     "bcrypt": "^6.0.0",

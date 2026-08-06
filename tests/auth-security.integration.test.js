@@ -29,6 +29,7 @@ const User = require("../server/models/User");
 const Score = require("../server/models/Score");
 const Notification = require("../server/models/Notification");
 const { createAuthToken } = require("../server/utils/authToken");
+const { getMongoBinaryOptions } = require("./support/mongodb");
 
 let mongoServer;
 
@@ -62,7 +63,7 @@ function tokenFromCookie(response) {
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create({
-    binary: { systemBinary: "/usr/bin/mongod", version: "8.0.28" },
+    binary: getMongoBinaryOptions(),
   });
   await mongoose.connect(mongoServer.getUri());
   await Promise.all([

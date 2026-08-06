@@ -21,9 +21,7 @@ const {
   getAchievementDefinitions,
 } = require("../server/services/achievementService");
 const { createAuthToken } = require("../server/utils/authToken");
-
-const SYSTEM_MONGOD = "/usr/bin/mongod";
-const MONGODB_VERSION = "8.0.28";
+const { getMongoBinaryOptions } = require("./support/mongodb");
 
 let mongoServer;
 let primaryUser;
@@ -69,7 +67,7 @@ function scoreData(user, overrides = {}) {
 
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create({
-    binary: { systemBinary: SYSTEM_MONGOD, version: MONGODB_VERSION },
+    binary: getMongoBinaryOptions(),
     instance: { dbName: "quizmaster-platform-features" },
   });
   await mongoose.connect(mongoServer.getUri());

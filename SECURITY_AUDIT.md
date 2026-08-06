@@ -1,5 +1,7 @@
 # QuizMaster Pro — Security Audit
 
+> **Historical baseline:** this report predates the final hardening stages. Use [`docs/FINAL_SECURITY_REVIEW.md`](docs/FINAL_SECURITY_REVIEW.md) for current classifications, evidence, and accepted local-project limitations.
+
 Date: 2026-08-05  
 Scope: JWT, cookies, Helmet, CORS, MongoDB query construction, XSS, CSRF, rate limiting, validation, password reset/email verification, file uploads, and environment-variable handling in the current repository. No source files were modified.
 

@@ -22,9 +22,7 @@ const {
   createDailyChallenge,
 } = require("../server/services/dailyChallengeService");
 const { createAuthToken } = require("../server/utils/authToken");
-
-const SYSTEM_MONGOD = "/usr/bin/mongod";
-const MONGODB_VERSION = "8.0.28";
+const { getMongoBinaryOptions } = require("./support/mongodb");
 const CATEGORY = "Replay Safety";
 
 let replicaSet;
@@ -168,7 +166,7 @@ beforeAll(async () => {
   jest.spyOn(console, "log").mockImplementation(() => {});
   jest.spyOn(console, "error").mockImplementation(() => {});
   replicaSet = await MongoMemoryReplSet.create({
-    binary: { systemBinary: SYSTEM_MONGOD, version: MONGODB_VERSION },
+    binary: getMongoBinaryOptions(),
     replSet: { count: 1, storageEngine: "wiredTiger" },
   });
 

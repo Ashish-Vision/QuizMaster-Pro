@@ -5,7 +5,7 @@ QuizMaster Pro uses Jest and Supertest for unit/API/database tests and Playwrigh
 ## Prerequisites
 
 - Node.js and npm versions compatible with `package-lock.json`
-- MongoDB server binary available at `/usr/bin/mongod` for the current integration harness
+- MongoDB 8.0.28 available locally or downloadable by `mongodb-memory-server`
 - Chromium installed for Playwright
 
 Install dependencies and the browser once on a new workstation:
@@ -15,7 +15,7 @@ npm ci
 npx playwright install chromium
 ```
 
-The integration harness currently pins MongoDB 8.0.28. Quiz completion and inactive-question tests use a single-node `MongoMemoryReplSet` with WiredTiger because MongoDB transactions require a replica set. Other database tests use an isolated `MongoMemoryServer` when transactions are not involved.
+The integration harness pins MongoDB 8.0.28. It uses `MONGOMS_SYSTEM_BINARY` when configured, otherwise `/usr/bin/mongod` when present, and otherwise the managed `mongodb-memory-server` binary. Quiz completion and inactive-question tests use a single-node `MongoMemoryReplSet` with WiredTiger because MongoDB transactions require a replica set. Other database tests use an isolated `MongoMemoryServer` when transactions are not involved.
 
 ## Commands
 
@@ -62,13 +62,13 @@ On a typical local workstation:
 - Coverage: approximately 40–90 seconds
 - Playwright desktop/mobile: approximately 40–60 seconds
 
-The first run can take longer if `mongodb-memory-server` or Playwright must obtain a binary. This repository prefers the system MongoDB binary to keep later runs deterministic.
+The first run can take longer if `mongodb-memory-server` or Playwright must obtain a binary. This repository prefers an available system MongoDB binary to keep later runs fast and deterministic.
 
 ## Troubleshooting
 
 ### MongoDB binary not found
 
-Install a compatible local MongoDB server or update the test-only `systemBinary` configuration consistently. Confirm with:
+Install a compatible local MongoDB server, set `MONGOMS_SYSTEM_BINARY`, or allow `mongodb-memory-server` to download its pinned binary. Confirm a system installation with:
 
 ```bash
 /usr/bin/mongod --version

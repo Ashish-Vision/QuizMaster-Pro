@@ -23,8 +23,7 @@ const {
   getAvailableChallengeGroups,
 } = require("../server/services/dailyChallengeService");
 const { createAuthToken } = require("../server/utils/authToken");
-
-const SYSTEM_MONGOD = "/usr/bin/mongod";
+const { getMongoBinaryOptions } = require("./support/mongodb");
 const CATEGORY = "Inactive Policy";
 
 let replicaSet;
@@ -115,7 +114,7 @@ async function submitQuiz(user, payload) {
 
 beforeAll(async () => {
   replicaSet = await MongoMemoryReplSet.create({
-    binary: { systemBinary: SYSTEM_MONGOD, version: "8.0.28" },
+    binary: getMongoBinaryOptions(),
     replSet: { count: 1, storageEngine: "wiredTiger" },
   });
 
