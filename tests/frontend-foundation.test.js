@@ -104,6 +104,9 @@ describe("frontend accessibility foundation", () => {
   test("every rendered page links the foundation before page styles", () => {
     const foundation = read("client/css/foundation.css");
     expect(foundation).toContain(":focus-visible");
+    expect(foundation).toContain(
+      "outline: 3px solid var(--focus-color) !important",
+    );
     expect(foundation).toContain("prefers-reduced-motion: reduce");
     expect(foundation).toContain("min-height: 44px");
 
@@ -135,6 +138,12 @@ describe("frontend accessibility foundation", () => {
 
     for (const partial of partials) {
       expect(read(partial)).not.toMatch(/<html\b/iu);
+    }
+
+    for (const view of completePages) {
+      const markup = read(view);
+      expect(markup).not.toMatch(/<script\b(?![^>]*\bsrc=)[^>]*>/iu);
+      expect(markup).not.toMatch(/\sstyle=/iu);
     }
 
     for (const stylesheet of findFiles("client/css", ".css")) {

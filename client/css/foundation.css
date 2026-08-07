@@ -29,8 +29,8 @@ body.modal-open {
 }
 
 :where(a, button, input, select, textarea, [tabindex]):focus-visible {
-  outline: 3px solid var(--focus-color);
-  outline-offset: 3px;
+  outline: 3px solid var(--focus-color) !important;
+  outline-offset: 3px !important;
   box-shadow: var(--focus-ring);
 }
 

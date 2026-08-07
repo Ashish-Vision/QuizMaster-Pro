@@ -188,6 +188,26 @@ test("foundation styles are applied in the browser", async ({ page }) => {
       return styles.overflowWrap;
     }),
   ).toBe("anywhere");
+
+  const email = page.locator("#loginEmail");
+  for (
+    let tabPresses = 0;
+    tabPresses < 10 &&
+    !(await email.evaluate((element) => element === document.activeElement));
+    tabPresses += 1
+  ) {
+    await page.keyboard.press("Tab");
+  }
+  await expect(email).toBeFocused();
+  expect(
+    await email.evaluate((element) => {
+      const styles = getComputedStyle(element);
+      return {
+        style: styles.outlineStyle,
+        width: styles.outlineWidth,
+      };
+    }),
+  ).toEqual({ style: "solid", width: "3px" });
 });
 
 test("authenticated user rendered-page audit", async ({ page, context }) => {

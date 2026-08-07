@@ -387,6 +387,10 @@ button {
   background: linear-gradient(90deg, var(--primary), var(--secondary));
 }
 
+.quiz-progress-preview {
+  width: 40%;
+}
+
 .section {
   width: min(calc(100% - 32px), var(--container-width));
 
