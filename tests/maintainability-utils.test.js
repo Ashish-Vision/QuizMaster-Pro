@@ -34,6 +34,11 @@ describe("maintainability utilities", () => {
       limit: 15,
       skip: 0,
     });
+    expect(parsePagination({ page: "0", limit: "invalid" })).toEqual({
+      page: 1,
+      limit: 20,
+      skip: 0,
+    });
     expect(
       parsePagination(
         { limit: "75" },
