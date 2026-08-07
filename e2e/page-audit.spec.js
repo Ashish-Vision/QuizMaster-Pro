@@ -180,6 +180,16 @@ test("public rendered-page audit", async ({ page }) => {
   for (const path of PUBLIC_PAGES) await auditPage(page, path);
 });
 
+test("foundation styles are applied in the browser", async ({ page }) => {
+  await page.goto("/login");
+  expect(
+    await page.locator("body").evaluate((element) => {
+      const styles = getComputedStyle(element);
+      return styles.overflowWrap;
+    }),
+  ).toBe("anywhere");
+});
+
 test("authenticated user rendered-page audit", async ({ page, context }) => {
   await authenticate(context, "64b000000000000000000001");
   for (const path of USER_PAGES) await auditPage(page, path);
@@ -412,7 +422,7 @@ test("reduced-motion preference preserves a usable quiz", async ({
     .locator(".option-button")
     .first()
     .evaluate((element) => getComputedStyle(element).animationDuration);
-  expect(["0s", "0.00001s"]).toContain(animationDuration);
+  expect(["0s", "0.00001s", "1e-05s"]).toContain(animationDuration);
 });
 
 test("representative user and admin pages expose accessible structure", async ({

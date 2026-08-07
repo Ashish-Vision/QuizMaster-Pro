@@ -12,6 +12,22 @@ function read(relativePath) {
   return fs.readFileSync(path.join(projectRoot, relativePath), "utf8");
 }
 
+function findFiles(relativeDirectory, extension) {
+  const directory = path.join(projectRoot, relativeDirectory);
+
+  return fs.readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
+    const relativePath = path.join(relativeDirectory, entry.name);
+
+    if (entry.isDirectory()) {
+      return findFiles(relativePath, extension);
+    }
+
+    return entry.isFile() && entry.name.endsWith(extension)
+      ? [relativePath]
+      : [];
+  });
+}
+
 describe("frontend accessibility foundation", () => {
   test("shared browser escaping safely renders representative untrusted text", () => {
     const context = { window: {} };
@@ -85,22 +101,46 @@ describe("frontend accessibility foundation", () => {
     }
   });
 
-  test("shared focus and reduced-motion rules are available to page styles", () => {
+  test("every rendered page links the foundation before page styles", () => {
     const foundation = read("client/css/foundation.css");
     expect(foundation).toContain(":focus-visible");
     expect(foundation).toContain("prefers-reduced-motion: reduce");
     expect(foundation).toContain("min-height: 44px");
 
-    const pageStyles = [
-      "client/css/style.css",
-      "client/css/auth.css",
-      "client/css/dashboard.css",
-      "client/css/quiz.css",
-      "client/css/admin/dashboard.css",
-      "client/css/admin/questions.css",
-    ];
-    for (const stylesheet of pageStyles) {
-      expect(read(stylesheet)).toContain('@import url("/css/foundation.css")');
+    const views = findFiles("client/views", ".ejs");
+    const completePages = views.filter((view) => /<html\b/iu.test(read(view)));
+    const partials = views.filter((view) => !completePages.includes(view));
+
+    expect(completePages.length).toBeGreaterThan(0);
+    expect(partials.length).toBeGreaterThan(0);
+
+    for (const view of completePages) {
+      const markup = read(view);
+      const head = markup.match(/<head\b[^>]*>([\s\S]*?)<\/head>/iu)?.[1];
+      expect(head).toBeDefined();
+
+      const foundationReferences = markup.match(/\/css\/foundation\.css/gu);
+      expect(foundationReferences).toHaveLength(1);
+
+      const stylesheetLinks = [
+        ...head.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*>/giu),
+      ];
+      const foundationLinkIndex = stylesheetLinks.findIndex((match) =>
+        match[0].includes("/css/foundation.css"),
+      );
+
+      expect(foundationLinkIndex).toBe(0);
+      expect(head.match(/\/css\/foundation\.css/gu)).toHaveLength(1);
+    }
+
+    for (const partial of partials) {
+      expect(read(partial)).not.toMatch(/<html\b/iu);
+    }
+
+    for (const stylesheet of findFiles("client/css", ".css")) {
+      expect(read(stylesheet)).not.toContain(
+        '@import url("/css/foundation.css");',
+      );
     }
   });
 });
