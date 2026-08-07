@@ -6,6 +6,10 @@ const Score = require("../models/Score");
 const User = require("../models/User");
 const { escapeRegex } = require("../utils/mongoSearch");
 const { normalizeText } = require("../utils/normalize");
+const {
+  createPaginationMeta,
+  parsePagination,
+} = require("../utils/pagination");
 
 const ALLOWED_SORTS = {
   newest: {
@@ -141,18 +145,10 @@ async function recalculateUserStatistics(userId) {
  */
 async function getAttempts(req, res, next) {
   try {
-    const requestedPage = Number.parseInt(req.query.page, 10);
-    const requestedLimit = Number.parseInt(req.query.limit, 10);
-
-    const page =
-      Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-
-    const limit =
-      Number.isInteger(requestedLimit) &&
-      requestedLimit >= 1 &&
-      requestedLimit <= 100
-        ? requestedLimit
-        : 10;
+    const { page, limit, skip } = parsePagination(req.query, {
+      defaultLimit: 10,
+      maxLimit: 100,
+    });
 
     const search = normalizeText(req.query.search);
     const category = normalizeText(req.query.category);
@@ -223,8 +219,6 @@ async function getAttempts(req, res, next) {
     }
 
     const selectedSort = ALLOWED_SORTS[sort] || ALLOWED_SORTS.newest;
-    const skip = (page - 1) * limit;
-
     const [
       attempts,
       filteredAttemptCount,
@@ -306,7 +300,11 @@ async function getAttempts(req, res, next) {
 
     const summary = summaryResult[0] || {};
 
-    const totalPages = Math.max(1, Math.ceil(filteredAttemptCount / limit));
+    const pagination = createPaginationMeta({
+      page,
+      limit,
+      totalItems: filteredAttemptCount,
+    });
 
     return res.status(200).json({
       success: true,
@@ -340,12 +338,8 @@ async function getAttempts(req, res, next) {
       },
 
       pagination: {
-        currentPage: page,
-        totalPages,
+        ...pagination,
         totalAttempts: filteredAttemptCount,
-        limit,
-        hasPreviousPage: page > 1,
-        hasNextPage: page < totalPages,
       },
     });
   } catch (error) {

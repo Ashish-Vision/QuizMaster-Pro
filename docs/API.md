@@ -59,6 +59,8 @@ New challenges use only active or legacy-without-flag questions. An already-issu
 
 ## User experience APIs
 
+Where pagination is supported, `page` and `limit` are optional query parameters and endpoint defaults apply when they are omitted. When supplied, both must be positive integers; limits above the global maximum of 100 are rejected, and endpoints may enforce a smaller feature-specific maximum. Invalid supplied values return HTTP `400`, and paginated database queries use deterministic tie-breaking.
+
 | Method and path              | Access        | Purpose                                                                    |
 | ---------------------------- | ------------- | -------------------------------------------------------------------------- |
 | `GET /api/history`           | Authenticated | Bounded `page`, `limit`, optional `category`; returns owned score history. |

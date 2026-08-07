@@ -4,6 +4,10 @@ const mongoose = require("mongoose");
 const { incrementUserTokenVersion } = require("../utils/authToken");
 const { escapeRegex } = require("../utils/mongoSearch");
 const { normalizeText } = require("../utils/normalize");
+const {
+  createPaginationMeta,
+  parsePagination,
+} = require("../utils/pagination");
 
 const User = require("../models/User");
 const Score = require("../models/Score");
@@ -60,19 +64,10 @@ function createSafeUser(user) {
  */
 async function getUsers(req, res, next) {
   try {
-    const requestedPage = Number.parseInt(req.query.page, 10);
-
-    const requestedLimit = Number.parseInt(req.query.limit, 10);
-
-    const page =
-      Number.isInteger(requestedPage) && requestedPage > 0 ? requestedPage : 1;
-
-    const limit =
-      Number.isInteger(requestedLimit) &&
-      requestedLimit >= 1 &&
-      requestedLimit <= 100
-        ? requestedLimit
-        : 10;
+    const { page, limit, skip } = parsePagination(req.query, {
+      defaultLimit: 10,
+      maxLimit: 100,
+    });
 
     const search = normalizeText(req.query.search);
 
@@ -167,8 +162,6 @@ async function getUsers(req, res, next) {
 
     const selectedSort = sortOptions[sort];
 
-    const skip = (page - 1) * limit;
-
     const [
       users,
       filteredUserCount,
@@ -206,7 +199,11 @@ async function getUsers(req, res, next) {
       }),
     ]);
 
-    const totalPages = Math.max(1, Math.ceil(filteredUserCount / limit));
+    const pagination = createPaginationMeta({
+      page,
+      limit,
+      totalItems: filteredUserCount,
+    });
 
     return res.status(200).json({
       success: true,
@@ -235,16 +232,8 @@ async function getUsers(req, res, next) {
       },
 
       pagination: {
-        currentPage: page,
-        totalPages,
-
+        ...pagination,
         totalUsers: filteredUserCount,
-
-        limit,
-
-        hasPreviousPage: page > 1,
-
-        hasNextPage: page < totalPages,
       },
     });
   } catch (error) {

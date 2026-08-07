@@ -418,6 +418,125 @@ describe("settings success and validation contracts", () => {
 });
 
 describe("administrator CRUD and report integration", () => {
+  test("admin lists preserve pagination contracts and deterministic ordering", async () => {
+    const admin = await createUser({ role: "admin" });
+    const cookie = authCookie(admin);
+    const ids = Array.from({ length: 3 }, () => new mongoose.Types.ObjectId());
+    const sharedDate = new Date("2025-01-01T00:00:00.000Z");
+
+    await User.insertMany(
+      ids.map((id, index) => ({
+        _id: id,
+        firstName: "Pagination",
+        lastName: `User${index}`,
+        email: `pagination-user-${index}@example.invalid`,
+        password: "StoredOnlyPassword123!",
+        emailVerified: true,
+        emailVerifiedAt: sharedDate,
+        isActive: true,
+        totalXp: 500,
+        createdAt: sharedDate,
+        updatedAt: sharedDate,
+      })),
+    );
+
+    await Question.insertMany(
+      ids.map((id, index) => ({
+        _id: id,
+        question: `Pagination question ${index}?`,
+        options: ["A", "B", "C", "D"],
+        correctAnswer: 0,
+        category: "Pagination Contract",
+        difficulty: "Easy",
+        createdAt: sharedDate,
+        updatedAt: sharedDate,
+      })),
+    );
+
+    await Score.insertMany(
+      ids.map((id) =>
+        scoreData(primaryUser, {
+          _id: id,
+          category: "Pagination Contract",
+          accuracy: 80,
+          completedAt: sharedDate,
+          createdAt: sharedDate,
+          updatedAt: sharedDate,
+        }),
+      ),
+    );
+
+    const endpointCases = [
+      {
+        path: "/api/admin/attempts?category=Pagination%20Contract&sort=accuracy",
+        collection: "attempts",
+        endpointTotal: "totalAttempts",
+      },
+      {
+        path: "/api/admin/questions?category=Pagination%20Contract&sortBy=difficulty&sortOrder=asc",
+        collection: "questions",
+        endpointTotal: "totalQuestions",
+      },
+      {
+        path: "/api/admin/users?search=Pagination&sort=xp",
+        collection: "users",
+        endpointTotal: "totalUsers",
+      },
+    ];
+
+    const expectedIds = ids.map(String).sort().reverse();
+
+    for (const { path, collection, endpointTotal } of endpointCases) {
+      const firstPage = await request(app)
+        .get(`${path}&page=1&limit=2`)
+        .set("Cookie", cookie);
+      const secondPage = await request(app)
+        .get(`${path}&page=2&limit=2`)
+        .set("Cookie", cookie);
+
+      expect(firstPage.status).toBe(200);
+      expect(secondPage.status).toBe(200);
+      expect(firstPage.body.pagination).toMatchObject({
+        currentPage: 1,
+        totalPages: 2,
+        [endpointTotal]: 3,
+        limit: 2,
+        hasPreviousPage: false,
+        hasNextPage: true,
+      });
+      expect(secondPage.body.pagination).toMatchObject({
+        currentPage: 2,
+        totalPages: 2,
+        [endpointTotal]: 3,
+        limit: 2,
+        hasPreviousPage: true,
+        hasNextPage: false,
+      });
+      for (const response of [firstPage, secondPage]) {
+        if (Object.hasOwn(response.body.pagination, "totalItems")) {
+          expect(response.body.pagination.totalItems).toBe(
+            response.body.pagination[endpointTotal],
+          );
+        }
+      }
+
+      const returnedIds = [
+        ...firstPage.body[collection],
+        ...secondPage.body[collection],
+      ].map((item) => String(item.id || item._id));
+      expect(returnedIds).toEqual(expectedIds);
+
+      await request(app)
+        .get(`${path}&page=0&limit=2`)
+        .set("Cookie", cookie)
+        .expect(400);
+      await request(app)
+        .get(`${path}&page=1&limit=101`)
+        .set("Cookie", cookie)
+        .expect(400);
+    }
+  });
+
   test("question create, list, metadata, read, update, and delete are consistent", async () => {
     const admin = await createUser({ role: "admin" });
     const payload = {
