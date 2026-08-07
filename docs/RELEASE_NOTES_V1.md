@@ -16,7 +16,7 @@ Quiz sessions are opaque, expiring, owned, and single-use. Completion uses a Mon
 
 ## Test summary
 
-- 231 Jest unit, contract, security, database, transaction, and concurrency tests
+- 232 Jest unit, contract, security, database, transaction, and concurrency tests
 - 28 Playwright desktop/mobile checks
 - MongoDB 8.0.28 isolated test databases and WiredTiger replica-set transaction suites
 - Fresh coverage: 59.48% statements, 38.89% branches, 53.77% functions, 59.48% lines
@@ -28,4 +28,4 @@ Install with `npm ci`, copy `.env.example`, configure a local MongoDB replica se
 
 ## Known limitations
 
-This is not a hosted or production-certified service. Rate limits are process-local, CSV reports are memory-buffered with a maximum of 1,000 export rows, pagination is offset-based with page sizes capped at 100, and daily completions are embedded in one document per 24-hour challenge. Optional integrations require external credentials, and browser automation currently targets Chromium. A repository license still requires an owner decision.
+This is not a hosted or production-certified service. Rate limits are process-local, CSV reports are memory-buffered with a maximum of 1,000 export rows, pagination is offset-based with page sizes capped at 100, and daily completions are embedded in one document per 24-hour challenge. Optional integrations require external credentials, and browser automation currently targets Chromium. The repository is `UNLICENSED` and all rights are reserved as described in `LICENSE`.

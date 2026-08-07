@@ -18,7 +18,7 @@ QuizMaster Pro is a complete full-stack portfolio application with cohesive user
 | All eleven administrator modules                    | Complete                                              |
 | Local quality workflow and documentation            | Complete                                              |
 | Public deployment infrastructure                    | Intentionally not included                            |
-| Repository license                                  | Owner decision required                               |
+| Repository license                                  | All rights reserved; package marked `UNLICENSED`      |
 
 ## Architecture
 
@@ -38,7 +38,7 @@ Authorization, ownership, validation, sensitive-field handling, active-question 
 
 ## Tests
 
-The validated baseline is 230 Jest tests and 26 Playwright checks. Critical quiz/JWT/ownership/security paths have substantially higher coverage than the aggregate server figure. External provider calls and several large admin/profile controllers remain lower-coverage areas.
+The validated baseline is 232 Jest tests and 28 Playwright checks. Critical quiz/JWT/ownership/security paths have substantially higher coverage than the aggregate server figure. External provider calls and several large admin/profile controllers remain lower-coverage areas.
 
 ## Documentation
 
@@ -51,4 +51,4 @@ README, API, architecture, environment, testing, security, contribution, screens
 - Add decode/re-encode avatar processing.
 - Continue safe-DOM migration and shared frontend patterns incrementally.
 - Capture portfolio screenshots, demo media, and a social preview.
-- Select a repository license before inviting reuse.
+- Revisit the all-rights-reserved policy before inviting reuse.

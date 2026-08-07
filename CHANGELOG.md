@@ -42,7 +42,7 @@ All notable project changes are documented here. The format follows [Keep a Chan
 
 ### Testing
 
-- Validated 230 Jest tests and 26 Chromium desktop/mobile Playwright checks.
+- Validated 232 Jest tests and 28 Chromium desktop/mobile Playwright checks.
 - Covered quiz rollback/concurrency, authentication invalidation, ownership, feature calculations, administrator CRUD, safe rendering, and representative accessibility structure.
 
 ## [1.0.0-rc.1] - 2026-08-05
