@@ -20,6 +20,9 @@ const {
   checkAndUnlockAchievements,
   getAchievementDefinitions,
 } = require("../server/services/achievementService");
+const {
+  MAX_EXPORT_ROWS,
+} = require("../server/controllers/adminReportController");
 const { createAuthToken } = require("../server/utils/authToken");
 const { getMongoBinaryOptions } = require("./support/mongodb");
 
@@ -192,6 +195,12 @@ describe("leaderboard eligibility and deterministic ranking", () => {
     ).toEqual(["Player00 Ranked", "Player01 Ranked"]);
     expect(response.body.currentUser.rank).toBe(14);
     expect(response.body.currentUser.isCurrentUser).toBe(true);
+
+    const compatibilityResponse = await request(app)
+      .get("/api/users/leaderboard")
+      .set("Cookie", authCookie(users[13]));
+    expect(compatibilityResponse.status).toBe(200);
+    expect(compatibilityResponse.body).toEqual(response.body);
   });
 
   test("returns a stable empty response when no eligible users exist", async () => {
@@ -520,5 +529,39 @@ describe("administrator CRUD and report integration", () => {
     expect(response.text).toContain("'=HYPERLINK");
     expect(response.text).toContain("Unicode 你好");
     expect(response.text.split("\n")[0]).toContain("Full Name");
+  });
+
+  test("CSV exports accept the row limit and reject larger reports", async () => {
+    const admin = await createUser({ role: "admin" });
+    const questions = Array.from({ length: MAX_EXPORT_ROWS }, (_, index) => ({
+      question: `Export boundary question ${index}?`,
+      options: ["A", "B", "C", "D"],
+      correctAnswer: 0,
+      category: "Export Boundary",
+      difficulty: "Easy",
+    }));
+    await Question.insertMany(questions);
+
+    const boundaryResponse = await request(app)
+      .get("/api/admin/reports/questions")
+      .set("Cookie", authCookie(admin));
+    expect(boundaryResponse.status).toBe(200);
+    expect(boundaryResponse.text.split("\n")).toHaveLength(MAX_EXPORT_ROWS + 1);
+
+    await Question.create({
+      question: "One question beyond the export boundary?",
+      options: ["A", "B", "C", "D"],
+      correctAnswer: 0,
+      category: "Export Boundary",
+      difficulty: "Easy",
+    });
+
+    const oversizedResponse = await request(app)
+      .get("/api/admin/reports/questions")
+      .set("Cookie", authCookie(admin));
+    expect(oversizedResponse.status).toBe(413);
+    expect(oversizedResponse.body.message).toContain(
+      `maximum of ${MAX_EXPORT_ROWS} export rows`,
+    );
   });
 });

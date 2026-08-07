@@ -143,6 +143,8 @@ Administrator notification links accept only empty strings or safe same-origin p
 
 Exports return UTF-8 CSV. Every cell is encoded and spreadsheet-formula prefixes are neutralized.
 
+Administrator CSV exports allow a maximum of 1,000 result rows. An export containing exactly 1,000 rows succeeds. If the filtered result would exceed 1,000 rows, the API returns HTTP `413`; narrow the report filters and retry.
+
 ## Health
 
 - `GET /api/health` — local process liveness.

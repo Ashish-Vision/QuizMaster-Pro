@@ -163,6 +163,8 @@ Create-question example:
 
 `GET /api/admin/reports/{summary|users|attempts|questions|categories|achievements}` returns report data or UTF-8 CSV according to the route contract. CSV values are quoted and spreadsheet-formula prefixes are neutralized.
 
+Administrator CSV exports allow a maximum of 1,000 result rows. An export containing exactly 1,000 rows succeeds. If the filtered result would exceed 1,000 rows, the API returns HTTP `413` with a message instructing the administrator to narrow the report filters and retry.
+
 ## Operations
 
 | Method | Path          | Description                                          |

@@ -10,6 +10,20 @@ const Question = require("../models/Question");
 const Score = require("../models/Score");
 const User = require("../models/User");
 
+const MAX_EXPORT_ROWS = 1000;
+
+function enforceExportRowLimit(records) {
+  if (records.length <= MAX_EXPORT_ROWS) {
+    return records;
+  }
+
+  const error = new Error(
+    `This report exceeds the maximum of ${MAX_EXPORT_ROWS} export rows. Narrow the report filters and try again.`,
+  );
+  error.statusCode = 413;
+  throw error;
+}
+
 function normalizeDays(value, fallback = 30) {
   const parsed = Number.parseInt(value, 10);
 
@@ -241,7 +255,10 @@ async function exportUsersReport(req, res, next) {
       .sort({
         createdAt: -1,
       })
+      .limit(MAX_EXPORT_ROWS + 1)
       .lean();
+
+    enforceExportRowLimit(users);
 
     const rows = users.map((user) => {
       const safeUser = getSafeUser(user);
@@ -328,7 +345,10 @@ async function exportAttemptsReport(req, res, next) {
       .sort({
         completedAt: -1,
       })
+      .limit(MAX_EXPORT_ROWS + 1)
       .lean();
+
+    enforceExportRowLimit(attempts);
 
     const rows = attempts.map((attempt) => [
       String(attempt._id),
@@ -420,7 +440,10 @@ async function exportQuestionsReport(req, res, next) {
         difficulty: 1,
         createdAt: -1,
       })
+      .limit(MAX_EXPORT_ROWS + 1)
       .lean();
+
+    enforceExportRowLimit(questions);
 
     const rows = questions.map((question) => [
       String(question._id),
@@ -547,6 +570,9 @@ async function exportCategoriesReport(req, res, next) {
             },
           },
         },
+        {
+          $limit: MAX_EXPORT_ROWS + 1,
+        },
       ]),
 
       Score.aggregate([
@@ -577,8 +603,14 @@ async function exportCategoriesReport(req, res, next) {
             },
           },
         },
+        {
+          $limit: MAX_EXPORT_ROWS + 1,
+        },
       ]),
     ]);
+
+    enforceExportRowLimit(questionStatistics);
+    enforceExportRowLimit(scoreStatistics);
 
     const scoreMap = new Map(
       scoreStatistics.map((item) => [String(item._id), item]),
@@ -656,7 +688,10 @@ async function exportAchievementsReport(req, res, next) {
       .sort({
         unlockedAt: -1,
       })
+      .limit(MAX_EXPORT_ROWS + 1)
       .lean();
+
+    enforceExportRowLimit(achievements);
 
     const rows = achievements.map((achievement) => [
       String(achievement._id),
@@ -713,6 +748,8 @@ async function exportAchievementsReport(req, res, next) {
 }
 
 module.exports = {
+  MAX_EXPORT_ROWS,
+  enforceExportRowLimit,
   getReportSummary,
   exportUsersReport,
   exportAttemptsReport,
