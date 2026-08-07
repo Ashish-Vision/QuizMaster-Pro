@@ -19,6 +19,7 @@
     "test:coverage": "jest --coverage --runInBand",
     "test:integration": "jest --runInBand tests/*.integration.test.js",
     "test:e2e": "playwright test",
+    "screenshots": "playwright test --config=playwright.screenshots.config.js",
     "check:syntax": "find server client/js scripts tests e2e -type f -name '*.js' -print0 | xargs -0 -n1 node --check",
     "check": "npm run check:syntax && npm run lint && npm run format:check && npm test",
     "audit:prod": "npm audit --omit=dev",

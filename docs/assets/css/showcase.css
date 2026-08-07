@@ -960,6 +960,31 @@ p {
   display: none;
 }
 
+.gallery-image-button {
+  width: 100%;
+  display: block;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  background: #08111e;
+  color: inherit;
+  cursor: zoom-in;
+}
+
+.gallery-image-button img {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 10;
+  display: block;
+  object-fit: cover;
+  object-position: top center;
+  transition: transform 220ms ease;
+}
+
+.gallery-image-button:hover img {
+  transform: scale(1.015);
+}
+
 .image-placeholder {
   min-height: 250px;
   position: relative;
@@ -1035,6 +1060,65 @@ p {
   padding: 15px 18px;
   color: var(--muted);
   font-size: 0.8rem;
+}
+
+.gallery-card figcaption strong,
+.gallery-card figcaption span {
+  display: block;
+}
+
+.gallery-card figcaption strong {
+  margin-bottom: 3px;
+  color: var(--text);
+  font-size: 0.92rem;
+}
+
+.gallery-lightbox {
+  width: min(94vw, 1440px);
+  max-width: none;
+  padding: 0;
+  overflow: visible;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface);
+  box-shadow: var(--shadow);
+  color: var(--text);
+}
+
+.gallery-lightbox::backdrop {
+  background: rgba(2, 7, 14, 0.88);
+  backdrop-filter: blur(8px);
+}
+
+.gallery-lightbox img {
+  width: 100%;
+  height: auto;
+  max-height: 82vh;
+  display: block;
+  border-radius: var(--radius) var(--radius) 0 0;
+  object-fit: contain;
+  background: #050b13;
+}
+
+.gallery-lightbox p {
+  margin: 0;
+  padding: 14px 20px 16px;
+}
+
+.lightbox-close {
+  width: 42px;
+  height: 42px;
+  position: absolute;
+  z-index: 1;
+  top: -15px;
+  right: -15px;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: var(--surface-bright);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 1.6rem;
+  line-height: 1;
 }
 
 .stack-grid {

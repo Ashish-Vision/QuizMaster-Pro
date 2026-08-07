@@ -4,6 +4,7 @@ const { defineConfig, devices } = require("@playwright/test");
 
 module.exports = defineConfig({
   testDir: "./e2e",
+  testIgnore: "**/screenshot-capture.spec.js",
   fullyParallel: false,
   retries: process.env.CI ? 2 : 0,
   reporter: "list",

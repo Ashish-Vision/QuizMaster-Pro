@@ -319,7 +319,8 @@
               <p class="eyebrow">Interface gallery</p>
               <h2 id="screenshots-title">Application screenshots</h2>
               <p>
-                Reviewed images will replace these placeholders when captured.
+                Explore the public, learner, and administrator interfaces
+                captured from the deterministic local test environment.
               </p>
             </div>
             <div
@@ -346,84 +347,400 @@
 
           <div class="gallery-grid" aria-live="polite">
             <figure class="gallery-card" data-category="learner" data-reveal>
-              <div class="image-placeholder">
-                <span>01</span><strong>Login</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Secure account access</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/login.png"
+                  alt="QuizMaster Pro login page"
+                  loading="eager"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Login</strong
+                ><span>Secure account access with email and password.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/registration.png"
+                  alt="QuizMaster Pro registration page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Registration</strong
+                ><span
+                  >New learner account creation and password guidance.</span
+                >
+              </figcaption>
             </figure>
             <figure
               class="gallery-card gallery-card-wide"
               data-category="learner"
               data-reveal
             >
-              <div class="image-placeholder">
-                <span>02</span><strong>Dashboard</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Learner overview and daily challenge</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/dashboard.png"
+                  alt="Learner dashboard with progress and quiz categories"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Dashboard</strong
+                ><span
+                  >Learning overview, progress, categories, and challenge
+                  status.</span
+                >
+              </figcaption>
             </figure>
             <figure class="gallery-card" data-category="learner" data-reveal>
-              <div class="image-placeholder">
-                <span>03</span><strong>Quiz</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Server-issued quiz experience</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/quiz-categories.png"
+                  alt="Quiz category selection cards"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Quiz categories</strong
+                ><span>Category discovery and quiz start actions.</span>
+              </figcaption>
             </figure>
             <figure class="gallery-card" data-category="learner" data-reveal>
-              <div class="image-placeholder">
-                <span>04</span><strong>Result</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Score and answer review</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/quiz.png"
+                  alt="Active Java quiz question and answer choices"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Active quiz</strong
+                ><span
+                  >Timed, server-issued question and answer experience.</span
+                >
+              </figcaption>
             </figure>
             <figure class="gallery-card" data-category="learner" data-reveal>
-              <div class="image-placeholder">
-                <span>05</span><strong>Leaderboard</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Ranked learner progress</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/result.png"
+                  alt="Completed Java quiz result summary"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Quiz result</strong
+                ><span>Score, accuracy, time, and earned XP summary.</span>
+              </figcaption>
             </figure>
             <figure class="gallery-card" data-category="learner" data-reveal>
-              <div class="image-placeholder">
-                <span>06</span><strong>Achievements</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Unlocks and progress</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/daily-challenge.png"
+                  alt="Daily quiz challenge card"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Daily challenge</strong
+                ><span
+                  >Today’s synthetic challenge, reward, and availability.</span
+                >
+              </figcaption>
+            </figure>
+            <figure
+              class="gallery-card gallery-card-wide"
+              data-category="learner"
+              data-reveal
+            >
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/leaderboard.png"
+                  alt="Leaderboard of synthetic QuizMaster learners"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Leaderboard</strong
+                ><span
+                  >Ranked synthetic learners and current-user position.</span
+                >
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/achievements.png"
+                  alt="Learner achievement cards and progress"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Achievements</strong
+                ><span>Unlocked badges and progress toward future awards.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/analytics.png"
+                  alt="Learner performance analytics dashboard"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Analytics</strong
+                ><span>Personal performance summaries and trends.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/history.png"
+                  alt="Learner quiz attempt history"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>History</strong
+                ><span>Previous synthetic attempts and result links.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/notifications.png"
+                  alt="Learner notification center"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Notifications</strong
+                ><span>Account, quiz, and achievement messages.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/profile.png"
+                  alt="Synthetic learner profile and statistics"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Profile</strong
+                ><span>Synthetic identity, progress, and recent activity.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="learner" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/user/settings.png"
+                  alt="Learner account settings page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Settings</strong
+                ><span>Account details and password controls.</span>
+              </figcaption>
             </figure>
             <figure
               class="gallery-card gallery-card-wide"
               data-category="admin"
               data-reveal
             >
-              <div class="image-placeholder admin-placeholder">
-                <span>07</span><strong>Admin dashboard</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Platform summary and trends</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/dashboard.png"
+                  alt="QuizMaster administrator dashboard"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Admin dashboard</strong
+                ><span>Platform totals, trends, and recent activity.</span>
+              </figcaption>
             </figure>
             <figure class="gallery-card" data-category="admin" data-reveal>
-              <div class="image-placeholder admin-placeholder">
-                <span>08</span><strong>Admin analytics</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Platform performance analytics</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/analytics.png"
+                  alt="Administrator platform analytics"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Admin analytics</strong
+                ><span
+                  >Platform-wide performance and participation analytics.</span
+                >
+              </figcaption>
             </figure>
             <figure class="gallery-card" data-category="admin" data-reveal>
-              <div class="image-placeholder admin-placeholder">
-                <span>09</span><strong>Questions</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>Question management</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/users.png"
+                  alt="Administrator user management page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>User management</strong
+                ><span
+                  >Synthetic learner accounts, roles, and status controls.</span
+                >
+              </figcaption>
             </figure>
             <figure class="gallery-card" data-category="admin" data-reveal>
-              <div class="image-placeholder admin-placeholder">
-                <span>10</span><strong>Users</strong
-                ><small>Screenshot placeholder</small>
-              </div>
-              <figcaption>User and role management</figcaption>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/questions.png"
+                  alt="Administrator question management page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Question management</strong
+                ><span>Question inventory, filters, and editor actions.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/categories.png"
+                  alt="Administrator category management page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Category management</strong
+                ><span>Category totals, usage, and management controls.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/attempts.png"
+                  alt="Administrator quiz attempts page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Attempts</strong
+                ><span
+                  >Synthetic quiz submissions and performance summaries.</span
+                >
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/achievements.png"
+                  alt="Administrator achievement analytics page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Achievements</strong
+                ><span>Achievement definitions, unlocks, and adoption.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/reports.png"
+                  alt="Administrator reports and exports page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Reports</strong
+                ><span>Platform summaries and safe CSV export actions.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/notifications.png"
+                  alt="Administrator notification management page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Notifications</strong
+                ><span>Broadcast composer and delivery overview.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/activity-logs.png"
+                  alt="Administrator activity log page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Activity logs</strong
+                ><span>Auditable administrator and system events.</span>
+              </figcaption>
+            </figure>
+            <figure class="gallery-card" data-category="admin" data-reveal>
+              <button class="gallery-image-button" type="button" data-lightbox>
+                <img
+                  src="./images/admin/settings.png"
+                  alt="Administrator platform settings page"
+                  loading="lazy"
+                  data-gallery-image
+                />
+              </button>
+              <figcaption>
+                <strong>Admin settings</strong
+                ><span>Platform configuration grouped by concern.</span>
+              </figcaption>
             </figure>
           </div>
+          <dialog
+            class="gallery-lightbox"
+            data-lightbox-dialog
+            aria-label="Expanded application screenshot"
+          >
+            <button
+              type="button"
+              class="lightbox-close"
+              data-lightbox-close
+              aria-label="Close expanded screenshot"
+            >
+              ×</button
+            ><img alt="" data-lightbox-image />
+            <p data-lightbox-caption></p>
+          </dialog>
         </div>
       </section>
 
