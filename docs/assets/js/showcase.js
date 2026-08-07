@@ -132,6 +132,36 @@ function initializeImageFallbacks() {
   });
 }
 
+function initializeGalleryLightbox() {
+  const dialog = document.querySelector("[data-lightbox-dialog]");
+  const dialogImage = dialog?.querySelector("[data-lightbox-image]");
+  const dialogCaption = dialog?.querySelector("[data-lightbox-caption]");
+
+  if (!dialog || !dialogImage || !dialogCaption) return;
+
+  document.querySelectorAll("[data-lightbox]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const image = button.querySelector("img");
+      const caption = button.closest("figure")?.querySelector("figcaption");
+      if (!image) return;
+
+      dialogImage.src = image.currentSrc || image.src;
+      dialogImage.alt = image.alt;
+      dialogCaption.textContent = caption?.textContent.trim() || image.alt;
+      dialog.showModal();
+    });
+  });
+
+  dialog
+    .querySelector("[data-lightbox-close]")
+    ?.addEventListener("click", () => {
+      dialog.close();
+    });
+  dialog.addEventListener("click", (event) => {
+    if (event.target === dialog) dialog.close();
+  });
+}
+
 function revealAll() {
   document
     .querySelectorAll("[data-reveal]")
@@ -165,6 +195,7 @@ initializeHeader();
 initializeActiveSections();
 initializeGalleryFilters();
 initializeImageFallbacks();
+initializeGalleryLightbox();
 initializeReveal();
 
 reducedMotion.addEventListener("change", (event) => {

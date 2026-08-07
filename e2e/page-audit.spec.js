@@ -224,7 +224,7 @@ test("ordinary user dashboard hydrates real UI from user APIs", async ({
 
   await expect(page.locator(".category-card").first()).toContainText("Java");
   await expect(page.locator(".leaderboard-row").first()).toContainText(
-    "Test User",
+    "Jordan Lee",
   );
   await expect(
     page.locator(".dashboard-achievement-item").first(),

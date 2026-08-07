@@ -17,9 +17,12 @@ User.findById = (id) => ({
     return {
       _id: id,
       id: String(id),
-      firstName: String(id) === ADMIN_ID ? "Admin" : "Test",
-      lastName: "User",
-      email: "test@example.invalid",
+      firstName: String(id) === ADMIN_ID ? "Admin" : "Avery",
+      lastName: String(id) === ADMIN_ID ? "User" : "Morgan",
+      email:
+        String(id) === ADMIN_ID
+          ? "admin@example.invalid"
+          : "avery.morgan@example.invalid",
       role: String(id) === ADMIN_ID ? "admin" : "user",
       tokenVersion: 0,
       isActive: true,

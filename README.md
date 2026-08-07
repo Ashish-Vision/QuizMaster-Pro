@@ -82,17 +82,25 @@ The frontend has no framework or compilation step. Express renders semantic EJS 
 
 ## Screenshots
 
-Screenshots are intentionally represented by placeholders until reviewed images are captured from a local session using synthetic data.
+The [GitHub Pages site](https://ashish-vision.github.io/QuizMaster-Pro/) is a static portfolio showcase with a full 25-screen gallery. The screenshots were captured from the locally running Node/Express application using deterministic synthetic test data; GitHub Pages does not deploy the application backend.
 
-| Learner experience                                                       | Administrator experience                                                             |
-| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
-| **Login placeholder**<br>`docs/images/screenshots/login.png`             | **Admin dashboard placeholder**<br>`docs/images/screenshots/admin-dashboard.png`     |
-| **Dashboard placeholder**<br>`docs/images/screenshots/dashboard.png`     | **Admin analytics placeholder**<br>`docs/images/screenshots/admin-analytics.png`     |
-| **Quiz placeholder**<br>`docs/images/screenshots/quiz.png`               | **Question management placeholder**<br>`docs/images/screenshots/admin-questions.png` |
-| **Result placeholder**<br>`docs/images/screenshots/result.png`           | **User management placeholder**<br>`docs/images/screenshots/admin-users.png`         |
-| **Leaderboard placeholder**<br>`docs/images/screenshots/leaderboard.png` | **Attempt management placeholder**<br>`docs/images/screenshots/admin-attempts.png`   |
+### Learner experience
 
-See [the screenshot guide](docs/SCREENSHOT_GUIDE.md) before adding images. Never capture real credentials, tokens, email addresses, or private user data.
+| Login                                               | Dashboard                                            | Active quiz                                    |
+| --------------------------------------------------- | ---------------------------------------------------- | ---------------------------------------------- |
+| ![QuizMaster Pro login](docs/images/user/login.png) | ![Learner dashboard](docs/images/user/dashboard.png) | ![Active Java quiz](docs/images/user/quiz.png) |
+
+| Result                                      | Leaderboard                                                        |
+| ------------------------------------------- | ------------------------------------------------------------------ |
+| ![Quiz result](docs/images/user/result.png) | ![Synthetic learner leaderboard](docs/images/user/leaderboard.png) |
+
+### Administrator experience
+
+| Dashboard                                                   | User management                                           | Question management                                     |
+| ----------------------------------------------------------- | --------------------------------------------------------- | ------------------------------------------------------- |
+| ![Administrator dashboard](docs/images/admin/dashboard.png) | ![Synthetic user management](docs/images/admin/users.png) | ![Question management](docs/images/admin/questions.png) |
+
+The actual QuizMaster Pro application is intended to run locally unless it is deployed separately. See [the screenshot guide](docs/SCREENSHOT_GUIDE.md) for the capture and regeneration workflow. All committed screenshots must use synthetic data and must never expose real credentials, tokens, email addresses, or private user data.
 
 ## Technology stack
 
