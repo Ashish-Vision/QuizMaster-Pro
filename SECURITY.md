@@ -59,6 +59,7 @@ Unique indexes and transaction tests cover replay and concurrent submission. Res
 
 - Notification links accept only safe same-origin relative paths.
 - Dynamic browser values are escaped or assigned as text under a restrictive CSP.
+- Script CSP is self-only and does not permit inline scripts. Style CSP retains `unsafe-inline` because progress indicators, charts, avatar previews, and celebration effects set validated runtime dimensions, image URLs, or CSS custom properties; removing it requires replacing those dynamic style operations rather than only moving static markup.
 - Avatar uploads are limited to JPEG, PNG, and WebP, maximum 5 MB, with MIME/signature/structure/dimension validation.
 - CSV output quotes fields and neutralizes spreadsheet formula prefixes.
 - Passwords, token hashes, token versions, and sensitive internal fields are not returned in safe user objects.

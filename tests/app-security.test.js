@@ -85,6 +85,9 @@ describe("application security and public contracts", () => {
     expect(response.headers["content-security-policy"]).toContain(
       "script-src 'self'",
     );
+    expect(response.headers["content-security-policy"]).toContain(
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    );
     expect(response.headers["content-security-policy"]).not.toContain(
       "'unsafe-eval'",
     );

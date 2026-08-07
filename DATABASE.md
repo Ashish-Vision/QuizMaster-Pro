@@ -121,7 +121,7 @@ Indexes should be reviewed against representative `explain("executionStats")` ou
 - Deep lists use offset pagination.
 - Administrator analytics include collection-wide aggregations.
 - CSV reports are buffered in memory.
-- Daily challenge completions are embedded.
+- Daily challenge completions are embedded in a per-day document. Writes stop when the 24-hour challenge expires, so a document does not grow across days; the design remains suitable for portfolio-scale usage and should move to a dedicated collection before high-volume public operation.
 - Regex administrator search does not behave like a dedicated search index.
 
 These are documented deployment limits, not evidence of incorrect behavior at the project's intended local scale.
