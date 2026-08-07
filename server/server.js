@@ -18,7 +18,7 @@ async function startServer() {
     const server = http.createServer(app);
 
     server.listen(PORT, () => {
-      console.log(`🚀 Server running on http://localhost:${PORT}`);
+      console.info(`🚀 Server running on http://localhost:${PORT}`);
     });
 
     process.on("unhandledRejection", (error) => {
@@ -38,19 +38,19 @@ async function startServer() {
     });
 
     process.on("SIGTERM", () => {
-      console.log("SIGTERM received. Closing server...");
+      console.info("SIGTERM received. Closing server...");
 
       server.close(() => {
-        console.log("Server closed.");
+        console.info("Server closed.");
         process.exit(0);
       });
     });
 
     process.on("SIGINT", () => {
-      console.log("SIGINT received. Closing server...");
+      console.info("SIGINT received. Closing server...");
 
       server.close(() => {
-        console.log("Server closed.");
+        console.info("Server closed.");
         process.exit(0);
       });
     });

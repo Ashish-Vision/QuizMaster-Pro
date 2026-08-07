@@ -14,17 +14,19 @@ async function resetQuestions() {
 
     const deleteResult = await Question.deleteMany({});
 
-    console.log(`Deleted ${deleteResult.deletedCount} existing questions.`);
+    console.info(`Deleted ${deleteResult.deletedCount} existing questions.`);
 
     const insertedQuestions = await Question.insertMany(questions);
 
-    console.log(`Successfully inserted ${insertedQuestions.length} questions.`);
+    console.info(
+      `Successfully inserted ${insertedQuestions.length} questions.`,
+    );
   } catch (error) {
     console.error("Question reset failed:", error.message);
     process.exitCode = 1;
   } finally {
     await mongoose.connection.close();
-    console.log("MongoDB connection closed.");
+    console.info("MongoDB connection closed.");
   }
 }
 

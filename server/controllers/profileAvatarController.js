@@ -176,19 +176,11 @@ async function deleteProfileAvatar(req, res, next) {
       configureCloudinary();
 
       try {
-        const deletionResult = await cloudinary.uploader.destroy(
-          getAvatarPublicId(userId),
-          {
-            resource_type: "image",
-            invalidate: true,
-            timeout: 15000,
-          },
-        );
-
-        console.log(
-          "Cloudinary avatar deletion result:",
-          deletionResult.result,
-        );
+        await cloudinary.uploader.destroy(getAvatarPublicId(userId), {
+          resource_type: "image",
+          invalidate: true,
+          timeout: 15000,
+        });
       } catch (cloudinaryError) {
         console.error("Cloudinary avatar deletion error:", cloudinaryError);
       }

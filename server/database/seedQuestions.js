@@ -15,11 +15,11 @@ async function seedQuestions() {
     const existingCount = await Question.countDocuments();
 
     if (existingCount > 0) {
-      console.log(
+      console.info(
         `Questions collection already contains ${existingCount} questions.`,
       );
 
-      console.log(
+      console.info(
         "No questions were inserted. Run the reset command to replace them.",
       );
 
@@ -28,13 +28,15 @@ async function seedQuestions() {
 
     const insertedQuestions = await Question.insertMany(questions);
 
-    console.log(`Successfully inserted ${insertedQuestions.length} questions.`);
+    console.info(
+      `Successfully inserted ${insertedQuestions.length} questions.`,
+    );
   } catch (error) {
     console.error("Question seeding failed:", error.message);
     process.exitCode = 1;
   } finally {
     await mongoose.connection.close();
-    console.log("MongoDB connection closed.");
+    console.info("MongoDB connection closed.");
   }
 }
 

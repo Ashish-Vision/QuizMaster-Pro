@@ -777,7 +777,7 @@ async function submitQuiz(req, res, next) {
     }
 
     try {
-      const createdNotifications = await createQuizNotifications({
+      await createQuizNotifications({
         userId,
 
         resultId: scoreDocument._id,
@@ -799,10 +799,6 @@ async function submitQuiz(req, res, next) {
         achievements: newlyUnlockedAchievements,
         session: databaseSession,
       });
-
-      console.log(
-        `Created ${createdNotifications.length} notifications for user ${userId}.`,
-      );
     } catch (notificationError) {
       throw notificationError;
     }
