@@ -13,7 +13,7 @@ A secure, full-stack quiz platform with server-authoritative quizzes, learner pr
 [![Node.js](https://img.shields.io/badge/Node.js-22%2B-339933?logo=node.js&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-5-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Replica_Set-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Tests](https://img.shields.io/badge/tests-230_Jest_%2B_26_Playwright-passing-brightgreen)](#testing)
+[![Tests](https://img.shields.io/badge/tests-231_Jest_%2B_28_Playwright-passing-brightgreen)](#testing)
 [![License](https://img.shields.io/badge/license-All_Rights_Reserved-lightgrey)](LICENSE)
 
 [Installation](#installation) · [API](#api-overview) · [Architecture](#architecture) · [Contributing](#contributing)
@@ -367,8 +367,8 @@ Read [SECURITY.md](SECURITY.md) for the security model, reporting process, and d
 
 The validated project baseline is:
 
-- **230 Jest tests** across 11 suites
-- **26 Playwright checks** across desktop Chrome and Pixel 7 profiles
+- **231 Jest tests** across 11 suites
+- **28 Playwright checks** across desktop Chrome and Pixel 7 profiles
 - **0 known production dependency vulnerabilities** at the latest recorded audit
 
 | Test layer              | Coverage                                                                                              |
