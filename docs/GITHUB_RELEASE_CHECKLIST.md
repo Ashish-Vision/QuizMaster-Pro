@@ -6,7 +6,7 @@
 - [x] No tracked real secret found by the final scan.
 - [x] README, API, architecture, environment, testing, security, contribution, and release docs are current.
 - [x] Read-only quality workflow and review templates are present.
-- [ ] Choose and add a LICENSE; update `package.json` and README accordingly.
+- [x] Confirm the all-rights-reserved `LICENSE` matches `package.json` and README.
 - [ ] Review historical large Playwright objects; do not rewrite history without a separate decision.
 
 ## Presentation
@@ -31,5 +31,5 @@
 
 - [ ] Merge reviewed changes through the desired branch strategy.
 - [ ] Confirm `CHANGELOG.md` release date.
-- [ ] Create an annotated `v1.0.0` tag only after the license and manual QA decisions.
+- [ ] Create an annotated `v1.0.0` tag only after manual QA is complete.
 - [ ] Create GitHub release notes from `RELEASE_NOTES_V1.md`.

@@ -9,5 +9,13 @@ coverage/
 playwright-report/
 test-results/
 *.log
+
+# Temporary local audit reports
+AUDIT_REPORT.md
+BUG_REPORT.md
+CLEANUP_REPORT.md
+PERFORMANCE_REPORT.md
+TEST_REPORT.md
+
 .vscode/
 .DS_Store
